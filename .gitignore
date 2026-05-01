@@ -1,0 +1,22 @@
+# Node dependencies (Railway installs these automatically)
+node_modules/
+
+# Portable Node.js binary (not needed on Railway - it has its own Node)
+node-portable/
+
+# Database file (auto-created on first run with demo data)
+data/db.json
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Mac
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment secrets
+.env

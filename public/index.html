@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PropVest — Premium Property Investment</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0d1b2a;--navy2:#1a2d42;--navy3:#243652;
+  --gold:#c9a84c;--gold2:#e8c76a;
+  --white:#ffffff;--off-white:#f4f6f9;--text:#2c3e50;--muted:#6b7c93;
+  --green:#27ae60;--red:#e74c3c;--border:#dde3ee;
+  --radius:12px;--shadow:0 4px 24px rgba(13,27,42,.13);--shadow-lg:0 8px 48px rgba(13,27,42,.22);
+}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--off-white);color:var(--text);min-height:100vh}
+.hidden{display:none!important}
+.screen{display:none;padding-bottom:72px}
+.screen.active{display:block}
+@media(min-width:641px){.screen{padding-bottom:0}}
+nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:64px;box-shadow:0 2px 16px rgba(0,0,0,.3)}
+.nav-logo{font-size:1.4rem;font-weight:800;letter-spacing:-.5px;color:var(--gold);cursor:pointer;display:flex;align-items:center;gap:8px}
+.nav-logo span{color:var(--white);font-weight:400}
+.nav-links{display:flex;gap:6px;align-items:center}
+.nav-btn{background:none;border:none;color:#a8bcd4;font-size:.9rem;padding:8px 14px;border-radius:8px;cursor:pointer;transition:all .2s;font-family:inherit}
+.nav-btn:hover{background:var(--navy2);color:var(--white)}
+.nav-btn.cta{background:var(--gold);color:var(--navy);font-weight:700;padding:8px 18px}
+.nav-btn.cta:hover{background:var(--gold2)}
+.nav-user{display:flex;align-items:center;gap:10px}
+.nav-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-weight:800;font-size:.85rem;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.hamburger{display:none;background:none;border:none;color:var(--white);font-size:1.6rem;cursor:pointer;padding:4px}
+.mobile-menu{display:none;position:fixed;top:64px;left:0;right:0;background:var(--navy);padding:12px;z-index:99;flex-direction:column;gap:4px;box-shadow:var(--shadow-lg)}
+.mobile-menu.open{display:flex}
+.mobile-menu .nav-btn{text-align:left;padding:12px 16px;font-size:1rem}
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:1px solid var(--border);z-index:90;box-shadow:0 -4px 20px rgba(0,0,0,.1)}
+.bottom-nav-inner{display:flex;padding:8px 0 env(safe-area-inset-bottom,8px)}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;cursor:pointer;border:none;background:none;font-family:inherit;flex:1;color:var(--muted);transition:color .2s}
+.bn-item.active{color:var(--gold)}
+.bn-icon{font-size:1.3rem}
+.bn-label{font-size:.65rem;font-weight:600}
+@media(max-width:640px){.bottom-nav{display:block}}
+.modal-overlay{position:fixed;inset:0;background:rgba(13,27,42,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(4px)}
+.modal-box{background:var(--white);border-radius:20px;padding:36px 32px;width:100%;max-width:440px;box-shadow:var(--shadow-lg);position:relative;max-height:90vh;overflow-y:auto}
+.modal-close{position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--muted)}
+.modal-logo{text-align:center;font-size:1.6rem;font-weight:800;color:var(--navy);margin-bottom:4px}
+.modal-logo em{color:var(--gold);font-style:normal}
+.modal-sub{text-align:center;font-size:.85rem;color:var(--muted);margin-bottom:24px}
+.auth-tabs{display:flex;background:var(--off-white);border-radius:10px;padding:4px;margin-bottom:24px}
+.auth-tab{flex:1;padding:10px;border:none;background:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;font-family:inherit}
+.auth-tab.active{background:var(--white);color:var(--navy);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.role-picker{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.role-card{border:2px solid var(--border);border-radius:10px;padding:16px;text-align:center;cursor:pointer;transition:all .2s}
+.role-card:hover,.role-card.selected{border-color:var(--gold)}
+.role-card.selected{background:rgba(201,168,76,.07)}
+.role-card .r-icon{font-size:1.8rem;margin-bottom:6px}
+.role-card strong{display:block;font-size:.9rem;color:var(--navy)}
+.role-card span{font-size:.75rem;color:var(--muted)}
+.auth-field{margin-bottom:14px}
+.auth-field label{display:block;font-size:.82rem;font-weight:600;color:var(--navy);margin-bottom:5px}
+.auth-field input{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:.95rem;color:var(--text);font-family:inherit;transition:border-color .2s}
+.auth-field input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.12)}
+.auth-submit{width:100%;padding:14px;background:linear-gradient(135deg,var(--navy),var(--navy3));color:var(--white);border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:8px}
+.auth-submit:disabled{opacity:.5;cursor:not-allowed}
+.auth-error{background:#fdecea;color:var(--red);font-size:.82rem;padding:10px 12px;border-radius:8px;margin-bottom:12px;display:none}
+.btn-primary{background:var(--gold);color:var(--navy);font-weight:700;padding:16px 36px;border-radius:50px;border:none;font-size:1rem;cursor:pointer;transition:all .25s;font-family:inherit;box-shadow:0 4px 20px rgba(201,168,76,.4)}
+.btn-primary:hover{background:var(--gold2);transform:translateY(-2px)}
+.btn-secondary{background:transparent;color:var(--white);font-weight:600;padding:16px 36px;border-radius:50px;border:2px solid rgba(255,255,255,.3);font-size:1rem;cursor:pointer;transition:all .25s;font-family:inherit}
+.btn-secondary:hover{border-color:var(--white)}
+.hero{background:linear-gradient(135deg,var(--navy) 0%,var(--navy3) 60%,#1f3a5f 100%);color:var(--white);padding:80px 24px 100px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23fff' fill-opacity='.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/svg%3E")}
+.hero-badge{display:inline-block;background:rgba(201,168,76,.2);border:1px solid var(--gold);color:var(--gold);font-size:.8rem;font-weight:600;letter-spacing:1.5px;padding:6px 16px;border-radius:20px;margin-bottom:24px;text-transform:uppercase}
+.hero h1{font-size:clamp(2rem,5vw,3.6rem);font-weight:800;line-height:1.15;max-width:780px;margin:0 auto 20px;letter-spacing:-1px}
+.hero h1 em{color:var(--gold);font-style:normal}
+.hero p{font-size:clamp(1rem,2vw,1.2rem);color:#a8bcd4;max-width:560px;margin:0 auto 40px;line-height:1.7}
+.hero-buttons{display:flex;gap:16px;justify-content:center;flex-wrap:wrap}
+.stats-bar{background:var(--white);display:flex;justify-content:center;flex-wrap:wrap;box-shadow:var(--shadow);border-bottom:1px solid var(--border)}
+.stat-item{padding:24px 40px;text-align:center;border-right:1px solid var(--border);flex:1;min-width:140px}
+.stat-item:last-child{border-right:none}
+.stat-num{font-size:1.8rem;font-weight:800;color:var(--navy)}
+.stat-label{font-size:.8rem;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.5px}
+.section{padding:60px 24px;max-width:1200px;margin:0 auto}
+.section-title{font-size:1.8rem;font-weight:800;color:var(--navy);margin-bottom:8px}
+.section-sub{color:var(--muted);margin-bottom:36px;font-size:1rem}
+.how-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px}
+.how-card{background:var(--white);border-radius:var(--radius);padding:32px 24px;box-shadow:var(--shadow);border:1px solid var(--border);text-align:center;transition:transform .2s}
+.how-card:hover{transform:translateY(-4px)}
+.how-icon{width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy3));display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:1.6rem}
+.how-card h3{font-size:1.05rem;font-weight:700;margin-bottom:8px;color:var(--navy)}
+.how-card p{font-size:.9rem;color:var(--muted);line-height:1.6}
+.listing-header{background:var(--navy);color:var(--white);padding:40px 24px}
+.listing-header h2{font-size:1.8rem;font-weight:800;margin-bottom:6px}
+.listing-header p{color:#a8bcd4}
+.filters{background:var(--white);border-bottom:1px solid var(--border);padding:16px 24px;display:flex;gap:12px;flex-wrap:wrap}
+.filter-btn{padding:8px 18px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);font-size:.85rem;cursor:pointer;transition:all .2s;font-family:inherit;color:var(--text)}
+.filter-btn.on{background:var(--navy);color:var(--white);border-color:var(--navy)}
+.props-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:24px;padding:32px 24px;max-width:1200px;margin:0 auto}
+.prop-card{background:var(--white);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);border:1px solid var(--border);transition:all .25s;cursor:pointer}
+.prop-card:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg)}
+.prop-img{height:200px;position:relative;background-size:cover;background-position:center;background-color:var(--navy2)}
+.prop-img-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,27,42,.5),transparent 60%)}
+.prop-badge{position:absolute;top:12px;left:12px;background:var(--gold);color:var(--navy);font-size:.75rem;font-weight:700;padding:4px 12px;border-radius:20px;z-index:1}
+.prop-badge.limited{background:var(--red);color:var(--white)}
+.prop-body{padding:20px}
+.prop-type{font-size:.75rem;text-transform:uppercase;letter-spacing:1px;color:var(--gold);font-weight:700;margin-bottom:4px}
+.prop-name{font-size:1.15rem;font-weight:800;color:var(--navy);margin-bottom:4px}
+.prop-loc{font-size:.85rem;color:var(--muted);margin-bottom:16px}
+.prop-metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:16px}
+.metric{text-align:center}
+.metric-val{font-size:1.05rem;font-weight:800;color:var(--navy)}
+.metric-lbl{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.prop-footer{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--border)}
+.min-invest{font-size:.8rem;color:var(--muted)}
+.min-invest strong{color:var(--navy);font-size:.95rem}
+.view-btn{background:var(--navy);color:var(--white);border:none;padding:8px 18px;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;font-family:inherit}
+.progress-wrap{margin-bottom:16px}
+.progress-label{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-bottom:6px}
+.progress-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:3px}
+.back-btn{display:inline-flex;align-items:center;gap:8px;background:none;border:none;color:var(--navy);font-size:.9rem;font-weight:600;cursor:pointer;padding:16px 24px;font-family:inherit}
+.back-btn:hover{color:var(--gold)}
+.detail-hero{height:300px;position:relative;background-size:cover;background-position:center;background-color:var(--navy2)}
+.detail-hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(13,27,42,.85),rgba(13,27,42,.2) 60%)}
+.detail-hero-info{position:absolute;bottom:0;left:0;right:0;padding:24px;color:var(--white)}
+.detail-hero-info h2{font-size:1.8rem;font-weight:800;margin:4px 0}
+.detail-body{max-width:1100px;margin:0 auto;padding:0 24px 60px}
+.detail-grid{display:grid;grid-template-columns:1fr 360px;gap:32px;margin-top:32px}
+.detail-main{display:flex;flex-direction:column;gap:24px}
+.detail-sidebar{display:flex;flex-direction:column;gap:20px}
+.card{background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.card-title{font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.tabs{display:flex;gap:4px;margin-bottom:20px;background:var(--off-white);padding:4px;border-radius:10px}
+.tab-btn{flex:1;padding:10px;border:none;background:none;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;color:var(--muted);transition:all .2s;font-family:inherit}
+.tab-btn.active{background:var(--white);color:var(--navy);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.fp-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fp-item{background:var(--off-white);border-radius:8px;padding:16px;text-align:center;border:2px dashed var(--border)}
+.fp-item .fp-icon{font-size:2rem;margin-bottom:8px}
+.fp-item strong{display:block;font-size:.85rem;color:var(--navy);margin-top:4px}
+.fp-item p{font-size:.78rem;color:var(--muted)}
+.fin-table{width:100%;border-collapse:collapse}
+.fin-table tr{border-bottom:1px solid var(--border)}
+.fin-table td{padding:12px 8px;font-size:.9rem}
+.fin-table td:first-child{color:var(--muted)}
+.fin-table td:last-child{text-align:right;font-weight:600;color:var(--navy)}
+.fin-table .total-row td{font-weight:800;font-size:1rem;border-top:2px solid var(--border)}
+.fin-table .profit-row{background:linear-gradient(135deg,#e8f5e9,#c8e6c9)}
+.fin-table .profit-row td{color:var(--green);font-weight:800}
+.roi-bars{display:flex;flex-direction:column;gap:10px}
+.roi-row{display:flex;align-items:center;gap:12px}
+.roi-label{width:60px;font-size:.8rem;color:var(--muted);flex-shrink:0}
+.roi-track{flex:1;height:28px;background:var(--off-white);border-radius:6px;overflow:hidden}
+.roi-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:10px;font-size:.8rem;font-weight:700;color:var(--white);background:linear-gradient(90deg,var(--navy),var(--navy3))}
+.roi-val{width:60px;text-align:right;font-size:.85rem;font-weight:700;color:var(--navy);flex-shrink:0}
+.invest-summary{display:flex;flex-direction:column}
+.is-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}
+.is-row:last-child{border-bottom:none}
+.is-label{font-size:.85rem;color:var(--muted)}
+.is-val{font-size:.95rem;font-weight:700;color:var(--navy)}
+.is-val.green{color:var(--green)}
+.is-val.gold{color:var(--gold)}
+.express-btn{width:100%;padding:16px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-weight:800;font-size:1rem;border:none;border-radius:10px;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(201,168,76,.35)}
+.express-btn:hover{transform:translateY(-2px)}
+.doc-list{display:flex;flex-direction:column;gap:8px}
+.doc-item{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--off-white);border-radius:8px;cursor:pointer;font-size:.85rem;color:var(--navy);font-weight:500}
+.doc-item:hover{background:var(--border)}
+.doc-size{margin-left:auto;color:var(--muted);font-size:.75rem}
+.form-page{max-width:680px;margin:0 auto;padding:32px 24px 60px}
+.form-page h2{font-size:1.6rem;font-weight:800;color:var(--navy);margin-bottom:6px}
+.form-page .sub{color:var(--muted);margin-bottom:28px;font-size:.95rem}
+.form-steps{display:flex;margin-bottom:36px}
+.step-item{flex:1;display:flex;flex-direction:column;align-items:center;position:relative}
+.step-item:not(:last-child)::after{content:'';position:absolute;top:16px;left:50%;width:100%;height:2px;background:var(--border);z-index:0}
+.step-item.done::after{background:var(--gold)}
+.step-dot{width:32px;height:32px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:var(--muted);z-index:1;position:relative;transition:all .3s}
+.step-item.active .step-dot{background:var(--gold);color:var(--navy)}
+.step-item.done .step-dot{background:var(--green);color:var(--white)}
+.step-label{font-size:.72rem;color:var(--muted);margin-top:6px;text-align:center}
+.step-item.active .step-label{color:var(--navy);font-weight:600}
+.form-card{background:var(--white);border-radius:var(--radius);padding:28px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.field-group{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field{margin-bottom:18px}
+.field label{display:block;font-size:.85rem;font-weight:600;color:var(--navy);margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-size:.95rem;color:var(--text);font-family:inherit;background:var(--white)}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.12)}
+.field textarea{resize:vertical;min-height:90px}
+.radio-group{display:flex;flex-direction:column;gap:10px}
+.radio-opt{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border:1.5px solid var(--border);border-radius:8px;cursor:pointer;transition:all .2s}
+.radio-opt:hover,.radio-opt.selected{border-color:var(--gold)}
+.radio-opt.selected{background:rgba(201,168,76,.08)}
+.radio-opt input[type="radio"]{margin-top:2px;accent-color:var(--gold)}
+.radio-opt-text strong{display:block;font-size:.9rem;font-weight:700;color:var(--navy)}
+.radio-opt-text span{font-size:.8rem;color:var(--muted)}
+.form-actions{display:flex;gap:12px;margin-top:24px}
+.btn-back-form{flex:0 0 auto;padding:14px 24px;border:1.5px solid var(--border);border-radius:8px;background:none;color:var(--text);font-size:.95rem;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-next{flex:1;padding:14px 24px;background:linear-gradient(135deg,var(--navy),var(--navy3));color:var(--white);border:none;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer;font-family:inherit}
+.btn-submit{flex:1;padding:14px 24px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);border:none;border-radius:8px;font-size:.95rem;font-weight:800;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(201,168,76,.35)}
+.btn-submit:disabled{opacity:.5;cursor:not-allowed}
+.confirm-page{max-width:600px;margin:0 auto;padding:60px 24px;text-align:center}
+.confirm-icon{font-size:5rem;margin-bottom:24px}
+.confirm-page h2{font-size:1.8rem;font-weight:800;color:var(--navy);margin-bottom:12px}
+.confirm-page p{color:var(--muted);line-height:1.7;margin-bottom:28px;font-size:.95rem}
+.referral-card{background:linear-gradient(135deg,var(--navy),var(--navy3));color:var(--white);border-radius:var(--radius);padding:28px;margin:28px 0;text-align:left}
+.referral-card h3{font-size:1.1rem;font-weight:700;margin-bottom:8px}
+.referral-card p{font-size:.9rem;color:#a8bcd4;margin-bottom:16px;line-height:1.6}
+.referral-code{background:rgba(201,168,76,.15);border:1px solid var(--gold);border-radius:8px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between}
+.referral-code span{font-family:monospace;font-size:1.1rem;font-weight:700;color:var(--gold);letter-spacing:2px}
+.copy-btn{background:var(--gold);color:var(--navy);border:none;padding:6px 14px;border-radius:6px;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit}
+.next-steps h3{font-size:1rem;font-weight:700;color:var(--navy);margin-bottom:12px;text-align:left}
+.step-list{display:flex;flex-direction:column;gap:10px}
+.step-row{display:flex;gap:14px;align-items:flex-start;padding:14px;background:var(--white);border-radius:10px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.step-num{width:28px;height:28px;border-radius:50%;background:var(--navy);color:var(--white);font-size:.8rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-text strong{display:block;font-size:.9rem;color:var(--navy)}
+.step-text span{font-size:.82rem;color:var(--muted)}
+.portal-header{background:linear-gradient(135deg,#0d1b2a,#1a2d42);color:var(--white);padding:40px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.portal-header h2{font-size:1.6rem;font-weight:800}
+.portal-header p{color:#a8bcd4;font-size:.9rem;margin-top:4px}
+.portal-body{max-width:1100px;margin:0 auto;padding:32px 24px 60px}
+.portal-grid{display:grid;grid-template-columns:1fr 340px;gap:28px}
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:40px;text-align:center;cursor:pointer;background:var(--white);margin-bottom:20px}
+.upload-zone:hover{border-color:var(--gold);background:rgba(201,168,76,.03)}
+.upload-zone .up-icon{font-size:3rem;margin-bottom:12px}
+.upload-zone h4{font-weight:700;color:var(--navy);margin-bottom:6px}
+.upload-zone p{font-size:.85rem;color:var(--muted)}
+.upload-types{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:16px}
+.upload-tag{background:var(--off-white);border:1px solid var(--border);padding:4px 12px;border-radius:12px;font-size:.75rem;color:var(--muted)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.portal-stats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px}
+.portal-stat{background:var(--white);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);border:1px solid var(--border);text-align:center}
+.portal-stat .p-num{font-size:1.6rem;font-weight:800;color:var(--navy)}
+.portal-stat .p-lbl{font-size:.75rem;color:var(--muted);margin-top:2px}
+.lead-list{display:flex;flex-direction:column;gap:10px}
+.lead-item{background:var(--white);border-radius:10px;padding:14px 16px;box-shadow:var(--shadow);border:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.lead-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy3));color:var(--white);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.9rem;flex-shrink:0}
+.lead-info strong{display:block;font-size:.9rem;color:var(--navy)}
+.lead-info span{font-size:.78rem;color:var(--muted)}
+.lead-tag{margin-left:auto;padding:4px 10px;border-radius:10px;font-size:.72rem;font-weight:700}
+.lead-tag.hot{background:#fff3e0;color:#e65100}
+.lead-tag.ref{background:#e8f5e9;color:#2e7d32}
+.lead-tag.new-lead{background:#e3f2fd;color:#1565c0}
+.publish-btn{width:100%;padding:16px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-weight:800;font-size:1rem;border:none;border-radius:10px;cursor:pointer;font-family:inherit;box-shadow:0 4px 16px rgba(201,168,76,.35);margin-top:8px}
+.publish-btn:disabled{opacity:.5;cursor:not-allowed}
+.profile-page{max-width:640px;margin:0 auto;padding:32px 24px 60px}
+.profile-avatar-big{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold2));color:var(--navy);font-weight:800;font-size:1.8rem;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.profile-name{text-align:center;font-size:1.4rem;font-weight:800;color:var(--navy)}
+.profile-role-label{text-align:center;color:var(--muted);margin-bottom:28px}
+.profile-role-label span{background:rgba(201,168,76,.15);color:var(--gold);font-weight:700;padding:3px 12px;border-radius:12px;font-size:.8rem}
+.saved-item{background:var(--white);border-radius:10px;padding:16px;box-shadow:var(--shadow);border:1px solid var(--border);display:flex;align-items:center;gap:14px;cursor:pointer;margin-bottom:10px}
+.saved-item:hover{border-color:var(--gold)}
+.logout-btn{width:100%;padding:14px;border:1.5px solid var(--border);border-radius:10px;background:none;color:var(--muted);font-size:.95rem;font-weight:600;cursor:pointer;font-family:inherit;margin-top:24px}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:var(--white);padding:12px 24px;border-radius:30px;font-size:.9rem;font-weight:600;opacity:0;transition:all .3s;z-index:300;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(min-width:641px){.toast{bottom:30px}}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:var(--white);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:900px){.detail-grid{grid-template-columns:1fr}.portal-grid{grid-template-columns:1fr}.portal-sidebar-col{order:-1}}
+@media(max-width:640px){
+  nav{padding:0 16px}.nav-links{display:none}.hamburger{display:block}
+  .hero{padding:60px 16px 80px}.stat-item{padding:16px 20px}
+  .props-grid{grid-template-columns:1fr;padding:20px 16px}
+  .field-group,.field-row{grid-template-columns:1fr}
+  .form-page{padding:24px 16px 48px}.section{padding:40px 16px}.detail-body{padding:0 16px 48px}
+  .tabs .tab-btn{font-size:.75rem;padding:8px 4px}
+}
+</style>
+</head>
+<body>
+
+<div class="toast" id="toast"></div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay hidden" id="authModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="document.getElementById('authModal').classList.add('hidden')">✕</button>
+    <div class="modal-logo">🏛 Prop<em>Vest</em></div>
+    <div class="modal-sub">Premium Property Investment Platform</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</button>
+      <button class="auth-tab" onclick="switchAuthTab('register',this)">Create Account</button>
+    </div>
+    <div id="auth-login">
+      <div class="auth-error" id="login-error"></div>
+      <div class="auth-field"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com"></div>
+      <div class="auth-field"><label>Password</label><input type="password" id="login-pass" placeholder="••••••••"></div>
+      <button class="auth-submit" id="login-btn" onclick="doLogin()">Sign In →</button>
+      <p style="text-align:center;font-size:.8rem;color:var(--muted);margin-top:16px">No account? <a href="#" onclick="switchAuthTab('register',null);return false" style="color:var(--gold);font-weight:600">Create one free</a></p>
+      <div style="margin-top:16px;padding:12px;background:var(--off-white);border-radius:8px;font-size:.78rem;color:var(--muted)">
+        <strong style="color:var(--navy)">Demo accounts:</strong><br>
+        Investor: investor@demo.com / demo123<br>
+        Developer: developer@demo.com / demo123
+      </div>
+    </div>
+    <div id="auth-register" class="hidden">
+      <div class="auth-error" id="reg-error"></div>
+      <div style="margin-bottom:16px">
+        <div style="font-size:.85rem;font-weight:600;color:var(--navy);margin-bottom:8px">I am a…</div>
+        <div class="role-picker">
+          <div class="role-card selected" id="role-investor" onclick="selectRole('investor')"><div class="r-icon">💼</div><strong>Investor</strong><span>Browse & invest</span></div>
+          <div class="role-card" id="role-developer" onclick="selectRole('developer')"><div class="r-icon">🏗</div><strong>Developer</strong><span>List opportunities</span></div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="auth-field"><label>First Name</label><input type="text" id="reg-fname" placeholder="John"></div>
+        <div class="auth-field"><label>Last Name</label><input type="text" id="reg-lname" placeholder="Smith"></div>
+      </div>
+      <div class="auth-field"><label>Email</label><input type="email" id="reg-email" placeholder="you@example.com"></div>
+      <div class="auth-field"><label>Password</label><input type="password" id="reg-pass" placeholder="Min 6 characters"></div>
+      <button class="auth-submit" id="reg-btn" onclick="doRegister()">Create Account →</button>
+    </div>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" onclick="goHome()">🏛 Prop<span>Vest</span></div>
+  <div class="nav-links">
+    <button class="nav-btn" onclick="goHome()">Home</button>
+    <button class="nav-btn" onclick="showScreen('listings')">Investments</button>
+    <button class="nav-btn dev-only hidden" onclick="showScreen('portal')">Developer Portal</button>
+    <div class="nav-user hidden" id="navUser">
+      <div class="nav-avatar" onclick="showScreen('profile')" id="navAvatar">?</div>
+      <button class="nav-btn" onclick="doLogout()" style="color:#a8bcd4">Sign Out</button>
+    </div>
+    <button class="nav-btn cta" id="navSignIn" onclick="openAuth()">Sign In</button>
+  </div>
+  <button class="hamburger" onclick="toggleMobile()">☰</button>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <button class="nav-btn" onclick="goHome();toggleMobile()">Home</button>
+  <button class="nav-btn" onclick="showScreen('listings');toggleMobile()">Browse Investments</button>
+  <button class="nav-btn dev-only hidden" onclick="showScreen('portal');toggleMobile()">Developer Portal</button>
+  <button class="nav-btn" onclick="showScreen('profile');toggleMobile()">My Profile</button>
+  <button class="nav-btn" onclick="doLogout()" style="color:#a8bcd4">Sign Out</button>
+</div>
+
+<!-- MOBILE BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="bottom-nav-inner">
+    <button class="bn-item active" id="bn-home" onclick="goHome();setBN('home')"><span class="bn-icon">🏠</span><span class="bn-label">Home</span></button>
+    <button class="bn-item" id="bn-browse" onclick="showScreen('listings');setBN('browse')"><span class="bn-icon">🔍</span><span class="bn-label">Browse</span></button>
+    <button class="bn-item dev-only hidden" id="bn-portal" onclick="showScreen('portal');setBN('portal')"><span class="bn-icon">📤</span><span class="bn-label">Portal</span></button>
+    <button class="bn-item" id="bn-profile" onclick="showScreen('profile');setBN('profile')"><span class="bn-icon">👤</span><span class="bn-label">Profile</span></button>
+  </div>
+</div>
+
+<!-- LANDING -->
+<div class="screen active" id="screen-landing">
+  <div class="hero">
+    <div class="hero-badge">Exclusive Investment Opportunities</div>
+    <h1>Invest in <em>Premium Properties</em> With Confidence</h1>
+    <p>Access carefully curated off-market property investments — complete with full financial feasibility reports, floorplans, and projected returns.</p>
+    <div class="hero-buttons">
+      <button class="btn-primary" onclick="showScreen('listings')">View Opportunities</button>
+      <button class="btn-secondary" onclick="openAuth()">Get Started Free</button>
+    </div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-num">$240M+</div><div class="stat-label">Capital Deployed</div></div>
+    <div class="stat-item"><div class="stat-num" id="stat-listings">—</div><div class="stat-label">Active Listings</div></div>
+    <div class="stat-item"><div class="stat-num">18.4%</div><div class="stat-label">Avg. Annual ROI</div></div>
+    <div class="stat-item"><div class="stat-num" id="stat-investors">2,300+</div><div class="stat-label">Investors</div></div>
+  </div>
+  <div class="section">
+    <div class="section-title">How It Works</div>
+    <div class="section-sub">Three simple steps from discovery to investment</div>
+    <div class="how-grid">
+      <div class="how-card"><div class="how-icon">🔍</div><h3>Browse Opportunities</h3><p>Explore vetted property investments with full financial breakdowns, ROI projections, and developer credentials.</p></div>
+      <div class="how-card"><div class="how-icon">📊</div><h3>Review the Financials</h3><p>Download floorplans, feasibility reports, profit models, and all due-diligence documentation in one place.</p></div>
+      <div class="how-card"><div class="how-icon">🤝</div><h3>Express Interest</h3><p>Tell us your investment capacity. We'll connect you directly with the developer — or refer you to a broker if needed.</p></div>
+      <div class="how-card"><div class="how-icon">🚀</div><h3>Get Connected</h3><p>Our team follows up within 24 hours to guide you through the next steps and secure your position.</p></div>
+    </div>
+  </div>
+  <div style="background:var(--navy);padding:60px 24px;text-align:center;color:var(--white)">
+    <div style="max-width:600px;margin:0 auto">
+      <div style="font-size:.8rem;letter-spacing:1.5px;color:var(--gold);font-weight:700;text-transform:uppercase;margin-bottom:16px">For Developers & Investment Providers</div>
+      <h2 style="font-size:1.8rem;font-weight:800;margin-bottom:12px">List Your Property Investment</h2>
+      <p style="color:#a8bcd4;margin-bottom:28px;line-height:1.7">Upload your full investment package and connect with qualified investors actively looking for opportunities like yours.</p>
+      <button class="btn-primary" onclick="showScreen('portal')">Access Developer Portal →</button>
+    </div>
+  </div>
+</div>
+
+<!-- LISTINGS -->
+<div class="screen" id="screen-listings">
+  <div class="listing-header"><h2>Investment Opportunities</h2><p id="listing-count-label">Loading…</p></div>
+  <div class="filters">
+    <button class="filter-btn on" onclick="filterProps('all',this)">All</button>
+    <button class="filter-btn" onclick="filterProps('residential',this)">Residential</button>
+    <button class="filter-btn" onclick="filterProps('commercial',this)">Commercial</button>
+    <button class="filter-btn" onclick="filterProps('mixed',this)">Mixed-Use</button>
+    <button class="filter-btn" onclick="filterProps('high-yield',this)">High Yield (&gt;20% IRR)</button>
+  </div>
+  <div class="props-grid" id="propsGrid"><div style="padding:40px;color:var(--muted);text-align:center"><span class="spinner"></span> Loading listings…</div></div>
+</div>
+
+<!-- DETAIL -->
+<div class="screen" id="screen-detail">
+  <button class="back-btn" onclick="showScreen('listings')">← Back to Opportunities</button>
+  <div class="detail-hero" id="detailHero"><div class="detail-hero-overlay"></div><div class="detail-hero-info"><div class="prop-type" id="d-type"></div><h2 id="d-name"></h2><div id="d-loc" style="color:#a8bcd4;font-size:.85rem;margin-top:4px"></div></div></div>
+  <div class="detail-body">
+    <div class="detail-grid">
+      <div class="detail-main">
+        <div class="card"><div class="card-title"><span>📋</span> Project Overview</div><p id="d-overview" style="color:var(--muted);line-height:1.8;font-size:.95rem"></p><div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:20px" id="d-stats"></div></div>
+        <div class="card">
+          <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('floorplans',this)">🏗 Floorplans</button>
+            <button class="tab-btn" onclick="switchTab('financials',this)">💰 Financials</button>
+            <button class="tab-btn" onclick="switchTab('roi',this)">📈 ROI</button>
+          </div>
+          <div id="tab-floorplans">
+            <div class="fp-grid" id="d-fp-grid"></div>
+            <div class="upload-zone" style="padding:24px;margin-top:16px"><div class="up-icon">📐</div><h4>Detailed Floorplan PDFs</h4><p>Full architectural drawings available to verified investors</p><button class="btn-next" style="margin-top:14px;width:auto;padding:10px 24px;font-size:.85rem" onclick="showScreen('interest')">Request Access</button></div>
+          </div>
+          <div id="tab-financials" class="hidden"><table class="fin-table" id="d-fin-table"></table></div>
+          <div id="tab-roi" class="hidden"><p style="font-size:.85rem;color:var(--muted);margin-bottom:20px" id="d-roi-intro"></p><div class="roi-bars" id="d-roi-bars"></div><div id="d-roi-summary" style="margin-top:20px;padding:16px;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:10px"></div></div>
+        </div>
+        <div class="card"><div class="card-title"><span>📎</span> Available Documents</div><div class="doc-list"><div class="doc-item"><span>📐</span> Architectural Floorplans <span class="doc-size">PDF · 8.4 MB</span></div><div class="doc-item"><span>📊</span> Financial Feasibility Report <span class="doc-size">PDF · 3.1 MB</span></div><div class="doc-item"><span>🏗</span> Development Application <span class="doc-size">PDF · 12 MB</span></div><div class="doc-item"><span>📋</span> Independent Valuation <span class="doc-size">PDF · 2.8 MB</span></div><div class="doc-item"><span>🤝</span> Investor Term Sheet <span class="doc-size">PDF · 1.2 MB</span></div></div><p style="font-size:.8rem;color:var(--muted);margin-top:12px">🔒 Full document access granted upon expressing interest and ID verification</p></div>
+      </div>
+      <div class="detail-sidebar">
+        <div class="card"><div class="card-title"><span>💎</span> Investment Summary</div><div class="invest-summary" id="d-summary"></div><div style="margin-top:16px"><div class="progress-label"><span style="font-size:.8rem;color:var(--muted)">Funding Progress</span><span id="d-prog-pct" style="font-size:.8rem;font-weight:700;color:var(--gold)"></span></div><div class="progress-bar" style="height:10px"><div class="progress-fill" id="d-prog-fill"></div></div></div><button class="express-btn" style="margin-top:20px" onclick="showScreen('interest')">Express Interest →</button></div>
+        <div class="card"><div class="card-title"><span>🏢</span> Developer Profile</div><div id="d-dev-profile"></div></div>
+        <div class="card" style="background:linear-gradient(135deg,var(--navy),var(--navy3));color:var(--white)"><div class="card-title" style="color:var(--gold)"><span>📞</span> Have Questions?</div><p style="font-size:.85rem;color:#a8bcd4;margin-bottom:16px">Speak with our investment team about this opportunity.</p><button class="express-btn" onclick="showScreen('interest')">Book a Call</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- INTEREST FORM -->
+<div class="screen" id="screen-interest">
+  <button class="back-btn" onclick="showScreen('detail')">← Back to Property</button>
+  <div class="form-page">
+    <h2>Express Your Interest</h2>
+    <p class="sub" id="interest-sub">Complete the form below and our team will be in touch within 24 hours.</p>
+    <div class="form-steps">
+      <div class="step-item active" id="fstep-1"><div class="step-dot">1</div><div class="step-label">Your Details</div></div>
+      <div class="step-item" id="fstep-2"><div class="step-dot">2</div><div class="step-label">Financial Profile</div></div>
+      <div class="step-item" id="fstep-3"><div class="step-dot">3</div><div class="step-label">Confirm</div></div>
+    </div>
+    <div id="form-step-1" class="form-card">
+      <div class="field-group">
+        <div class="field"><label>First Name *</label><input type="text" id="i-fname" placeholder="John"></div>
+        <div class="field"><label>Last Name *</label><input type="text" id="i-lname" placeholder="Smith"></div>
+      </div>
+      <div class="field"><label>Email Address *</label><input type="email" id="i-email" placeholder="john@example.com"></div>
+      <div class="field"><label>Phone Number</label><input type="tel" id="i-phone" placeholder="+61 4XX XXX XXX"></div>
+      <div class="field"><label>State</label><select id="i-state"><option>NSW</option><option>VIC</option><option>QLD</option><option>WA</option><option>SA</option><option>ACT</option><option>Other</option></select></div>
+      <div class="form-actions"><button class="btn-next" onclick="nextStep(2)">Continue →</button></div>
+    </div>
+    <div id="form-step-2" class="form-card hidden">
+      <div class="field"><label>Intended investment amount</label><select id="i-amount"><option>$250,000 – $500,000</option><option>$500,000 – $1,000,000</option><option>$1,000,000 – $2,500,000</option><option>$2,500,000+</option><option>Still assessing</option></select></div>
+      <div class="field"><label>Funding method</label>
+        <div class="radio-group">
+          <label class="radio-opt selected" onclick="selectRadio(this)"><input type="radio" name="funding" checked><div class="radio-opt-text"><strong>Cash / Existing Funds</strong><span>I have the capital ready</span></div></label>
+          <label class="radio-opt" onclick="selectRadio(this)"><input type="radio" name="funding"><div class="radio-opt-text"><strong>Finance / Loan Required</strong><span>I'll need to arrange finance</span></div></label>
+          <label class="radio-opt" onclick="selectRadio(this)"><input type="radio" name="funding"><div class="radio-opt-text"><strong>Combination of Both</strong><span>Mix of cash and finance</span></div></label>
+          <label class="radio-opt" onclick="selectRadio(this)"><input type="radio" name="funding"><div class="radio-opt-text"><strong>SMSF / Superannuation</strong><span>Self-managed super fund</span></div></label>
+        </div>
+      </div>
+      <div class="field"><label>Do you have a mortgage broker or financial advisor?</label>
+        <div class="radio-group">
+          <label class="radio-opt selected" id="broker-yes" onclick="selectBroker(true)"><input type="radio" name="broker" checked><div class="radio-opt-text"><strong>Yes, I have a broker / advisor</strong><span>Already working with a professional</span></div></label>
+          <label class="radio-opt" id="broker-no" onclick="selectBroker(false)"><input type="radio" name="broker"><div class="radio-opt-text"><strong>No — I'd welcome a referral</strong><span>Connect me with a trusted broker</span></div></label>
+        </div>
+      </div>
+      <div class="field"><label>Additional comments</label><textarea id="i-comments" placeholder="e.g. Interested in the penthouse units…"></textarea></div>
+      <div class="form-actions"><button class="btn-back-form" onclick="nextStep(1)">Back</button><button class="btn-next" onclick="nextStep(3)">Continue →</button></div>
+    </div>
+    <div id="form-step-3" class="form-card hidden">
+      <h3 style="font-weight:700;color:var(--navy);margin-bottom:16px">Review Your Submission</h3>
+      <div style="background:var(--off-white);border-radius:10px;padding:20px;margin-bottom:20px"><div id="review-rows"></div></div>
+      <div id="referral-notice" class="hidden" style="background:#fff8e1;border:1px solid #ffd54f;border-radius:10px;padding:16px;margin-bottom:20px">
+        <div style="font-weight:700;color:#e65100;margin-bottom:6px">🔗 Broker Referral Included</div>
+        <p style="font-size:.85rem;color:#795548;line-height:1.6">We'll connect you with a trusted financial advisor who specialises in property investment — free, no obligation.</p>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:20px">
+        <input type="checkbox" id="agreeBox" style="margin-top:3px;width:16px;height:16px;accent-color:var(--gold)">
+        <label for="agreeBox" style="font-size:.85rem;color:var(--muted);line-height:1.6;cursor:pointer">I consent to PropVest contacting me regarding this investment opportunity. My details will be shared with the developer and, if applicable, a broker referral partner.</label>
+      </div>
+      <div class="form-actions"><button class="btn-back-form" onclick="nextStep(2)">Back</button><button class="btn-submit" id="submit-btn" onclick="submitForm()">Submit Interest →</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRMATION -->
+<div class="screen" id="screen-confirm">
+  <div class="confirm-page">
+    <div class="confirm-icon" id="confirm-icon">✅</div>
+    <h2 id="confirm-title">Interest Registered!</h2>
+    <p id="confirm-body"></p>
+    <div id="referral-block" class="referral-card hidden">
+      <h3>🔗 Broker Referral Arranged</h3>
+      <p>Because you're yet to work with a mortgage broker or financial advisor, we've flagged your profile for a complimentary broker referral. A specialist will reach out within 48 hours.</p>
+      <div class="referral-code"><span id="ref-code">REF-0000</span><button class="copy-btn" onclick="copyRef()">Copy</button></div>
+      <p style="margin-top:12px;font-size:.8rem;color:#7faacc">Quote this reference number when speaking with your broker.</p>
+    </div>
+    <div class="next-steps" style="margin:24px 0">
+      <h3>What Happens Next</h3>
+      <div class="step-list">
+        <div class="step-row"><div class="step-num">1</div><div class="step-text"><strong>Confirmation Email Sent</strong><span>Check your inbox for a summary of your expression of interest</span></div></div>
+        <div class="step-row"><div class="step-num">2</div><div class="step-text"><strong>Team Review (within 24hrs)</strong><span>Our investment team reviews your profile and prepares tailored information</span></div></div>
+        <div class="step-row"><div class="step-num">3</div><div class="step-text"><strong>Introduction Call</strong><span>We connect you with the developer and, if applicable, your broker referral</span></div></div>
+        <div class="step-row"><div class="step-num">4</div><div class="step-text"><strong>Secure Document Access</strong><span>Full due-diligence pack including floorplans and feasibility report unlocked</span></div></div>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="showScreen('listings')" style="margin-top:12px">Browse More Opportunities</button>
+  </div>
+</div>
+
+<!-- DEVELOPER PORTAL -->
+<div class="screen" id="screen-portal">
+  <div class="portal-header">
+    <div><h2>Developer Portal</h2><p>Manage your investment listings and track investor leads</p></div>
+    <button class="express-btn" style="width:auto;padding:12px 24px;font-size:.9rem" onclick="document.getElementById('listingForm').scrollIntoView({behavior:'smooth'})">+ New Listing</button>
+  </div>
+  <div class="portal-body">
+    <div class="portal-grid">
+      <div>
+        <div class="card" style="margin-bottom:24px">
+          <div class="card-title"><span>📤</span> Upload Investment Package</div>
+          <div class="upload-zone" onclick="toast('File upload will be available once deployed to the cloud.')">
+            <div class="up-icon">⬆️</div><h4>Drop Files Here or Click to Upload</h4>
+            <p>Floorplans, feasibility reports, renders, DA approvals, valuations & term sheets</p>
+            <div class="upload-types"><span class="upload-tag">📐 Floorplans (PDF)</span><span class="upload-tag">📊 Feasibility (XLSX/PDF)</span><span class="upload-tag">🖼 Renders (JPG/PNG)</span><span class="upload-tag">📋 DA Approval</span><span class="upload-tag">🤝 Term Sheet</span><span class="upload-tag">🏦 Valuation</span></div>
+          </div>
+          <div id="listingForm">
+            <div class="field-row">
+              <div class="field"><label>Project Name *</label><input type="text" id="p-name" placeholder="e.g. Harbour View Residences"></div>
+              <div class="field"><label>Property Type *</label><select id="p-type"><option value="residential">Luxury Residential</option><option value="commercial">Commercial — Office</option><option value="commercial">Commercial — Retail</option><option value="mixed">Mixed-Use</option><option value="residential">Land Subdivision</option></select></div>
+            </div>
+            <div class="field"><label>Location *</label><input type="text" id="p-loc" placeholder="e.g. 14 Pyrmont Bridge Rd, Darling Harbour NSW 2009"></div>
+            <div class="field-row">
+              <div class="field"><label>Min. Investment ($) *</label><input type="number" id="p-min" placeholder="250000"></div>
+              <div class="field"><label>Total Raise ($) *</label><input type="number" id="p-raise" placeholder="18500000"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Target IRR (%) *</label><input type="number" id="p-irr" placeholder="18.2" step="0.1"></div>
+              <div class="field"><label>Hold Period (years) *</label><input type="number" id="p-hold" placeholder="3.5" step="0.5"></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><label>Total Dev. Cost ($)</label><input type="number" id="p-cost" placeholder="64840000"></div>
+              <div class="field"><label>Gross Realisable Value ($)</label><input type="number" id="p-grv" placeholder="89700000"></div>
+            </div>
+            <div class="field"><label>Project Description</label><textarea id="p-desc" placeholder="Describe the project, location highlights, developer experience, and what makes this attractive…"></textarea></div>
+            <div class="field-row">
+              <div class="field"><label>Est. Completion</label><input type="month" id="p-complete"></div>
+              <div class="field"><label>Planning Status</label><select id="p-status"><option>DA Approved</option><option>DA Pending</option><option>Under Construction</option><option>Pre-DA</option></select></div>
+            </div>
+            <div class="field"><label>Investment Structure</label><select id="p-structure"><option>Equity / Joint Venture</option><option>Preferred Equity</option><option>Mezzanine Finance</option><option>First Mortgage</option><option>Second Mortgage</option></select></div>
+            <div id="portal-form-error" style="color:var(--red);font-size:.85rem;margin-bottom:8px;display:none"></div>
+            <button class="publish-btn" id="publish-btn" onclick="publishListing()">🚀 Publish Listing</button>
+          </div>
+        </div>
+        <div class="card"><div class="card-title"><span>📋</span> My Published Listings</div><div id="my-listings-list"><p style="color:var(--muted);font-size:.9rem">No listings yet.</p></div></div>
+      </div>
+      <div class="portal-sidebar-col">
+        <div class="portal-stats">
+          <div class="portal-stat"><div class="p-num" id="ps-listings">0</div><div class="p-lbl">My Listings</div></div>
+          <div class="portal-stat"><div class="p-num" id="ps-leads">0</div><div class="p-lbl">Total Leads</div></div>
+          <div class="portal-stat"><div class="p-num" id="ps-week">0</div><div class="p-lbl">This Week</div></div>
+          <div class="portal-stat"><div class="p-num" id="ps-refs">0</div><div class="p-lbl">Referrals</div></div>
+        </div>
+        <div class="card"><div class="card-title"><span>🔥</span> Investor Leads</div><div class="lead-list" id="leads-list"><p style="color:var(--muted);font-size:.85rem">Leads appear when investors express interest in your listings.</p></div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div class="screen" id="screen-profile">
+  <div class="profile-page">
+    <div class="profile-avatar-big" id="profile-avatar-big">?</div>
+    <div class="profile-name" id="profile-name">—</div>
+    <div class="profile-role-label"><span id="profile-role-tag">Investor</span></div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title"><span>👤</span> Account Details</div>
+      <div style="display:grid;gap:8px">
+        <div style="display:flex;justify-content:space-between;font-size:.9rem;border-bottom:1px solid var(--border);padding-bottom:8px"><span style="color:var(--muted)">Email</span><span id="profile-email" style="font-weight:600;color:var(--navy)">—</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:.9rem;border-bottom:1px solid var(--border);padding-bottom:8px"><span style="color:var(--muted)">Role</span><span id="profile-role-text" style="font-weight:600;color:var(--navy)">—</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:.9rem"><span style="color:var(--muted)">Member Since</span><span id="profile-joined" style="font-weight:600;color:var(--navy)">—</span></div>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:20px"><div class="card-title"><span>⭐</span> My Submitted Interests</div><div id="my-interests-list"><p style="color:var(--muted);font-size:.85rem">No interests submitted yet.</p></div></div>
+    <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+  </div>
+</div>
+
+<script>
+const API={
+  async _r(r){return r.json()},
+  get:(u)=>fetch(u).then(r=>r.json()),
+  post:(u,d)=>fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}).then(r=>r.json()),
+  getListings:()=>API.get('/api/listings'),
+  createListing:(d)=>API.post('/api/listings',d),
+  getInterests:()=>API.get('/api/interests'),
+  createInterest:(d)=>API.post('/api/interests',d),
+  login:(d)=>API.post('/api/auth/login',d),
+  register:(d)=>API.post('/api/auth/register',d),
+  logout:()=>API.post('/api/auth/logout',{}),
+  me:()=>API.get('/api/auth/me'),
+  stats:()=>API.get('/api/stats'),
+};
+let currentUser=null,currentListingId=null,needsBroker=false,selectedRole='investor',allListings=[],activeFilter='all';
+
+window.addEventListener('DOMContentLoaded',async()=>{
+  try{const{user}=await API.me();if(user){currentUser=user;onLoggedIn();}else{openAuth();}}catch{openAuth();}
+  await loadListings();await loadStats();
+});
+async function loadListings(){try{allListings=await API.getListings();renderListings();}catch(e){console.error(e);}}
+async function loadStats(){try{const s=await API.stats();document.getElementById('stat-listings').textContent=s.listings;document.getElementById('stat-investors').textContent=(2300+s.investors)+'+';document.getElementById('listing-count-label').textContent=s.listings+' opportunit'+(s.listings===1?'y':'ies')+' available';}catch{}}
+
+function openAuth(){document.getElementById('authModal').classList.remove('hidden');}
+function switchAuthTab(tab,btn){document.getElementById('auth-login').classList.toggle('hidden',tab!=='login');document.getElementById('auth-register').classList.toggle('hidden',tab!=='register');document.querySelectorAll('.auth-tab').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');else document.querySelectorAll('.auth-tab')[tab==='login'?0:1].classList.add('active');}
+function selectRole(r){selectedRole=r;document.getElementById('role-investor').classList.toggle('selected',r==='investor');document.getElementById('role-developer').classList.toggle('selected',r==='developer');}
+async function doLogin(){
+  const email=document.getElementById('login-email').value.trim(),password=document.getElementById('login-pass').value;
+  const errEl=document.getElementById('login-error'),btn=document.getElementById('login-btn');
+  errEl.style.display='none';btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Signing in…';
+  try{const res=await API.login({email,password});if(res.error){errEl.textContent=res.error;errEl.style.display='block';return;}currentUser=res.user;document.getElementById('authModal').classList.add('hidden');onLoggedIn();toast('Welcome back, '+res.user.fname+'!');}
+  catch{errEl.textContent='Connection error.';errEl.style.display='block';}
+  finally{btn.disabled=false;btn.textContent='Sign In →';}
+}
+async function doRegister(){
+  const fname=document.getElementById('reg-fname').value.trim(),lname=document.getElementById('reg-lname').value.trim(),email=document.getElementById('reg-email').value.trim(),password=document.getElementById('reg-pass').value;
+  const errEl=document.getElementById('reg-error'),btn=document.getElementById('reg-btn');
+  errEl.style.display='none';btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Creating account…';
+  try{const res=await API.register({fname,lname,email,password,role:selectedRole});if(res.error){errEl.textContent=res.error;errEl.style.display='block';return;}currentUser=res.user;document.getElementById('authModal').classList.add('hidden');onLoggedIn();toast('Welcome to PropVest, '+res.user.fname+'!');}
+  catch{errEl.textContent='Connection error.';errEl.style.display='block';}
+  finally{btn.disabled=false;btn.textContent='Create Account →';}
+}
+function onLoggedIn(){
+  const u=currentUser,isDev=u.role==='developer';
+  document.getElementById('navSignIn').classList.add('hidden');document.getElementById('navUser').classList.remove('hidden');
+  document.getElementById('navAvatar').textContent=u.fname[0]+(u.lname?u.lname[0]:'');
+  document.querySelectorAll('.dev-only').forEach(el=>el.classList.toggle('hidden',!isDev));
+  document.getElementById('profile-avatar-big').textContent=u.fname[0]+(u.lname?u.lname[0]:'');
+  document.getElementById('profile-name').textContent=u.fname+' '+(u.lname||'');
+  document.getElementById('profile-role-tag').textContent=isDev?'Developer':'Investor';
+  document.getElementById('profile-email').textContent=u.email;
+  document.getElementById('profile-role-text').textContent=isDev?'Property Developer / Investment Provider':'Property Investor';
+  document.getElementById('profile-joined').textContent=new Date(u.joined).toLocaleDateString('en-AU',{month:'long',year:'numeric'});
+  if(isDev)refreshPortal();refreshMyInterests();
+  if(u.fname)document.getElementById('i-fname').value=u.fname;
+  if(u.lname)document.getElementById('i-lname').value=u.lname;
+  if(u.email)document.getElementById('i-email').value=u.email;
+}
+async function doLogout(){await API.logout();currentUser=null;document.getElementById('navSignIn').classList.remove('hidden');document.getElementById('navUser').classList.add('hidden');document.querySelectorAll('.dev-only').forEach(el=>el.classList.add('hidden'));showScreen('landing');openAuth();toast('Signed out.');}
+
+function showScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+name).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});if(name==='portal'&&currentUser?.role==='developer')refreshPortal();if(name==='profile')refreshMyInterests();}
+function goHome(){showScreen('landing');setBN('home');}
+function toggleMobile(){document.getElementById('mobileMenu').classList.toggle('open');}
+function setBN(tab){document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));const el=document.getElementById('bn-'+tab);if(el)el.classList.add('active');}
+
+function renderListings(){
+  const filtered=allListings.filter(l=>activeFilter==='all'?true:activeFilter==='high-yield'?l.irr>=20:l.type===activeFilter);
+  document.getElementById('listing-count-label').textContent=filtered.length+' opportunit'+(filtered.length===1?'y':'ies')+' available';
+  const grid=document.getElementById('propsGrid');
+  if(!filtered.length){grid.innerHTML='<p style="color:var(--muted);padding:20px">No opportunities match this filter.</p>';return;}
+  grid.innerHTML=filtered.map(l=>`<div class="prop-card" onclick="showDetail('${l.id}')"><div class="prop-img" style="background-image:url('${l.photo}')"><div class="prop-img-overlay"></div><div class="prop-badge ${l.badgeClass||''}">${l.badge||'OPEN'}</div></div><div class="prop-body"><div class="prop-type">${l.category}</div><div class="prop-name">${l.name}</div><div class="prop-loc">${l.loc}</div><div class="prop-metrics"><div class="metric"><div class="metric-val">${l.irr}%</div><div class="metric-lbl">IRR</div></div><div class="metric"><div class="metric-val">${l.hold}</div><div class="metric-lbl">Hold</div></div><div class="metric"><div class="metric-val">${l.profit}</div><div class="metric-lbl">Profit Est.</div></div></div><div class="progress-wrap"><div class="progress-label"><span>Funding Progress</span><span>${l.fundedPct}%</span></div><div class="progress-bar"><div class="progress-fill" style="width:${l.fundedPct}%"></div></div></div><div class="prop-footer"><div class="min-invest">Min. invest <strong>${l.minInvest}</strong></div><button class="view-btn">View Details</button></div></div></div>`).join('');
+}
+function filterProps(f,btn){activeFilter=f;document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderListings();}
+
+function showDetail(id){
+  const l=allListings.find(x=>x.id===id);if(!l)return;currentListingId=id;
+  document.getElementById('detailHero').style.backgroundImage=`url('${l.heroPhoto}')`;
+  document.getElementById('d-type').textContent=l.category;document.getElementById('d-name').textContent=l.name;document.getElementById('d-loc').textContent=l.loc;
+  document.getElementById('interest-sub').textContent=l.name+' — '+l.loc.replace('📍 ','')+'. Complete the form and our team will be in touch within 24 hours.';
+  document.getElementById('d-overview').textContent=l.overview;
+  document.getElementById('d-stats').innerHTML=(l.stats||[]).map(([v,label])=>`<div style="flex:1;min-width:120px;background:var(--off-white);border-radius:8px;padding:14px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:var(--navy)">${v}</div><div style="font-size:.75rem;color:var(--muted);margin-top:2px">${label}</div></div>`).join('');
+  document.getElementById('d-fp-grid').innerHTML=(l.floorplans||[]).map(([icon,name,desc])=>`<div class="fp-item"><div class="fp-icon">${icon}</div><strong>${name}</strong><p>${desc}</p></div>`).join('');
+  document.getElementById('d-fin-table').innerHTML=(l.financials||[]).map(row=>`<tr class="${row[2]==='total'?'total-row':row[2]==='profit'?'profit-row':''}"><td>${row[0]}</td><td>${row[1]}</td></tr>`).join('');
+  const roi=l.roi||{};document.getElementById('d-roi-intro').textContent=roi.intro||'';
+  document.getElementById('d-roi-bars').innerHTML=(roi.bars||[]).map(([label,w,pct,val])=>`<div class="roi-row"><div class="roi-label">${label}</div><div class="roi-track"><div class="roi-fill" style="width:${w}">${pct}</div></div><div class="roi-val">${val}</div></div>`).join('');
+  document.getElementById('d-roi-summary').innerHTML=`<div style="font-size:.85rem;font-weight:700;color:#1b5e20">Total Return Summary</div><div style="font-size:1.3rem;font-weight:800;color:#1b5e20;margin-top:4px">${roi.summary||''}</div>`;
+  document.getElementById('d-summary').innerHTML=[['Total Raise',l.raise],['Min. Investment',l.minInvest],['Structure',l.structure||'—'],['Target IRR',l.irr+'% p.a.','green'],['Hold Period',l.hold],['Funding Status',l.fundedPct+'% Raised','gold'],['Spots Remaining',(l.spotsLeft||'—')+' available']].map(([lbl,val,cls])=>`<div class="is-row"><span class="is-label">${lbl}</span><span class="is-val ${cls||''}">${val}</span></div>`).join('');
+  document.getElementById('d-prog-pct').textContent=l.fundedPct+'%';document.getElementById('d-prog-fill').style.width=l.fundedPct+'%';
+  const dev=l.developer||{};
+  document.getElementById('d-dev-profile').innerHTML=`<div style="display:flex;align-items:center;gap:12px;margin-bottom:14px"><div style="width:48px;height:48px;background:linear-gradient(135deg,var(--navy),var(--navy3));border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.4rem">🏗</div><div><div style="font-weight:700;color:var(--navy);font-size:.95rem">${dev.name||'—'}</div><div style="font-size:.78rem;color:var(--muted)">${dev.est||''}</div></div></div><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px"><div style="background:var(--off-white);border-radius:8px;padding:10px;text-align:center"><div style="font-weight:800;color:var(--navy)">${dev.completed||0}</div><div style="font-size:.72rem;color:var(--muted)">Completed</div></div><div style="background:var(--off-white);border-radius:8px;padding:10px;text-align:center"><div style="font-weight:800;color:var(--navy)">${dev.gdv||'—'}</div><div style="font-size:.72rem;color:var(--muted)">GDV Delivered</div></div></div><p style="font-size:.82rem;color:var(--muted);line-height:1.6;margin-bottom:12px">${dev.bio||''}</p><div style="display:flex;gap:6px;flex-wrap:wrap">${(dev.badges||[]).map(b=>`<span style="background:#e3f2fd;color:#1565c0;font-size:.72rem;font-weight:700;padding:4px 10px;border-radius:10px">${b}</span>`).join('')}</div>`;
+  switchTab('floorplans',document.querySelector('.tab-btn'));showScreen('detail');
+}
+function switchTab(name,btn){['floorplans','financials','roi'].forEach(t=>document.getElementById('tab-'+t).classList.add('hidden'));document.getElementById('tab-'+name).classList.remove('hidden');document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');}
+
+function selectRadio(el){el.closest('.radio-group').querySelectorAll('.radio-opt').forEach(o=>o.classList.remove('selected'));el.classList.add('selected');}
+function selectBroker(has){needsBroker=!has;document.getElementById('broker-yes').classList.toggle('selected',has);document.getElementById('broker-no').classList.toggle('selected',!has);}
+function nextStep(step){
+  [1,2,3].forEach(i=>{document.getElementById('form-step-'+i).classList.add('hidden');document.getElementById('fstep-'+i).classList.remove('active','done');});
+  document.getElementById('form-step-'+step).classList.remove('hidden');
+  for(let i=1;i<step;i++)document.getElementById('fstep-'+i).classList.add('done');
+  document.getElementById('fstep-'+step).classList.add('active');
+  if(step===3){const l=allListings.find(x=>x.id===currentListingId);document.getElementById('review-rows').innerHTML=[['Property',l?l.name:'—'],['Name',document.getElementById('i-fname').value+' '+document.getElementById('i-lname').value],['Email',document.getElementById('i-email').value],['Amount',document.getElementById('i-amount').value],['Broker',needsBroker?'Referral Requested':'Has broker / advisor']].map(([k,v])=>`<div style="display:flex;justify-content:space-between;font-size:.9rem;border-bottom:1px solid var(--border);padding-bottom:10px;margin-bottom:2px"><span style="color:var(--muted)">${k}</span><span style="font-weight:600;color:var(--navy)">${v}</span></div>`).join('');document.getElementById('referral-notice').classList.toggle('hidden',!needsBroker);}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+async function submitForm(){
+  const btn=document.getElementById('submit-btn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Submitting…';
+  try{const res=await API.createInterest({listingId:currentListingId,fname:document.getElementById('i-fname').value.trim(),lname:document.getElementById('i-lname').value.trim(),email:document.getElementById('i-email').value.trim(),phone:document.getElementById('i-phone').value.trim(),amount:document.getElementById('i-amount').value,comments:document.getElementById('i-comments').value.trim(),needsBroker});
+  if(res.error){toast('Error: '+res.error);return;}const i=res.interest,l=allListings.find(x=>x.id===currentListingId);
+  document.getElementById('ref-code').textContent=i.refCode;document.getElementById('confirm-icon').textContent=needsBroker?'🔗':'✅';document.getElementById('confirm-title').textContent=needsBroker?'Interest Registered & Referral Arranged!':'Interest Registered!';
+  document.getElementById('confirm-body').innerHTML=`Thank you, <strong>${i.fname}</strong>. Your interest in <strong>${l?.name||'this property'}</strong> has been received. Our team will contact you within <strong>24 business hours</strong>.`;
+  document.getElementById('referral-block').classList.toggle('hidden',!needsBroker);if(currentUser?.role==='developer')refreshPortal();refreshMyInterests();showScreen('confirm');}
+  finally{btn.disabled=false;btn.textContent='Submit Interest →';}
+}
+function copyRef(){navigator.clipboard?.writeText(document.getElementById('ref-code').textContent);toast('Reference code copied!');}
+
+async function publishListing(){
+  const name=document.getElementById('p-name').value.trim(),loc=document.getElementById('p-loc').value.trim(),minRaw=document.getElementById('p-min').value,raiseRaw=document.getElementById('p-raise').value,irrRaw=document.getElementById('p-irr').value,holdRaw=document.getElementById('p-hold').value;
+  const errEl=document.getElementById('portal-form-error'),btn=document.getElementById('publish-btn');
+  if(!name||!loc||!minRaw||!raiseRaw||!irrRaw||!holdRaw){errEl.textContent='Please fill in all required fields (marked *).';errEl.style.display='block';return;}
+  errEl.style.display='none';btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Publishing…';
+  try{const cost=document.getElementById('p-cost').value,grv=document.getElementById('p-grv').value,profit=cost&&grv?'$'+Math.round((Number(grv)-Number(cost))/1000000*10)/10+'M':'TBC';
+  const typeEl=document.getElementById('p-type'),ts=Date.now(),complete=document.getElementById('p-complete').value,completeFmt=complete?new Date(complete+'-01').toLocaleDateString('en-AU',{month:'short',year:'numeric'}):'TBC';
+  const listing={type:typeEl.value,badge:'NEW',badgeClass:'',name,loc:'📍 '+loc,irr:parseFloat(irrRaw),hold:holdRaw+' yr',profit,fundedPct:0,minInvest:'$'+Number(minRaw).toLocaleString(),raise:'$'+Number(raiseRaw).toLocaleString(),structure:document.getElementById('p-structure').value,spotsLeft:20,photo:'https://picsum.photos/seed/lst'+ts+'/800/400',heroPhoto:'https://picsum.photos/seed/lsth'+ts+'/1200/400',category:typeEl.options[typeEl.selectedIndex].text,overview:document.getElementById('p-desc').value.trim()||'Investment opportunity. Full details available upon expression of interest.',stats:[[completeFmt,'Est. Completion'],[document.getElementById('p-status').value,'Planning Status'],['$'+Number(minRaw).toLocaleString(),'Min. Investment'],['$'+Number(raiseRaw).toLocaleString(),'Total Raise']],floorplans:[['📐','Floorplans','Available upon request'],['📊','Feasibility','Available upon request'],['🏗','DA Documents','Available upon request'],['🤝','Term Sheet','Available upon request']],financials:cost&&grv?[['Total Dev. Cost','$'+Number(cost).toLocaleString()],['Gross Realisable Value','$'+Number(grv).toLocaleString()],['Estimated Profit','$'+Number(Number(grv)-Number(cost)).toLocaleString(),'profit'],['Margin on Cost',Math.round((Number(grv)-Number(cost))/Number(cost)*1000)/10+'%','profit']]:[['Financial details','Contact developer for details']],roi:{intro:'Contact developer for detailed return modelling.',bars:[['Exit','100%','+'+Math.round(parseFloat(irrRaw)*parseFloat(holdRaw))+'%','TBC']],summary:'IRR: '+irrRaw+'% p.a. over '+holdRaw+' year hold'},developer:{name:(currentUser?.fname||'')+' '+(currentUser?.lname||''),est:'Registered '+new Date().getFullYear(),completed:0,gdv:'New listing',bio:'Contact the developer for full credentials and track record.',badges:['✓ Registered on PropVest']}};
+  const res=await API.createListing(listing);if(res.error){errEl.textContent=res.error;errEl.style.display='block';return;}
+  allListings.unshift(res.listing);['p-name','p-loc','p-min','p-raise','p-irr','p-hold','p-cost','p-grv','p-desc','p-complete'].forEach(id=>document.getElementById(id).value='');
+  renderListings();await refreshPortal();await loadStats();toast('✅ Listing published! Investors can now view it.');}
+  catch(e){errEl.textContent='Error: '+e.message;errEl.style.display='block';}
+  finally{btn.disabled=false;btn.textContent='🚀 Publish Listing';}
+}
+async function refreshPortal(){
+  if(!currentUser||currentUser.role!=='developer')return;
+  try{const[listings,interests]=await Promise.all([API.getListings(),API.getInterests()]);
+  const myListings=listings.filter(l=>l.devId===currentUser.id),refs=interests.filter(i=>i.needsBroker),weekAgo=new Date(Date.now()-7*24*60*60*1000),thisWeek=interests.filter(i=>new Date(i.createdAt)>weekAgo);
+  document.getElementById('ps-listings').textContent=myListings.length;document.getElementById('ps-leads').textContent=interests.length;document.getElementById('ps-week').textContent=thisWeek.length;document.getElementById('ps-refs').textContent=refs.length;
+  document.getElementById('my-listings-list').innerHTML=myListings.length===0?'<p style="color:var(--muted);font-size:.9rem">No listings yet.</p>':myListings.map(l=>`<div class="lead-item" style="cursor:pointer" onclick="showDetail('${l.id}')"><div style="width:50px;height:50px;border-radius:8px;background-image:url('${l.photo}');background-size:cover;flex-shrink:0"></div><div class="lead-info"><strong>${l.name}</strong><span>${l.irr}% IRR · ${l.fundedPct}% funded</span></div><span class="lead-tag new-lead">LIVE</span></div>`).join('');
+  document.getElementById('leads-list').innerHTML=interests.length===0?'<p style="color:var(--muted);font-size:.85rem">Leads appear when investors express interest.</p>':interests.slice().reverse().slice(0,8).map(i=>`<div class="lead-item"><div class="lead-avatar">${i.fname[0]}${(i.lname||'?')[0]}</div><div class="lead-info"><strong>${i.fname} ${i.lname||''}</strong><span>${i.listingName} · ${i.amount}</span></div><span class="lead-tag ${i.needsBroker?'ref':'hot'}">${i.needsBroker?'Referral':'Direct'}</span></div>`).join('');}
+  catch(e){console.error(e);}
+}
+async function refreshMyInterests(){
+  const el=document.getElementById('my-interests-list');if(!el||!currentUser)return;
+  try{const interests=await API.getInterests();if(!interests.length){el.innerHTML='<p style="color:var(--muted);font-size:.85rem">No interests submitted yet.</p>';return;}el.innerHTML=interests.slice().reverse().map(i=>`<div class="saved-item" onclick="showDetail('${i.listingId}')"><div><strong style="font-size:.9rem;color:var(--navy)">${i.listingName}</strong><div style="font-size:.78rem;color:var(--muted)">${i.amount} · ${new Date(i.createdAt).toLocaleDateString('en-AU')}</div></div><div style="margin-left:auto;text-align:right"><strong style="color:var(--gold)">${i.needsBroker?'Referral':'Direct'}</strong><div style="font-size:.72rem;color:var(--muted)">Interest</div></div></div>`).join('');}catch{}
+}
+function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3000);}
+document.querySelectorAll('.filter-btn').forEach(btn=>{btn.addEventListener('click',function(){document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on');});});
+</script>
+</body>
+</html>
