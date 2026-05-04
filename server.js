@@ -288,6 +288,23 @@ app.get('/api/stats', (req, res) => {
   });
 });
 
+// ── FEASO ─────────────────────────────────────────
+app.get('/api/listings/:id/feaso', (req, res) => {
+  const db = readDB();
+  const listing = db.listings.find(l => l.id === req.params.id);
+  if (!listing) return res.status(404).json({ error: 'Listing not found.' });
+  res.json(listing.feaso || null);
+});
+
+app.post('/api/listings/:id/feaso', requireAuth, requireDev, (req, res) => {
+  const db = readDB();
+  const idx = db.listings.findIndex(l => l.id === req.params.id && l.devId === req.session.userId);
+  if (idx === -1) return res.status(404).json({ error: 'Listing not found or not yours.' });
+  db.listings[idx].feaso = { ...req.body, updatedAt: new Date().toISOString() };
+  writeDB(db);
+  res.json({ ok: true, feaso: db.listings[idx].feaso });
+});
+
 // ── Health check ──────────────────────────────────
 app.get('/api/health', (req, res) => res.json({ ok: true, version: '1.0.0' }));
 

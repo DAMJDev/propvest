@@ -262,6 +262,71 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
   .form-page{padding:24px 16px 48px}.section{padding:40px 16px}.detail-body{padding:0 16px 48px}
   .tabs .tab-btn{font-size:.75rem;padding:8px 4px}
 }
+/* ── FEASO Module ─────────────────────────────────── */
+.feaso-page{max-width:1060px;margin:0 auto;padding:32px 24px 80px}
+.feaso-grid{display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start}
+.feaso-section{background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:20px}
+.feaso-section-title{font-size:1rem;font-weight:800;color:var(--navy);margin-bottom:16px;display:flex;align-items:center;gap:8px;padding-bottom:12px;border-bottom:2px solid var(--border)}
+.feaso-section-title .fsec-badge{background:var(--navy);color:var(--white);width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0}
+.dollar-wrap{position:relative}.dollar-wrap::before{content:'$';position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.9rem;pointer-events:none;z-index:1}
+.dollar-wrap input{padding-left:24px}
+.pct-wrap{position:relative}.pct-wrap::after{content:'%';position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.9rem;pointer-events:none}
+.pct-wrap input{padding-right:28px}
+.feaso-sticky{position:sticky;top:80px}
+.feaso-preview{background:linear-gradient(135deg,var(--navy),var(--navy3));color:var(--white);border-radius:var(--radius);padding:24px;box-shadow:var(--shadow-lg)}
+.feaso-preview h3{font-size:.95rem;font-weight:700;color:var(--gold);margin-bottom:14px;text-transform:uppercase;letter-spacing:.5px}
+.fp-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.08);font-size:.82rem}
+.fp-row:last-child{border-bottom:none}
+.fp-row .fp-lbl{color:#a8bcd4}.fp-row .fp-val{font-weight:700;color:var(--white);text-align:right}
+.fp-row.hl .fp-val{color:var(--gold);font-size:1rem}
+.fp-row.pr .fp-val{color:#81c784}
+.fp-div{height:1px;background:rgba(255,255,255,.12);margin:10px 0}
+.unit-tbl{width:100%;border-collapse:collapse;font-size:.8rem}
+.unit-tbl th{background:var(--navy);color:var(--white);padding:8px 5px;text-align:left;font-weight:600;white-space:nowrap;font-size:.72rem}
+.unit-tbl td{padding:5px 4px;border-bottom:1px solid var(--border)}
+.unit-tbl td input{width:100%;border:1.5px solid var(--border);border-radius:4px;padding:5px 6px;font-family:inherit;font-size:.78rem;background:var(--white)}
+.unit-tbl td input:focus{outline:none;border-color:var(--gold)}
+.unit-tbl .cc{background:var(--off-white);font-weight:600;color:var(--navy);text-align:right;white-space:nowrap;padding:5px 8px;font-size:.76rem}
+.unit-tbl .del-btn{background:none;border:none;color:var(--red);cursor:pointer;font-size:1rem;padding:2px 6px}
+.unit-tbl tfoot td{font-weight:800;color:var(--navy);background:#eef1ff;padding:8px 5px;font-size:.82rem}
+.add-unit-btn{margin-top:10px;padding:8px 18px;border:1.5px dashed var(--gold);background:none;color:var(--gold);border-radius:8px;cursor:pointer;font-size:.82rem;font-weight:600;font-family:inherit}
+.add-unit-btn:hover{background:rgba(201,168,76,.07)}
+/* ── FEASO Report ─────────────────────────────────── */
+.feaso-report{max-width:960px;margin:0 auto;padding:32px 24px 80px}
+.rpt-header{background:linear-gradient(135deg,#0d1b2a,#1a2d42);color:var(--white);padding:32px;border-radius:var(--radius);margin-bottom:24px;position:relative}
+.rpt-header h1{font-size:1.7rem;font-weight:800;margin-bottom:4px}
+.rpt-header .rh-sub{color:#a8bcd4;font-size:.9rem}
+.rpt-header .rh-brand{position:absolute;top:28px;right:28px;font-size:1.3rem;font-weight:800;color:var(--gold)}
+.metric-chips{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:24px}
+.mc{background:var(--white);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);border:1px solid var(--border);flex:1;min-width:150px;text-align:center}
+.mc .mcv{font-size:1.4rem;font-weight:800;color:var(--navy)}
+.mc .mcl{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.mc .mcv.green{color:var(--green)}.mc .mcv.gold{color:var(--gold)}
+.rpt-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px}
+.rpt-card{background:var(--white);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.rpt-card-title{font-size:.82rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--gold)}
+.rpt-tbl{width:100%;border-collapse:collapse}
+.rpt-tbl tr{border-bottom:1px solid var(--border)}
+.rpt-tbl td{padding:8px 4px;font-size:.83rem}
+.rpt-tbl td:first-child{color:var(--muted)}
+.rpt-tbl td:last-child{text-align:right;font-weight:600;color:var(--navy);font-variant-numeric:tabular-nums}
+.rpt-tbl .sub-row td{font-weight:700;background:var(--off-white)}
+.rpt-tbl .tdc-row td{font-size:.95rem;font-weight:800;color:var(--white);background:var(--navy);padding:10px 4px}
+.rpt-tbl .grv-row td{color:var(--white);background:#1565c0;font-weight:800}
+.rpt-tbl .pr-row td{color:#1b5e20;font-weight:800;background:linear-gradient(135deg,#e8f5e9,#c8e6c9)}
+.stack-bar{height:26px;border-radius:6px;overflow:hidden;display:flex;margin:8px 0}
+.stack-eq{height:100%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:var(--navy);background:var(--gold)}
+.stack-dt{background:var(--navy3);flex:1;height:100%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:var(--white)}
+.unit-rpt-tbl{width:100%;border-collapse:collapse;font-size:.78rem}
+.unit-rpt-tbl th{background:var(--navy);color:var(--white);padding:8px 5px;text-align:right;font-weight:600;white-space:nowrap}
+.unit-rpt-tbl th:first-child{text-align:left}
+.unit-rpt-tbl td{padding:6px 5px;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap}
+.unit-rpt-tbl td:first-child{text-align:left}
+.unit-rpt-tbl .tot-row td{background:#eef1ff;font-weight:800;color:var(--navy)}
+.print-btn{background:var(--navy);color:var(--white);border:none;padding:11px 24px;border-radius:8px;font-size:.9rem;font-weight:700;cursor:pointer;font-family:inherit}
+@media print{nav,.bottom-nav,.toast,.back-btn,.print-actions{display:none!important}.screen{display:block!important;padding:0}.feaso-report{max-width:100%;padding:20px}body{background:var(--white)}}
+@media(max-width:960px){.feaso-grid{grid-template-columns:1fr}.feaso-sticky{position:static}.rpt-grid{grid-template-columns:1fr}}
+@media(max-width:640px){.metric-chips{flex-direction:column}.mc{min-width:unset}.unit-tbl{font-size:.7rem}.unit-tbl th{font-size:.65rem}}
 </style>
 </head>
 <body>
@@ -584,6 +649,195 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
   </div>
 </div>
 
+<!-- ═══════════════════════════════════════════════ -->
+<!-- FEASO QUESTIONNAIRE                              -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="screen" id="screen-feaso">
+  <button class="back-btn" onclick="showScreen('portal')">← Back to Portal</button>
+  <div class="feaso-page">
+    <h2 style="font-size:1.6rem;font-weight:800;color:var(--navy);margin-bottom:4px">📊 Feasibility Report Builder</h2>
+    <p style="color:var(--muted);margin-bottom:28px;font-size:.95rem">Enter your project details below. All figures calculate live. Hit <strong>Generate Report</strong> to produce a print-ready FEASO.</p>
+    <div class="feaso-grid">
+      <!-- LEFT COLUMN: FORM -->
+      <div>
+        <!-- S1: PROJECT DETAILS -->
+        <div class="feaso-section">
+          <div class="feaso-section-title"><div class="fsec-badge">1</div>Project Details</div>
+          <div class="field-row">
+            <div class="field"><label>Development Name</label><input type="text" id="f-name" placeholder="e.g. Tugun Boutique Apartments" oninput="fUpdate()"></div>
+            <div class="field"><label>State</label><select id="f-state" onchange="fUpdate()"><option>QLD</option><option>NSW</option><option>VIC</option><option>WA</option><option>SA</option><option>ACT</option></select></div>
+          </div>
+          <div class="field"><label>Address</label><input type="text" id="f-address" placeholder="329 Golden Four Dr, Tugun QLD 4224" oninput="fUpdate()"></div>
+          <div class="field"><label>Development Description</label><input type="text" id="f-desc" placeholder="8 Level Boutique Apartments Plus Rooftop Pool" oninput="fUpdate()"></div>
+          <div class="field-row">
+            <div class="field"><label>Site Area (m²)</label><input type="number" id="f-sitearea" placeholder="500" oninput="fUpdate()"></div>
+            <div class="field"><label>Total Dwellings</label><input type="number" id="f-dwellings" placeholder="10" oninput="fUpdate()"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Planning Status</label><select id="f-status" onchange="fUpdate()"><option>DA Approved</option><option>DA Pending</option><option>Under Construction</option><option>Pre-DA</option></select></div>
+            <div class="field"><label>Zoning</label><input type="text" id="f-zoning" placeholder="Medium Density Residential" oninput="fUpdate()"></div>
+          </div>
+        </div>
+        <!-- S2: TIMELINE -->
+        <div class="feaso-section">
+          <div class="feaso-section-title"><div class="fsec-badge">2</div>Estimated Programme (Months)</div>
+          <div class="field-row">
+            <div class="field"><label>Feasibility</label><input type="number" id="f-t1" value="1" min="0" oninput="fUpdate()"></div>
+            <div class="field"><label>Design</label><input type="number" id="f-t2" value="4" min="0" oninput="fUpdate()"></div>
+            <div class="field"><label>Tender</label><input type="number" id="f-t3" value="3" min="0" oninput="fUpdate()"></div>
+            <div class="field"><label>Construction</label><input type="number" id="f-t4" value="18" min="0" oninput="fUpdate()"></div>
+            <div class="field"><label>Handover</label><input type="number" id="f-t5" value="2" min="0" oninput="fUpdate()"></div>
+          </div>
+          <div id="f-timeline-info" style="font-size:.85rem;color:var(--muted);margin-top:-4px"></div>
+        </div>
+        <!-- S3: ACQUISITION -->
+        <div class="feaso-section">
+          <div class="feaso-section-title"><div class="fsec-badge">3</div>Acquisition Costs</div>
+          <div class="field-row">
+            <div class="field"><label>Land Cost ($)</label><div class="dollar-wrap"><input type="number" id="f-land" placeholder="5300000" oninput="fUpdate()"></div></div>
+            <div class="field"><label>Stamp Duty ($) <small style="color:var(--muted);font-weight:400">— leave blank to auto-calc</small></label><div class="dollar-wrap"><input type="number" id="f-stamp" placeholder="auto" oninput="fUpdate()"></div></div>
+          </div>
+          <div id="f-stamp-info" style="font-size:.82rem;color:var(--muted);margin-top:-8px;margin-bottom:12px"></div>
+          <div class="field-row">
+            <div class="field"><label>Bank Fees ($)</label><div class="dollar-wrap"><input type="number" id="f-bankfees" value="800" oninput="fUpdate()"></div></div>
+            <div class="field"><label>Conveyancing ($)</label><div class="dollar-wrap"><input type="number" id="f-convey" value="1500" oninput="fUpdate()"></div></div>
+          </div>
+        </div>
+        <!-- S4: CONSTRUCTION -->
+        <div class="feaso-section">
+          <div class="feaso-section-title"><div class="fsec-badge">4</div>Construction Costs</div>
+          <div class="field-row">
+            <div class="field"><label>Total Construction Cost ($)</label><div class="dollar-wrap"><input type="number" id="f-const" placeholder="14358190" oninput="fUpdate()"></div></div>
+            <div class="field"><label>Contingency (%)</label><div class="pct-wrap"><input type="number" id="f-conting" value="10" step="0.5" oninput="fUpdate()"></div></div>
+          </div>
+          <div id="f-const-info" style="font-size:.82rem;color:var(--muted);margin-top:-8px;margin-bottom:12px"></div>
+          <div class="field-row">
+            <div class="field"><label>Design & Planning ($)</label><div class="dollar-wrap"><input type="number" id="f-design" placeholder="830250" oninput="fUpdate()"></div></div>
+            <div class="field"><label>Development & Project Management ($)</label><div class="dollar-wrap"><input type="number" id="f-devmgmt" placeholder="627000" oninput="fUpdate()"></div></div>
+          </div>
+        </div>
+        <!-- S5: SOFT COSTS -->
+        <div class="feaso-section">
+          <div class="feaso-section-title"><div class="fsec-badge">5</div>Other Costs</div>
+          <div class="field-row">
+            <div class="field"><label>Statutory & Council Costs ($)</label><div class="dollar-wrap"><input type="number" id="f-statutory" placeholder="281770" oninput="fUpdate()"></div></div>
+            <div class="field"><label>Marketing ($)</label><div class="dollar-wrap"><input type="number" id="f-marketing" placeholder="734250" oninput="fUpdate()"></div></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Legals ($)</label><div class="dollar-wrap"><input type="number" id="f-legals" placeholder="55000" oninput="fUpdate()"></div></div>
+            <div class="field"><label>Holding Costs (Rates, Water, Insurance) ($)</label><div class="dollar-wrap"><input type="number" id="f-holdcost" placeholder="89357" oninput="fUpdate()"></div></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>QS & Estimating Fees ($)</label><div class="dollar-wrap"><input type="number" id="f-qs" placeholder="25000" oninput="fUpdate()"></div></div>
+            <div class="field"><label>Other / Clause Costs ($)</label><div class="dollar-wrap"><input type="number" id="f-other" placeholder="5000" oninput="fUpdate()"></div></div>
+          </div>
+        </div>
+        <!-- S6: FINANCE -->
+        <div class="feaso-section">
+          <div class="feaso-section-title"><div class="fsec-badge">6</div>Finance & Funding</div>
+          <div class="field-row">
+            <div class="field"><label>LVR (%)</label><div class="pct-wrap"><input type="number" id="f-lvr" value="65" step="1" oninput="fUpdate()"></div></div>
+            <div class="field"><label>Interest Rate (% p.a.)</label><div class="pct-wrap"><input type="number" id="f-rate" value="8.80" step="0.1" oninput="fUpdate()"></div></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Establishment & Line Fees (%)</label><div class="pct-wrap"><input type="number" id="f-estab" value="1.0" step="0.1" oninput="fUpdate()"></div></div>
+            <div class="field"><label>Acquisition Fee ($)</label><div class="dollar-wrap"><input type="number" id="f-acqfee" placeholder="106000" oninput="fUpdate()"></div></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Holding Income (p.a. $)</label><div class="dollar-wrap"><input type="number" id="f-holdinc" placeholder="42500" oninput="fUpdate()"></div></div>
+            <div class="field"><label>License Fee ($)</label><div class="dollar-wrap"><input type="number" id="f-licensefee" value="0" oninput="fUpdate()"></div></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Income Tax Rate (%)</label><div class="pct-wrap"><input type="number" id="f-taxrate" value="30" step="1" oninput="fUpdate()"></div></div>
+          </div>
+        </div>
+        <!-- S7: UNIT MIX / REVENUE -->
+        <div class="feaso-section">
+          <div class="feaso-section-title"><div class="fsec-badge">7</div>Revenue — Unit Mix & Gross Realization</div>
+          <div class="field-row" style="margin-bottom:16px">
+            <div class="field"><label>Agent Commission (%)</label><div class="pct-wrap"><input type="number" id="f-agentcomm" value="3" step="0.25" oninput="fUpdate()"></div></div>
+            <div class="field"><label>GST Rate (%)</label><div class="pct-wrap"><input type="number" id="f-gstrate" value="10" step="1" oninput="fUpdate()"></div></div>
+          </div>
+          <div style="overflow-x:auto;-webkit-overflow-scrolling:touch">
+            <table class="unit-tbl">
+              <thead><tr>
+                <th>Type / Level</th><th>Qty</th><th>Bed</th><th>Bath</th><th>Car</th>
+                <th>Int m²</th><th>Ext m²</th><th>$/m²</th>
+                <th>Sell Value ($)</th><th>Wkly Rent ($)</th><th></th>
+              </tr></thead>
+              <tbody id="unit-mix-body">
+                <tr>
+                  <td><input type="text" value="Unit 1" oninput="fUpdate()" style="min-width:80px"></td>
+                  <td><input type="number" value="1" min="1" style="width:44px" oninput="fUpdate()"></td>
+                  <td><input type="number" value="2" min="0" style="width:40px" oninput="fUpdate()"></td>
+                  <td><input type="number" value="2" min="0" style="width:40px" oninput="fUpdate()"></td>
+                  <td><input type="number" value="1" min="0" style="width:40px" oninput="fUpdate()"></td>
+                  <td><input type="number" value="140" min="0" style="width:55px" oninput="fUpdate()"></td>
+                  <td><input type="number" value="15" min="0" style="width:50px" oninput="fUpdate()"></td>
+                  <td><input type="number" value="18250" min="0" style="width:70px" oninput="fUpdate()"></td>
+                  <td class="cc">—</td>
+                  <td><input type="number" value="1128" min="0" style="width:65px" oninput="fUpdate()"></td>
+                  <td><button class="del-btn" onclick="removeUnitRow(this)">✕</button></td>
+                </tr>
+              </tbody>
+              <tfoot><tr>
+                <td colspan="7" style="font-size:.75rem;color:var(--muted);font-weight:600">TOTALS</td>
+                <td></td>
+                <td id="u-tot-grv" class="cc" style="font-size:.82rem">—</td>
+                <td id="u-tot-rent" class="cc" style="font-size:.82rem">—</td>
+                <td></td>
+              </tr></tfoot>
+            </table>
+          </div>
+          <button class="add-unit-btn" onclick="addUnitRow()">+ Add Unit Type</button>
+        </div>
+        <!-- GENERATE -->
+        <button class="publish-btn" onclick="generateFeasoReport()">📊 Generate FEASO Report</button>
+        <p style="font-size:.78rem;color:var(--muted);text-align:center;margin-top:10px">Report auto-saves to this listing. You can edit and regenerate anytime.</p>
+      </div><!-- end left col -->
+
+      <!-- RIGHT COLUMN: LIVE PREVIEW -->
+      <div class="feaso-sticky">
+        <div class="feaso-preview">
+          <h3>📊 Live Summary</h3>
+          <div class="fp-row"><span class="fp-lbl">Acquisition</span><span class="fp-val" id="fp-acq">—</span></div>
+          <div class="fp-row"><span class="fp-lbl">Construction (inc. contingency)</span><span class="fp-val" id="fp-const">—</span></div>
+          <div class="fp-row"><span class="fp-lbl">Soft Costs</span><span class="fp-val" id="fp-soft">—</span></div>
+          <div class="fp-row"><span class="fp-lbl">Finance Costs</span><span class="fp-val" id="fp-fin">—</span></div>
+          <div class="fp-div"></div>
+          <div class="fp-row hl"><span class="fp-lbl">TOTAL DEV. COST</span><span class="fp-val" id="fp-tdc">—</span></div>
+          <div class="fp-div"></div>
+          <div class="fp-row"><span class="fp-lbl">Gross Realization (GRV)</span><span class="fp-val" id="fp-grv">—</span></div>
+          <div class="fp-row"><span class="fp-lbl" style="color:#ef9a9a">Less GST</span><span class="fp-val" id="fp-gst" style="color:#ef9a9a">—</span></div>
+          <div class="fp-row"><span class="fp-lbl" style="color:#ef9a9a">Less Agent Commission</span><span class="fp-val" id="fp-agent" style="color:#ef9a9a">—</span></div>
+          <div class="fp-row"><span class="fp-lbl">Net Realization (NRV)</span><span class="fp-val" id="fp-nrv">—</span></div>
+          <div class="fp-div"></div>
+          <div class="fp-row pr"><span class="fp-lbl">Gross Dev. Profit</span><span class="fp-val" id="fp-gdp">—</span></div>
+          <div class="fp-row pr"><span class="fp-lbl">Profit Margin (on GRV)</span><span class="fp-val" id="fp-gpm">—</span></div>
+          <div class="fp-div"></div>
+          <div class="fp-row"><span class="fp-lbl">Equity</span><span class="fp-val" id="fp-equity">—</span></div>
+          <div class="fp-row"><span class="fp-lbl">Debt (LVR)</span><span class="fp-val" id="fp-debt">—</span></div>
+        </div>
+        <button onclick="generateFeasoReport()" class="publish-btn" style="margin-top:14px;font-size:.88rem;padding:13px">📊 Generate Report</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- FEASO REPORT VIEWER                             -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="screen" id="screen-feaso-report">
+  <div class="feaso-report">
+    <div class="print-actions" style="display:flex;gap:12px;margin-bottom:24px;align-items:center;flex-wrap:wrap">
+      <button class="back-btn" onclick="showScreen('feaso')" style="padding:10px 20px;font-size:.9rem">← Back to Edit</button>
+      <div style="flex:1"></div>
+      <button class="print-btn" onclick="window.print()">🖨 Print / Save as PDF</button>
+    </div>
+    <div id="feaso-report-body"></div>
+  </div>
+</div>
+
 <script>
 const API={
   async _r(r){return r.json()},
@@ -598,6 +852,8 @@ const API={
   logout:()=>API.post('/api/auth/logout',{}),
   me:()=>API.get('/api/auth/me'),
   stats:()=>API.get('/api/stats'),
+  saveFeasoData:(id,d)=>API.post('/api/listings/'+id+'/feaso',d),
+  getFeasoData:(id)=>API.get('/api/listings/'+id+'/feaso'),
 };
 let currentUser=null,currentListingId=null,needsBroker=false,selectedRole='investor',allListings=[],activeFilter='all';
 
@@ -719,7 +975,7 @@ async function refreshPortal(){
   try{const[listings,interests]=await Promise.all([API.getListings(),API.getInterests()]);
   const myListings=listings.filter(l=>l.devId===currentUser.id),refs=interests.filter(i=>i.needsBroker),weekAgo=new Date(Date.now()-7*24*60*60*1000),thisWeek=interests.filter(i=>new Date(i.createdAt)>weekAgo);
   document.getElementById('ps-listings').textContent=myListings.length;document.getElementById('ps-leads').textContent=interests.length;document.getElementById('ps-week').textContent=thisWeek.length;document.getElementById('ps-refs').textContent=refs.length;
-  document.getElementById('my-listings-list').innerHTML=myListings.length===0?'<p style="color:var(--muted);font-size:.9rem">No listings yet.</p>':myListings.map(l=>`<div class="lead-item" style="cursor:pointer" onclick="showDetail('${l.id}')"><div style="width:50px;height:50px;border-radius:8px;background-image:url('${l.photo}');background-size:cover;flex-shrink:0"></div><div class="lead-info"><strong>${l.name}</strong><span>${l.irr}% IRR · ${l.fundedPct}% funded</span></div><span class="lead-tag new-lead">LIVE</span></div>`).join('');
+  document.getElementById('my-listings-list').innerHTML=myListings.length===0?'<p style="color:var(--muted);font-size:.9rem">No listings yet.</p>':myListings.map(l=>`<div class="lead-item"><div style="width:50px;height:50px;border-radius:8px;background-image:url('${l.photo}');background-size:cover;flex-shrink:0;cursor:pointer" onclick="showDetail('${l.id}')"></div><div class="lead-info" style="flex:1;cursor:pointer" onclick="showDetail('${l.id}')"><strong>${l.name}</strong><span>${l.irr}% IRR · ${l.fundedPct}% funded</span></div><button onclick="event.stopPropagation();showFeasoForm('${l.id}')" style="background:var(--gold);color:var(--navy);border:none;padding:6px 12px;border-radius:6px;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit">📊 FEASO</button><span class="lead-tag new-lead" style="flex-shrink:0">LIVE</span></div>`).join('');
   document.getElementById('leads-list').innerHTML=interests.length===0?'<p style="color:var(--muted);font-size:.85rem">Leads appear when investors express interest.</p>':interests.slice().reverse().slice(0,8).map(i=>`<div class="lead-item"><div class="lead-avatar">${i.fname[0]}${(i.lname||'?')[0]}</div><div class="lead-info"><strong>${i.fname} ${i.lname||''}</strong><span>${i.listingName} · ${i.amount}</span></div><span class="lead-tag ${i.needsBroker?'ref':'hot'}">${i.needsBroker?'Referral':'Direct'}</span></div>`).join('');}
   catch(e){console.error(e);}
 }
@@ -729,6 +985,328 @@ async function refreshMyInterests(){
 }
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3000);}
 document.querySelectorAll('.filter-btn').forEach(btn=>{btn.addEventListener('click',function(){document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on');});});
+
+// ═══════════════════════════════════════════════════
+//  FEASO — Feasibility Report Module
+// ═══════════════════════════════════════════════════
+let currentFeasoListingId=null,unitRowCount=1;
+const n=v=>parseFloat(v)||0;
+function fmtC(v){if(!v&&v!==0)return'—';const a=Math.abs(v);let s=a>=1e6?'$'+(a/1e6).toFixed(2).replace(/\.?0+$/,'')+'M':a>=1000?'$'+Math.round(a/1000)+'K':'$'+Math.round(a);return v<0?'-'+s:s;}
+function fmtD(v){if(!v&&v!==0)return'—';return(v<0?'-$':'$')+Math.abs(v).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});}
+
+function showFeasoForm(listingId){
+  currentFeasoListingId=listingId;
+  showScreen('feaso');
+  API.getFeasoData(listingId).then(data=>{
+    if(data&&data.formData)loadFeasoForm(data.formData);
+    fUpdate();
+  }).catch(()=>fUpdate());
+}
+
+function loadFeasoForm(d){
+  const sv=(id,v)=>{const el=document.getElementById(id);if(el&&v!=null)el.value=v;};
+  sv('f-name',d.name);sv('f-state',d.state);sv('f-address',d.address);sv('f-desc',d.desc);
+  sv('f-sitearea',d.sitearea);sv('f-dwellings',d.dwellings);sv('f-status',d.status);sv('f-zoning',d.zoning);
+  sv('f-t1',d.t1);sv('f-t2',d.t2);sv('f-t3',d.t3);sv('f-t4',d.t4);sv('f-t5',d.t5);
+  sv('f-land',d.land);sv('f-stamp',d.stamp);sv('f-bankfees',d.bankfees);sv('f-convey',d.convey);
+  sv('f-const',d.const_);sv('f-conting',d.conting);sv('f-design',d.design);sv('f-devmgmt',d.devmgmt);
+  sv('f-statutory',d.statutory);sv('f-marketing',d.marketing);sv('f-legals',d.legals);
+  sv('f-holdcost',d.holdcost);sv('f-qs',d.qs);sv('f-other',d.other);
+  sv('f-lvr',d.lvr);sv('f-rate',d.rate);sv('f-estab',d.estab);sv('f-acqfee',d.acqfee);
+  sv('f-holdinc',d.holdinc);sv('f-licensefee',d.licensefee);sv('f-taxrate',d.taxrate);
+  sv('f-agentcomm',d.agentcomm);sv('f-gstrate',d.gstrate);
+  if(d.units&&d.units.length){document.getElementById('unit-mix-body').innerHTML='';d.units.forEach(u=>addUnitRow(u));}
+}
+
+function getFeasoData(){
+  const gv=id=>document.getElementById(id)?.value||'';
+  const gn=id=>n(document.getElementById(id)?.value);
+  // Timeline
+  const t1=gn('f-t1'),t2=gn('f-t2'),t3=gn('f-t3'),t4=gn('f-t4'),t5=gn('f-t5');
+  const totalMonths=t1+t2+t3+t4+t5,totalYears=totalMonths/12;
+  // Units
+  const units=getUnitMix();
+  const grv=units.reduce((s,u)=>s+u.qty*u.sellValue,0);
+  const totalWkRent=units.reduce((s,u)=>s+u.qty*u.weeklyRent,0);
+  const totalAnnRent=totalWkRent*52;
+  // Land
+  const land=gn('f-land');
+  let stamp=gn('f-stamp');
+  if(!stamp&&land){
+    // QLD stamp duty (commercial land)
+    if(land<=5000)stamp=0;
+    else if(land<=75000)stamp=Math.round((land-5000)*0.015);
+    else if(land<=540000)stamp=Math.round(1050+(land-75000)*0.035);
+    else if(land<=1000000)stamp=Math.round(17325+(land-540000)*0.045);
+    else stamp=Math.round(38025+(land-1000000)*0.0575);
+  }
+  const bankfees=gn('f-bankfees')||800,convey=gn('f-convey')||1500;
+  const acquisitionCost=land+stamp+bankfees+convey;
+  // Construction
+  const constCost=gn('f-const'),contingPct=gn('f-conting')/100||0.1;
+  const contingAmt=constCost*contingPct,totalConst=constCost+contingAmt;
+  const design=gn('f-design'),devmgmt=gn('f-devmgmt');
+  // Soft
+  const statutory=gn('f-statutory'),marketing=gn('f-marketing'),legals=gn('f-legals');
+  const holdcost=gn('f-holdcost'),qs=gn('f-qs'),other=gn('f-other');
+  const softCosts=design+devmgmt+statutory+marketing+legals+holdcost+qs+other;
+  const preFinance=acquisitionCost+totalConst+softCosts;
+  // Finance
+  const lvrPct=gn('f-lvr')/100||0.65,eqPct=1-lvrPct;
+  const intRate=gn('f-rate')/100||0.088,estabPct=gn('f-estab')/100||0.01;
+  const debt=preFinance*lvrPct,equity=preFinance*eqPct;
+  const landLoan=land*lvrPct,devLoan=(preFinance-land)*lvrPct;
+  const intLand=landLoan*intRate*totalYears,intDev=devLoan*intRate*totalYears;
+  const estabLand=landLoan*(estabPct/2),estabDev=devLoan*(estabPct/2);
+  const lineLand=landLoan*(estabPct/2),lineDev=devLoan*(estabPct/2);
+  const valuation=50000;
+  const financeCosts=valuation+estabLand+estabDev+lineLand+lineDev+intLand+intDev;
+  const tdc=preFinance+financeCosts;
+  const debtPostInt=debt+intLand+intDev;
+  // Revenue
+  const gstRate=gn('f-gstrate')/100||0.1;
+  const agentPct=gn('f-agentcomm')/100||0.03;
+  const gst=grv*(gstRate/(1+gstRate));
+  const agentComm=grv*agentPct;
+  const nrv=grv-gst-agentComm;
+  const holdinc=gn('f-holdinc'),acqfee=gn('f-acqfee'),licensefee=gn('f-licensefee');
+  const taxrate=gn('f-taxrate')/100||0.3;
+  const gdp=nrv+holdinc-acqfee-licensefee-tdc;
+  const gpm=grv>0?(gdp/grv)*100:0;
+  const incomeTax=gdp>0?gdp*taxrate:0;
+  return{
+    name:gv('f-name'),state:gv('f-state'),address:gv('f-address'),desc:gv('f-desc'),
+    sitearea:gv('f-sitearea'),dwellings:gv('f-dwellings'),status:gv('f-status'),zoning:gv('f-zoning'),
+    t1,t2,t3,t4,t5,totalMonths,totalYears,
+    land,stamp,bankfees,convey,acquisitionCost,
+    const_:constCost,conting:gv('f-conting'),contingAmt,totalConst,
+    design,devmgmt,statutory,marketing,legals,holdcost,qs,other,softCosts,preFinance,
+    lvr:gv('f-lvr'),rate:gv('f-rate'),estab:gv('f-estab'),
+    lvrPct,eqPct,intRate,estabPct,debt,equity,
+    landLoan,devLoan,intLand,intDev,estabLand,estabDev,lineLand,lineDev,valuation,
+    financeCosts,tdc,debtPostInt,
+    acqfee,holdinc,licensefee,taxrate:gv('f-taxrate'),agentcomm:gv('f-agentcomm'),gstrate:gv('f-gstrate'),
+    gstRate,agentPct,grv,gst,agentComm,nrv,gdp,gpm,incomeTax,
+    totalWkRent,totalAnnRent,units
+  };
+}
+
+function getUnitMix(){
+  return Array.from(document.querySelectorAll('#unit-mix-body tr')).map(row=>{
+    const inp=row.querySelectorAll('input');
+    const type=inp[0]?.value||'',qty=n(inp[1]?.value)||1,beds=n(inp[2]?.value),baths=n(inp[3]?.value);
+    const car=n(inp[4]?.value),intSqm=n(inp[5]?.value),extSqm=n(inp[6]?.value),priceSqm=n(inp[7]?.value);
+    const weeklyRent=n(inp[8]?.value);
+    const nsa=intSqm,sellValue=Math.round(nsa*priceSqm);
+    const annRent=weeklyRent*52,grossYield=sellValue>0?(annRent/(sellValue))*100:0;
+    return{type,qty,beds,baths,car,intSqm,extSqm,priceSqm,nsa,sellValue,weeklyRent,annRent,grossYield};
+  });
+}
+
+function fUpdate(){
+  const d=getFeasoData();
+  // Timeline info
+  const ti=document.getElementById('f-timeline-info');
+  if(ti)ti.textContent=`Total programme: ${d.totalMonths} months (${d.totalYears.toFixed(2)} years)`;
+  // Stamp auto info
+  const si=document.getElementById('f-stamp-info');
+  if(si&&d.land&&!document.getElementById('f-stamp').value)
+    si.textContent=`Auto-calculated stamp duty (QLD): ${fmtD(d.stamp)}`;
+  else if(si) si.textContent='';
+  // Construction info
+  const ci=document.getElementById('f-const-info');
+  if(ci&&d.const_>0)ci.textContent=`Contingency ${fmtD(d.contingAmt)} → Total incl. contingency: ${fmtD(d.totalConst)}`;
+  // Unit sell value cells
+  let totGrv=0,totWkRent=0;
+  document.querySelectorAll('#unit-mix-body tr').forEach(row=>{
+    const inp=row.querySelectorAll('input');
+    const qty=n(inp[1]?.value)||1,intSqm=n(inp[5]?.value),priceSqm=n(inp[7]?.value),wkRent=n(inp[8]?.value);
+    const sv=Math.round(intSqm*priceSqm)*qty;
+    const cc=row.querySelector('.cc');
+    if(cc)cc.textContent=sv>0?fmtD(sv):'—';
+    totGrv+=sv;totWkRent+=wkRent*qty;
+  });
+  const ug=document.getElementById('u-tot-grv'),ur=document.getElementById('u-tot-rent');
+  if(ug)ug.textContent=totGrv>0?fmtD(totGrv):'—';
+  if(ur)ur.textContent=totWkRent>0?fmtD(totWkRent)+'/wk':'—';
+  // Preview panel
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  set('fp-acq',d.acquisitionCost>0?fmtC(d.acquisitionCost):'—');
+  set('fp-const',d.totalConst>0?fmtC(d.totalConst):'—');
+  set('fp-soft',d.softCosts>0?fmtC(d.softCosts):'—');
+  set('fp-fin',d.financeCosts>0?fmtC(d.financeCosts):'—');
+  set('fp-tdc',d.tdc>0?fmtC(d.tdc):'—');
+  set('fp-grv',d.grv>0?fmtC(d.grv):'—');
+  set('fp-gst',d.gst>0?'-'+fmtC(d.gst):'—');
+  set('fp-agent',d.agentComm>0?'-'+fmtC(d.agentComm):'—');
+  set('fp-nrv',d.nrv>0?fmtC(d.nrv):'—');
+  set('fp-gdp',d.tdc>0?fmtC(d.gdp):'—');
+  set('fp-gpm',d.gpm!==0?d.gpm.toFixed(1)+'%':'—');
+  set('fp-equity',d.equity>0?fmtC(d.equity):'—');
+  set('fp-debt',d.debt>0?fmtC(d.debt):'—');
+}
+
+function addUnitRow(p){
+  const tbody=document.getElementById('unit-mix-body');
+  const i=++unitRowCount;const u=p||{};
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td><input type="text" value="${u.type||'Unit '+i}" oninput="fUpdate()" style="min-width:80px"></td>
+    <td><input type="number" value="${u.qty||1}" min="1" style="width:44px" oninput="fUpdate()"></td>
+    <td><input type="number" value="${u.beds||2}" min="0" style="width:40px" oninput="fUpdate()"></td>
+    <td><input type="number" value="${u.baths||2}" min="0" style="width:40px" oninput="fUpdate()"></td>
+    <td><input type="number" value="${u.car||1}" min="0" style="width:40px" oninput="fUpdate()"></td>
+    <td><input type="number" value="${u.intSqm||0}" min="0" style="width:55px" oninput="fUpdate()"></td>
+    <td><input type="number" value="${u.extSqm||0}" min="0" style="width:50px" oninput="fUpdate()"></td>
+    <td><input type="number" value="${u.priceSqm||0}" min="0" style="width:70px" oninput="fUpdate()"></td>
+    <td class="cc">—</td>
+    <td><input type="number" value="${u.weeklyRent||0}" min="0" style="width:65px" oninput="fUpdate()"></td>
+    <td><button class="del-btn" onclick="removeUnitRow(this)">✕</button></td>`;
+  tbody.appendChild(tr);fUpdate();
+}
+
+function removeUnitRow(btn){
+  if(document.querySelectorAll('#unit-mix-body tr').length<=1){toast('Need at least one unit type.');return;}
+  btn.closest('tr').remove();fUpdate();
+}
+
+async function generateFeasoReport(){
+  const d=getFeasoData();
+  if(currentFeasoListingId){
+    try{await API.saveFeasoData(currentFeasoListingId,{formData:d});}catch(e){console.log('FEASO save:',e);}
+  }
+  const date=new Date().toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'});
+  const body=document.getElementById('feaso-report-body');
+  body.innerHTML=`
+    <div class="rpt-header">
+      <div class="rh-brand">🏛 PropVest</div>
+      <div style="font-size:.75rem;color:#a8bcd4;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">Feasibility Summary Report</div>
+      <h1>${d.name||'Development Feasibility Report'}</h1>
+      <div class="rh-sub">${d.address||'—'}</div>
+      <div style="margin-top:10px;font-size:.82rem;color:#a8bcd4">${d.desc||''} &nbsp;·&nbsp; ${d.status||''} &nbsp;·&nbsp; Prepared: ${date}</div>
+    </div>
+    <div class="metric-chips">
+      <div class="mc"><div class="mcv ${d.gpm>20?'green':'gold'}">${d.gpm.toFixed(1)}%</div><div class="mcl">Gross Profit Margin</div></div>
+      <div class="mc"><div class="mcv green">${fmtD(d.gdp)}</div><div class="mcl">Gross Dev. Profit</div></div>
+      <div class="mc"><div class="mcv">${fmtD(d.tdc)}</div><div class="mcl">Total Dev. Cost (TDC)</div></div>
+      <div class="mc"><div class="mcv gold">${fmtD(d.grv)}</div><div class="mcl">Gross Realization (GRV)</div></div>
+    </div>
+    <div class="rpt-grid">
+      <div class="rpt-card">
+        <div class="rpt-card-title">📋 Development Summary</div>
+        <table class="rpt-tbl">
+          <tr><td>Land Cost</td><td>${fmtD(d.land)}</td></tr>
+          <tr><td>Stamp Duty</td><td>${fmtD(d.stamp)}</td></tr>
+          <tr><td>Bank Fees & Conveyancing</td><td>${fmtD(d.bankfees+d.convey)}</td></tr>
+          <tr class="sub-row"><td>Acquisition Subtotal</td><td>${fmtD(d.acquisitionCost)}</td></tr>
+          <tr><td>Construction Cost</td><td>${fmtD(d.const_)}</td></tr>
+          <tr><td>Contingency (${d.conting}%)</td><td>${fmtD(d.contingAmt)}</td></tr>
+          <tr><td>Design & Planning</td><td>${fmtD(d.design)}</td></tr>
+          <tr><td>Development & Project Management</td><td>${fmtD(d.devmgmt)}</td></tr>
+          <tr><td>Statutory & Council Costs</td><td>${fmtD(d.statutory)}</td></tr>
+          <tr><td>Marketing</td><td>${fmtD(d.marketing)}</td></tr>
+          <tr><td>Legals</td><td>${fmtD(d.legals)}</td></tr>
+          <tr><td>QS & Estimating Fees</td><td>${fmtD(d.qs)}</td></tr>
+          <tr><td>Holding Costs (Rates, Water, Insurance)</td><td>${fmtD(d.holdcost)}</td></tr>
+          ${d.other>0?`<tr><td>Other Costs</td><td>${fmtD(d.other)}</td></tr>`:''}
+          <tr class="sub-row"><td>Pre-Finance Subtotal</td><td>${fmtD(d.preFinance)}</td></tr>
+          <tr><td>Finance Costs</td><td>${fmtD(d.financeCosts)}</td></tr>
+          <tr class="tdc-row"><td>TOTAL DEVELOPMENT COST (TDC)</td><td>${fmtD(d.tdc)}</td></tr>
+          <tr class="grv-row"><td>GROSS REALIZATION VALUE (GRV)</td><td>${fmtD(d.grv)}</td></tr>
+          <tr><td style="color:var(--red)">Less GST (${d.gstrate}%)</td><td style="color:var(--red)">-${fmtD(d.gst)}</td></tr>
+          <tr><td style="color:var(--red)">Less Agent Commission (${d.agentcomm}%)</td><td style="color:var(--red)">-${fmtD(d.agentComm)}</td></tr>
+          <tr class="sub-row"><td>NET REALIZATION VALUE (NRV)</td><td>${fmtD(d.nrv)}</td></tr>
+          ${d.holdinc>0?`<tr><td style="color:var(--green)">Plus Holding Income</td><td style="color:var(--green)">+${fmtD(d.holdinc)}</td></tr>`:''}
+          ${d.acqfee>0?`<tr><td style="color:var(--red)">Less Acquisition Fee</td><td style="color:var(--red)">-${fmtD(d.acqfee)}</td></tr>`:''}
+          ${d.licensefee>0?`<tr><td style="color:var(--red)">Less License Fee</td><td style="color:var(--red)">-${fmtD(d.licensefee)}</td></tr>`:''}
+          <tr class="pr-row"><td>GROSS DEVELOPMENT PROFIT</td><td>${fmtD(d.gdp)}</td></tr>
+          <tr class="pr-row"><td>GROSS PROFIT MARGIN</td><td>${d.gpm.toFixed(1)}%</td></tr>
+        </table>
+      </div>
+      <div>
+        <div class="rpt-card" style="margin-bottom:18px">
+          <div class="rpt-card-title">💰 Funding Metrics</div>
+          <div style="font-size:.75rem;color:var(--muted);margin-bottom:4px">Capital Stack — Equity ${(d.eqPct*100).toFixed(0)}% / Debt ${(d.lvrPct*100).toFixed(0)}%</div>
+          <div class="stack-bar">
+            <div class="stack-eq" style="width:${(d.eqPct*100).toFixed(0)}%">Equity ${(d.eqPct*100).toFixed(0)}%</div>
+            <div class="stack-dt">Debt ${(d.lvrPct*100).toFixed(0)}%</div>
+          </div>
+          <table class="rpt-tbl" style="margin-top:10px">
+            <tr><td>Equity (${(d.eqPct*100).toFixed(0)}%)</td><td>${fmtD(d.equity)}</td></tr>
+            <tr><td>Debt — ${(d.lvrPct*100).toFixed(0)}% LVR (pre-interest)</td><td>${fmtD(d.debt)}</td></tr>
+            <tr><td>Debt (post capitalised interest)</td><td>${fmtD(d.debtPostInt)}</td></tr>
+            <tr><td>Dev. Funding Interest (${d.rate}% p.a.)</td><td>${fmtD(d.intLand+d.intDev)}</td></tr>
+            <tr><td>Establishment & Line Fees (${d.estab}%)</td><td>${fmtD(d.estabLand+d.estabDev+d.lineLand+d.lineDev)}</td></tr>
+            <tr><td>GST (Tax on Sale)</td><td>${fmtD(d.gst)}</td></tr>
+            <tr><td>Income Tax (${d.taxrate}% on profit)</td><td>${fmtD(d.incomeTax)}</td></tr>
+            <tr class="sub-row"><td>Development Timeframe</td><td>${d.totalYears.toFixed(2)} years</td></tr>
+          </table>
+        </div>
+        <div class="rpt-card" style="margin-bottom:18px">
+          <div class="rpt-card-title">📍 Site Information</div>
+          <table class="rpt-tbl">
+            <tr><td>Address</td><td style="font-weight:600">${d.address||'—'}</td></tr>
+            <tr><td>Description</td><td>${d.desc||'—'}</td></tr>
+            <tr><td>Site Area</td><td>${d.sitearea?d.sitearea+' m²':'—'}</td></tr>
+            <tr><td>Dwellings</td><td>${d.dwellings||'—'}</td></tr>
+            <tr><td>State / Council</td><td>${d.state||'—'}</td></tr>
+            <tr><td>Zoning</td><td>${d.zoning||'—'}</td></tr>
+            <tr><td>Status</td><td><span style="background:#e3f2fd;color:#1565c0;padding:2px 8px;border-radius:8px;font-size:.75rem;font-weight:700">${d.status||'—'}</span></td></tr>
+          </table>
+        </div>
+        <div class="rpt-card">
+          <div class="rpt-card-title">📅 Estimated Programme</div>
+          <table class="rpt-tbl">
+            <tr><td>Feasibility</td><td>${d.t1} month${d.t1!==1?'s':''}</td></tr>
+            <tr><td>Design</td><td>${d.t2} months</td></tr>
+            <tr><td>Tender</td><td>${d.t3} months</td></tr>
+            <tr><td>Construction</td><td>${d.t4} months</td></tr>
+            <tr><td>Handover</td><td>${d.t5} months</td></tr>
+            <tr class="sub-row"><td>Total Programme</td><td>${d.totalMonths} months (${d.totalYears.toFixed(2)} years)</td></tr>
+          </table>
+        </div>
+      </div>
+    </div>
+    ${d.units.length>0?`
+    <div class="rpt-card" style="margin-bottom:24px">
+      <div class="rpt-card-title">🏗 Gross Realization — Unit Mix</div>
+      <div style="overflow-x:auto">
+        <table class="unit-rpt-tbl">
+          <thead><tr>
+            <th style="text-align:left">Type</th><th>Qty</th><th>Bed</th><th>Bath</th><th>Car</th>
+            <th>Int m²</th><th>Ext m²</th><th>NSA</th><th>$/m²</th>
+            <th>Selling Value</th><th>Wkly Rent</th><th>Annual Rent</th><th>Gross Yield</th>
+          </tr></thead>
+          <tbody>
+            ${d.units.map(u=>`<tr>
+              <td>${u.type}</td><td>${u.qty}</td><td>${u.beds}</td><td>${u.baths}</td><td>${u.car}</td>
+              <td>${u.intSqm.toFixed(1)}</td><td>${u.extSqm.toFixed(1)}</td><td>${u.nsa.toFixed(1)}</td>
+              <td>${fmtD(u.priceSqm)}</td>
+              <td style="font-weight:700;color:var(--navy)">${fmtD(u.sellValue*u.qty)}</td>
+              <td>${u.weeklyRent>0?fmtD(u.weeklyRent):'—'}</td>
+              <td>${u.annRent>0?fmtD(u.annRent*u.qty):'—'}</td>
+              <td>${u.grossYield>0?u.grossYield.toFixed(1)+'%':'—'}</td>
+            </tr>`).join('')}
+          </tbody>
+          <tfoot><tr class="tot-row">
+            <td>TOTAL</td><td>${d.units.reduce((s,u)=>s+u.qty,0)}</td><td colspan="6"></td>
+            <td></td><td style="color:var(--gold)">${fmtD(d.grv)}</td>
+            <td>${d.totalWkRent>0?fmtD(d.totalWkRent):'—'}</td>
+            <td>${d.totalAnnRent>0?fmtD(d.totalAnnRent):'—'}</td><td></td>
+          </tr></tfoot>
+        </table>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:14px;padding:12px;background:var(--off-white);border-radius:8px;font-size:.82rem">
+        <div><div style="color:var(--muted)">GST (${d.gstrate}% on GRV)</div><div style="font-weight:700;color:var(--navy)">${fmtD(d.gst)}</div></div>
+        <div><div style="color:var(--muted)">Agent Fee (${d.agentcomm}%)</div><div style="font-weight:700;color:var(--navy)">${fmtD(d.agentComm)}</div></div>
+        <div><div style="color:var(--muted)">GRV Net</div><div style="font-weight:700;color:var(--green)">${fmtD(d.grv-d.gst)}</div></div>
+      </div>
+    </div>`:''}
+    <div style="background:var(--off-white);border-radius:10px;padding:14px 18px;font-size:.75rem;color:var(--muted);line-height:1.7">
+      <strong style="color:var(--navy)">Disclaimer:</strong> This feasibility report is indicative only. All figures are estimates and should not be relied upon as financial advice. Independent legal, financial, and development advice should be obtained before making any investment decision. Prepared via PropVest Platform — ${date}.
+    </div>`;
+  showScreen('feaso-report');
+}
 </script>
 </body>
 </html>
