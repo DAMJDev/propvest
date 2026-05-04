@@ -109,10 +109,15 @@ function seedDB() {
   const data = {
     users: [
       { id:'u-demo-inv', email:'investor@demo.com', password: hashPw('demo123'), fname:'Alex', lname:'Demo', role:'investor', joined: new Date().toISOString() },
-      { id:'u-demo-dev', email:'developer@demo.com', password: hashPw('demo123'), fname:'Sam', lname:'Demo', role:'developer', joined: new Date().toISOString() }
+      { id:'u-demo-dev', email:'developer@demo.com', password: hashPw('demo123'), fname:'Sam', lname:'Demo', role:'developer', joined: new Date().toISOString() },
+      { id:'u-admin-001', email:'admin@propvest.com.au', password: hashPw('PropVest2026Admin!'), fname:'Anthony', lname:'Admin', role:'admin', joined: new Date().toISOString() }
     ],
     listings: DEFAULT_LISTINGS,
-    interests: []
+    interests: [],
+    subscriptions: [
+      // Pre-activate the demo developer so it works out of the box
+      { id:'sub-demo-dev', userId:'u-demo-dev', userEmail:'developer@demo.com', userName:'Sam Demo', userRole:'developer', plan:'developer_monthly', paymentRef:'DEMO', status:'active', requestedAt: new Date().toISOString(), activatedAt: new Date().toISOString() }
+    ]
   };
   if (!fs.existsSync(path.dirname(DB_FILE))) {
     fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
@@ -135,8 +140,21 @@ function requireAuth(req, res, next) {
 function requireDev(req, res, next) {
   const db = readDB();
   const user = db.users.find(u => u.id === req.session.userId);
-  if (!user || user.role !== 'developer') return res.status(403).json({ error: 'Developer account required' });
+  if (!user || (user.role !== 'developer' && user.role !== 'admin')) return res.status(403).json({ error: 'Developer account required' });
   next();
+}
+
+function requireAdmin(req, res, next) {
+  const db = readDB();
+  const user = db.users.find(u => u.id === req.session.userId);
+  if (!user || user.role !== 'admin') return res.status(403).json({ error: 'Admin access required.' });
+  next();
+}
+
+function getActiveSubPlans(db, userId) {
+  return (db.subscriptions || [])
+    .filter(s => s.userId === userId && s.status === 'active')
+    .map(s => s.plan);
 }
 
 // ══════════════════════════════════════════════════
@@ -167,7 +185,7 @@ app.post('/api/auth/register', (req, res) => {
   writeDB(db);
   req.session.userId = user.id;
   const { password: _, ...safeUser } = user;
-  res.json({ ok: true, user: safeUser });
+  res.json({ ok: true, user: { ...safeUser, activeSubscriptions: [] } });
 });
 
 app.post('/api/auth/login', (req, res) => {
@@ -177,7 +195,8 @@ app.post('/api/auth/login', (req, res) => {
   if (!user) return res.status(401).json({ error: 'Incorrect email or password.' });
   req.session.userId = user.id;
   const { password: _, ...safeUser } = user;
-  res.json({ ok: true, user: safeUser });
+  const activePlans = getActiveSubPlans(db, user.id);
+  res.json({ ok: true, user: { ...safeUser, activeSubscriptions: activePlans } });
 });
 
 app.post('/api/auth/logout', (req, res) => {
@@ -191,7 +210,8 @@ app.get('/api/auth/me', (req, res) => {
   const user = db.users.find(u => u.id === req.session.userId);
   if (!user) return res.json({ user: null });
   const { password: _, ...safeUser } = user;
-  res.json({ user: safeUser });
+  const activePlans = getActiveSubPlans(db, user.id);
+  res.json({ user: { ...safeUser, activeSubscriptions: activePlans } });
 });
 
 // ── Listings ──────────────────────────────────────
@@ -303,6 +323,79 @@ app.post('/api/listings/:id/feaso', requireAuth, requireDev, (req, res) => {
   db.listings[idx].feaso = { ...req.body, updatedAt: new Date().toISOString() };
   writeDB(db);
   res.json({ ok: true, feaso: db.listings[idx].feaso });
+});
+
+// ── Subscriptions ─────────────────────────────────
+app.post('/api/subscription/request', requireAuth, (req, res) => {
+  const db = readDB();
+  if (!db.subscriptions) db.subscriptions = [];
+  const user = db.users.find(u => u.id === req.session.userId);
+  const { plan, paymentRef } = req.body;
+  if (!plan) return res.status(400).json({ error: 'Plan required.' });
+
+  // Check for existing active or pending subscription for this plan
+  const existing = db.subscriptions.find(s => s.userId === user.id && s.plan === plan && ['pending','active'].includes(s.status));
+  if (existing) return res.json({ ok: true, subscription: existing, alreadyExists: true });
+
+  const sub = {
+    id: 'sub-' + Date.now(),
+    userId: user.id,
+    userEmail: user.email,
+    userName: (user.fname + ' ' + (user.lname || '')).trim(),
+    userRole: user.role,
+    plan,
+    paymentRef: paymentRef || '',
+    status: 'pending',
+    requestedAt: new Date().toISOString(),
+    activatedAt: null
+  };
+  db.subscriptions.push(sub);
+  writeDB(db);
+  res.json({ ok: true, subscription: sub });
+});
+
+app.get('/api/subscription/status', requireAuth, (req, res) => {
+  const db = readDB();
+  const subs = (db.subscriptions || []).filter(s => s.userId === req.session.userId);
+  res.json({ subscriptions: subs });
+});
+
+app.get('/api/admin/subscriptions', requireAuth, requireAdmin, (req, res) => {
+  const db = readDB();
+  const allUsers = db.users.map(({ password: _, ...u }) => u);
+  const subs = (db.subscriptions || []).slice().reverse();
+  res.json({ subscriptions: subs, totalUsers: allUsers.length });
+});
+
+app.post('/api/admin/subscriptions/:id/approve', requireAuth, requireAdmin, (req, res) => {
+  const db = readDB();
+  if (!db.subscriptions) return res.status(404).json({ error: 'Not found.' });
+  const sub = db.subscriptions.find(s => s.id === req.params.id);
+  if (!sub) return res.status(404).json({ error: 'Subscription not found.' });
+  sub.status = 'active';
+  sub.activatedAt = new Date().toISOString();
+  writeDB(db);
+  res.json({ ok: true });
+});
+
+app.post('/api/admin/subscriptions/:id/reject', requireAuth, requireAdmin, (req, res) => {
+  const db = readDB();
+  if (!db.subscriptions) return res.status(404).json({ error: 'Not found.' });
+  const sub = db.subscriptions.find(s => s.id === req.params.id);
+  if (!sub) return res.status(404).json({ error: 'Subscription not found.' });
+  sub.status = 'rejected';
+  writeDB(db);
+  res.json({ ok: true });
+});
+
+app.post('/api/admin/subscriptions/:id/cancel', requireAuth, requireAdmin, (req, res) => {
+  const db = readDB();
+  if (!db.subscriptions) return res.status(404).json({ error: 'Not found.' });
+  const sub = db.subscriptions.find(s => s.id === req.params.id);
+  if (!sub) return res.status(404).json({ error: 'Subscription not found.' });
+  sub.status = 'cancelled';
+  writeDB(db);
+  res.json({ ok: true });
 });
 
 // ── Health check ──────────────────────────────────

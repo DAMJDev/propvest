@@ -376,6 +376,48 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
 .im-stat-box{border:1px solid rgba(255,255,255,.12);padding:16px 20px}
 @media print{.im-doc{background:#141210!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.im-page{page-break-after:always;break-after:page;padding:40px}.print-actions{display:none!important}nav,.bottom-nav,.toast{display:none!important}.screen{display:block!important;padding:0}}
 @media(max-width:900px){.im-cover{grid-template-columns:1fr}.im-cover-right{display:none}.im-page{padding:28px}.im-g2,.im-g3,.im-g4{grid-template-columns:1fr}.im-bignum{font-size:2rem}.im-hbar-lbl{width:100px}}
+/* ── Pricing ──────────────────────────────────────── */
+.pricing-page{max-width:1100px;margin:0 auto;padding:48px 24px}
+.pricing-hdr{text-align:center;margin-bottom:52px}
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;margin-bottom:48px}
+.plan-card{background:var(--white);border-radius:20px;padding:36px 30px;box-shadow:var(--shadow);border:2px solid var(--border);position:relative;display:flex;flex-direction:column;transition:transform .2s,box-shadow .2s}
+.plan-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+.plan-card.featured{border-color:var(--gold)}
+.plan-ribbon{position:absolute;top:-1px;right:24px;background:var(--gold);color:var(--navy);font-size:.67rem;font-weight:800;padding:5px 14px;border-radius:0 0 10px 10px;letter-spacing:.8px;text-transform:uppercase}
+.plan-icon{font-size:2.4rem;margin-bottom:14px}
+.plan-name{font-size:1.15rem;font-weight:800;color:var(--navy);margin-bottom:4px}
+.plan-tagline{font-size:.83rem;color:var(--muted);margin-bottom:22px;line-height:1.5}
+.plan-price{margin-bottom:22px}.plan-price .amt{font-size:2.8rem;font-weight:900;color:var(--navy);line-height:1}
+.plan-price .per{font-size:.88rem;color:var(--muted)}
+.plan-feats{list-style:none;margin-bottom:28px;display:flex;flex-direction:column;gap:10px;flex:1}
+.plan-feats li{display:flex;align-items:flex-start;gap:10px;font-size:.88rem;color:var(--text);line-height:1.5}
+.plan-feats li .ck{color:var(--green);font-weight:800;flex-shrink:0;margin-top:1px}
+.plan-feats li .x{color:var(--muted);flex-shrink:0;margin-top:1px}
+.plan-feats li.dim{color:var(--muted)}
+.plan-cta{width:100%;padding:14px;border-radius:10px;border:none;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;font-family:inherit;margin-top:auto}
+.plan-cta.navy{background:var(--navy);color:var(--white)}.plan-cta.navy:hover{background:var(--navy2)}
+.plan-cta.gold{background:var(--gold);color:var(--navy)}.plan-cta.gold:hover{background:var(--gold2)}
+.plan-cta.ghost{background:none;border:2px solid var(--border);color:var(--navy)}.plan-cta.ghost:hover{border-color:var(--navy)}
+.sub-status-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:.78rem;font-weight:700}
+.ssb-active{background:#e8f5e9;color:#2e7d32}.ssb-pending{background:#fff8e1;color:#e65100}.ssb-none{background:var(--off-white);color:var(--muted)}
+/* ── Subscription Modal ───────────────────────────── */
+.sub-overlay{position:fixed;inset:0;background:rgba(13,27,42,.75);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)}
+.sub-box{background:var(--white);border-radius:20px;padding:36px 32px;width:100%;max-width:500px;box-shadow:var(--shadow-lg);max-height:90vh;overflow-y:auto}
+/* ── Admin ────────────────────────────────────────── */
+.admin-page{max-width:1100px;margin:0 auto;padding:36px 24px}
+.admin-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:32px;flex-wrap:wrap;gap:16px}
+.admin-sub-row{display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-radius:12px;background:var(--white);border:1px solid var(--border);margin-bottom:12px;flex-wrap:wrap;gap:12px}
+.admin-sub-info{display:flex;flex-direction:column;gap:4px;flex:1}
+.admin-sub-acts{display:flex;gap:8px;flex-shrink:0}
+.btn-approve{background:var(--green);color:var(--white);border:none;padding:8px 18px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:.85rem}
+.btn-reject{background:var(--red);color:var(--white);border:none;padding:8px 18px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:.85rem}
+.btn-cancel{background:var(--muted);color:var(--white);border:none;padding:8px 18px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:.85rem}
+.admin-stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-top:8px}
+/* ── Upgrade gate banner ─────────────────────────── */
+.upgrade-gate{background:linear-gradient(135deg,#fff8e1,#fffde7);border:2px solid var(--gold);border-radius:16px;padding:28px;text-align:center;margin:24px 0}
+.upgrade-gate h3{font-size:1.2rem;font-weight:800;color:var(--navy);margin-bottom:8px}
+.upgrade-gate p{color:var(--muted);font-size:.9rem;margin-bottom:20px;line-height:1.6}
+@media(max-width:640px){.pricing-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -401,7 +443,8 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
       <div style="margin-top:16px;padding:12px;background:var(--off-white);border-radius:8px;font-size:.78rem;color:var(--muted)">
         <strong style="color:var(--navy)">Demo accounts:</strong><br>
         Investor: investor@demo.com / demo123<br>
-        Developer: developer@demo.com / demo123
+        Developer: developer@demo.com / demo123<br>
+        Admin: admin@propvest.com.au / PropVest2026Admin!
       </div>
     </div>
     <div id="auth-register" class="hidden">
@@ -430,7 +473,9 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
   <div class="nav-links">
     <button class="nav-btn" onclick="goHome()">Home</button>
     <button class="nav-btn" onclick="showScreen('listings')">Investments</button>
+    <button class="nav-btn" onclick="showScreen('pricing')">Pricing</button>
     <button class="nav-btn dev-only hidden" onclick="showScreen('portal')">Developer Portal</button>
+    <button class="nav-btn admin-only hidden" onclick="showScreen('admin');loadAdminSubs()" style="color:var(--gold)">🔐 Admin</button>
     <div class="nav-user hidden" id="navUser">
       <div class="nav-avatar" onclick="showScreen('profile')" id="navAvatar">?</div>
       <button class="nav-btn" onclick="doLogout()" style="color:#a8bcd4">Sign Out</button>
@@ -442,7 +487,9 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
 <div class="mobile-menu" id="mobileMenu">
   <button class="nav-btn" onclick="goHome();toggleMobile()">Home</button>
   <button class="nav-btn" onclick="showScreen('listings');toggleMobile()">Browse Investments</button>
+  <button class="nav-btn" onclick="showScreen('pricing');toggleMobile()">Pricing</button>
   <button class="nav-btn dev-only hidden" onclick="showScreen('portal');toggleMobile()">Developer Portal</button>
+  <button class="nav-btn admin-only hidden" onclick="showScreen('admin');loadAdminSubs();toggleMobile()">🔐 Admin Panel</button>
   <button class="nav-btn" onclick="showScreen('profile');toggleMobile()">My Profile</button>
   <button class="nav-btn" onclick="doLogout()" style="color:#a8bcd4">Sign Out</button>
 </div>
@@ -489,7 +536,10 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
       <div style="font-size:.8rem;letter-spacing:1.5px;color:var(--gold);font-weight:700;text-transform:uppercase;margin-bottom:16px">For Developers & Investment Providers</div>
       <h2 style="font-size:1.8rem;font-weight:800;margin-bottom:12px">List Your Property Investment</h2>
       <p style="color:#a8bcd4;margin-bottom:28px;line-height:1.7">Upload your full investment package and connect with qualified investors actively looking for opportunities like yours.</p>
-      <button class="btn-primary" onclick="showScreen('portal')">Access Developer Portal →</button>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <button class="btn-primary" onclick="showScreen('portal')">Access Developer Portal →</button>
+        <button class="btn-secondary" onclick="showScreen('pricing')" style="border-color:rgba(255,255,255,.3);color:#a8bcd4">View Pricing →</button>
+      </div>
     </div>
   </div>
 </div>
@@ -626,6 +676,14 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
     <div><h2>Developer Portal</h2><p>Manage your investment listings and track investor leads</p></div>
     <button class="express-btn" style="width:auto;padding:12px 24px;font-size:.9rem" onclick="document.getElementById('listingForm').scrollIntoView({behavior:'smooth'})">+ New Listing</button>
   </div>
+  <div id="portal-sub-gate" class="hidden" style="max-width:900px;margin:0 auto 24px;padding:0 24px">
+    <div class="upgrade-gate">
+      <div style="font-size:2rem;margin-bottom:12px">🔒</div>
+      <h3>Developer Subscription Required</h3>
+      <p>Activate your Developer Plan to publish listings, build FEASO reports, and generate Information Memorandums.<br>Your plan includes a <strong>7-day free trial</strong> — cancel anytime.</p>
+      <button onclick="openSubscribeModal('developer_monthly')" style="background:var(--gold);color:var(--navy);border:none;padding:14px 32px;border-radius:10px;font-weight:700;font-size:1rem;cursor:pointer;font-family:inherit">Activate Developer Plan — $299/month →</button>
+    </div>
+  </div>
   <div class="portal-body">
     <div class="portal-grid">
       <div>
@@ -692,6 +750,10 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
         <div style="display:flex;justify-content:space-between;font-size:.9rem;border-bottom:1px solid var(--border);padding-bottom:8px"><span style="color:var(--muted)">Role</span><span id="profile-role-text" style="font-weight:600;color:var(--navy)">—</span></div>
         <div style="display:flex;justify-content:space-between;font-size:.9rem"><span style="color:var(--muted)">Member Since</span><span id="profile-joined" style="font-weight:600;color:var(--navy)">—</span></div>
       </div>
+    </div>
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title"><span>💳</span> My Subscription</div>
+      <div id="profile-sub-status" style="margin-top:4px"><span class="sub-status-badge ssb-none">Not subscribed — <a href="#" onclick="showScreen('pricing');return false" style="color:var(--gold);font-weight:700">View Plans</a></span></div>
     </div>
     <div class="card" style="margin-bottom:20px"><div class="card-title"><span>⭐</span> My Submitted Interests</div><div id="my-interests-list"><p style="color:var(--muted);font-size:.85rem">No interests submitted yet.</p></div></div>
     <button class="logout-btn" onclick="doLogout()">Sign Out</button>
@@ -928,6 +990,123 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
   </div>
 </div>
 
+<!-- PRICING -->
+<div class="screen" id="screen-pricing">
+  <div class="pricing-page">
+    <div class="pricing-hdr">
+      <div style="font-size:.75rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1.8px;margin-bottom:14px">Transparent Pricing</div>
+      <h2 style="font-size:2rem;font-weight:900;color:var(--navy);margin-bottom:14px">Plans for Every Participant</h2>
+      <p style="color:var(--muted);max-width:580px;margin:0 auto;line-height:1.8">PropVest is a professional investment marketplace. Developers pay to list; investors browse for free. No surprises.</p>
+    </div>
+    <div class="pricing-grid">
+      <!-- Developer -->
+      <div class="plan-card featured">
+        <div class="plan-ribbon">Most Popular</div>
+        <div class="plan-icon">🏗</div>
+        <div class="plan-name">Developer Plan</div>
+        <div class="plan-tagline">For property developers, project marketers & buyers agents listing investment opportunities</div>
+        <div class="plan-price"><span class="amt">$299</span><span class="per"> /month + GST</span></div>
+        <ul class="plan-feats">
+          <li><span class="ck">✓</span>Unlimited investment listing publications</li>
+          <li><span class="ck">✓</span>FEASO Feasibility Report Builder — live auto-calc</li>
+          <li><span class="ck">✓</span>Information Memorandum (IM) generator — 16-page PDF</li>
+          <li><span class="ck">✓</span>Live investor lead tracking dashboard</li>
+          <li><span class="ck">✓</span>Broker referral network access</li>
+          <li><span class="ck">✓</span>Priority listing placement on the platform</li>
+          <li><span class="ck">✓</span>1.5% success fee only on completed capital raises</li>
+        </ul>
+        <button class="plan-cta gold" id="dev-plan-cta" onclick="openSubscribeModal('developer_monthly')">Activate Developer Plan →</button>
+      </div>
+      <!-- Investor -->
+      <div class="plan-card">
+        <div class="plan-icon">💼</div>
+        <div class="plan-name">Investor — Free</div>
+        <div class="plan-tagline">For sophisticated property investors, SMSF trustees & private equity investors</div>
+        <div class="plan-price"><span class="amt">Free</span><span class="per"> to browse</span></div>
+        <ul class="plan-feats">
+          <li><span class="ck">✓</span>Browse all live investment opportunities</li>
+          <li><span class="ck">✓</span>View project overviews & financial summaries</li>
+          <li><span class="ck">✓</span>Express interest in any opportunity</li>
+          <li><span class="ck">✓</span>Complimentary broker referral connection</li>
+          <li class="dim"><span class="x">◦</span>Full IM document package — $149 per project</li>
+          <li class="dim"><span class="x">◦</span>Direct developer introduction — $149 per project</li>
+        </ul>
+        <button class="plan-cta navy" onclick="openAuth()">Create Free Account →</button>
+      </div>
+      <!-- Success Fee -->
+      <div class="plan-card">
+        <div class="plan-icon">🤝</div>
+        <div class="plan-name">Success Fee Model</div>
+        <div class="plan-tagline">For completed capital raises — charged only when funds are successfully closed</div>
+        <div class="plan-price"><span class="amt">1.5%</span><span class="per"> of capital raised</span></div>
+        <ul class="plan-feats">
+          <li><span class="ck">✓</span>Only applies on successful fund closes</li>
+          <li><span class="ck">✓</span>No fee on introductions that don't close</li>
+          <li><span class="ck">✓</span>Covers equity, mezzanine & JV raises</li>
+          <li><span class="ck">✓</span>Broker referrals: $500–$1,500 per settlement</li>
+          <li><span class="ck">✓</span>Invoiced within 7 days of settlement confirmation</li>
+          <li><span class="ck">✓</span>All matching, documentation & follow-up included</li>
+        </ul>
+        <button class="plan-cta ghost" onclick="window.location.href='mailto:info@propvest.com.au'">Discuss Your Project →</button>
+      </div>
+    </div>
+    <div style="background:var(--navy);border-radius:20px;padding:44px;text-align:center;color:var(--white)">
+      <h3 style="font-size:1.5rem;font-weight:800;margin-bottom:12px">Questions about pricing?</h3>
+      <p style="color:#a8bcd4;margin-bottom:28px;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.8">Our team is happy to walk you through the platform and discuss the right setup for your project.</p>
+      <a href="mailto:info@propvest.com.au" style="display:inline-block;background:var(--gold);color:var(--navy);padding:14px 36px;border-radius:10px;font-weight:700;text-decoration:none;font-size:1rem">✉ info@propvest.com.au</a>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="screen" id="screen-admin">
+  <div class="admin-page">
+    <div class="admin-hdr">
+      <div>
+        <h2 style="font-size:1.6rem;font-weight:800;color:var(--navy)">🔐 Admin Panel</h2>
+        <p style="color:var(--muted);margin-top:4px">Manage subscriptions and platform activity</p>
+      </div>
+      <button class="btn-secondary" onclick="loadAdminSubs()" style="padding:10px 20px;font-size:.9rem">🔄 Refresh</button>
+    </div>
+    <!-- Stats -->
+    <div class="card" style="margin-bottom:24px">
+      <div class="card-title"><span>📊</span> Platform Overview</div>
+      <div class="admin-stat-grid" id="admin-stat-grid"><p style="color:var(--muted);font-size:.9rem">Loading…</p></div>
+    </div>
+    <!-- Subscriptions -->
+    <div class="card">
+      <div class="card-title"><span>💳</span> Subscription Requests</div>
+      <div id="admin-subs-list" style="margin-top:8px"><p style="color:var(--muted);font-size:.9rem">Loading…</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- SUBSCRIPTION MODAL -->
+<div class="sub-overlay hidden" id="subModal">
+  <div class="sub-box">
+    <h3 style="font-size:1.3rem;font-weight:800;color:var(--navy);margin-bottom:6px">🚀 Activate Your Plan</h3>
+    <div style="font-size:.85rem;font-weight:600;color:var(--gold);margin-bottom:20px" id="sub-plan-label">Developer Plan — $299/month + GST</div>
+    <div style="background:var(--off-white);border-radius:12px;padding:20px;margin-bottom:20px">
+      <p style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:10px">Payment Instructions</p>
+      <ol style="padding-left:18px;font-size:.88rem;color:var(--text);display:flex;flex-direction:column;gap:8px;line-height:1.7">
+        <li>Transfer your first month to:<br><strong>BSB 062-000 · ACC 12345678</strong><br><span style="font-size:.8rem;color:var(--muted)">Account name: PropVest Pty Ltd · Use your email as reference</span></li>
+        <li>Enter your bank transaction ID or receipt number below</li>
+        <li>Submit — we'll activate your plan within 24 hours</li>
+      </ol>
+    </div>
+    <input type="hidden" id="sub-plan-id">
+    <div style="margin-bottom:20px">
+      <label style="font-size:.85rem;font-weight:600;color:var(--navy);display:block;margin-bottom:8px">Payment Reference / Transaction ID</label>
+      <input type="text" id="sub-pay-ref" placeholder="e.g. TXN-20260504-01234 (or leave blank to request callback)" style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.9rem;outline:none">
+      <p style="font-size:.78rem;color:var(--muted);margin-top:6px">No payment yet? Leave blank and we'll contact you to arrange payment.</p>
+    </div>
+    <div style="display:flex;gap:12px">
+      <button style="flex:1;padding:13px;border-radius:10px;border:1.5px solid var(--border);background:none;font-family:inherit;font-weight:600;cursor:pointer;color:var(--muted);font-size:.9rem" onclick="document.getElementById('subModal').classList.add('hidden')">Cancel</button>
+      <button style="flex:2;padding:13px;border-radius:10px;background:var(--gold);border:none;font-family:inherit;font-weight:700;font-size:1rem;color:var(--navy);cursor:pointer" onclick="submitSubRequest()">Submit Request →</button>
+    </div>
+  </div>
+</div>
+
 <!-- IM REPORT SCREEN -->
 <div class="screen" id="screen-im">
   <div class="print-actions" style="display:flex;gap:12px;padding:16px 24px;background:var(--navy);align-items:center">
@@ -954,8 +1133,14 @@ const API={
   stats:()=>API.get('/api/stats'),
   saveFeasoData:(id,d)=>API.post('/api/listings/'+id+'/feaso',d),
   getFeasoData:(id)=>API.get('/api/listings/'+id+'/feaso'),
+  subRequest:(plan,ref)=>API.post('/api/subscription/request',{plan,paymentRef:ref}),
+  subStatus:()=>API.get('/api/subscription/status'),
+  adminSubs:()=>API.get('/api/admin/subscriptions'),
+  approveSub:(id)=>API.post('/api/admin/subscriptions/'+id+'/approve',{}),
+  rejectSub:(id)=>API.post('/api/admin/subscriptions/'+id+'/reject',{}),
+  cancelSub:(id)=>API.post('/api/admin/subscriptions/'+id+'/cancel',{}),
 };
-let currentUser=null,currentListingId=null,needsBroker=false,selectedRole='investor',allListings=[],activeFilter='all';
+let currentUser=null,currentListingId=null,needsBroker=false,selectedRole='investor',allListings=[],activeFilter='all',userActiveSubs=[];
 
 window.addEventListener('DOMContentLoaded',async()=>{
   try{const{user}=await API.me();if(user){currentUser=user;onLoggedIn();}else{openAuth();}}catch{openAuth();}
@@ -984,24 +1169,29 @@ async function doRegister(){
   finally{btn.disabled=false;btn.textContent='Create Account →';}
 }
 function onLoggedIn(){
-  const u=currentUser,isDev=u.role==='developer';
+  const u=currentUser,isDev=u.role==='developer',isAdmin=u.role==='admin';
+  userActiveSubs=u.activeSubscriptions||[];
   document.getElementById('navSignIn').classList.add('hidden');document.getElementById('navUser').classList.remove('hidden');
   document.getElementById('navAvatar').textContent=u.fname[0]+(u.lname?u.lname[0]:'');
-  document.querySelectorAll('.dev-only').forEach(el=>el.classList.toggle('hidden',!isDev));
+  document.querySelectorAll('.dev-only').forEach(el=>el.classList.toggle('hidden',!isDev&&!isAdmin));
+  document.querySelectorAll('.admin-only').forEach(el=>el.classList.toggle('hidden',!isAdmin));
   document.getElementById('profile-avatar-big').textContent=u.fname[0]+(u.lname?u.lname[0]:'');
   document.getElementById('profile-name').textContent=u.fname+' '+(u.lname||'');
-  document.getElementById('profile-role-tag').textContent=isDev?'Developer':'Investor';
+  document.getElementById('profile-role-tag').textContent=isAdmin?'Admin':isDev?'Developer':'Investor';
   document.getElementById('profile-email').textContent=u.email;
-  document.getElementById('profile-role-text').textContent=isDev?'Property Developer / Investment Provider':'Property Investor';
+  document.getElementById('profile-role-text').textContent=isAdmin?'Platform Administrator':isDev?'Property Developer / Investment Provider':'Property Investor';
   document.getElementById('profile-joined').textContent=new Date(u.joined).toLocaleDateString('en-AU',{month:'long',year:'numeric'});
-  if(isDev)refreshPortal();refreshMyInterests();
+  if(isDev||isAdmin)refreshPortal();
+  refreshMyInterests();refreshSubStatus();
+  // Update the developer plan CTA on pricing page based on subscription state
+  updatePricingCTAs();
   if(u.fname)document.getElementById('i-fname').value=u.fname;
   if(u.lname)document.getElementById('i-lname').value=u.lname;
   if(u.email)document.getElementById('i-email').value=u.email;
 }
-async function doLogout(){await API.logout();currentUser=null;document.getElementById('navSignIn').classList.remove('hidden');document.getElementById('navUser').classList.add('hidden');document.querySelectorAll('.dev-only').forEach(el=>el.classList.add('hidden'));showScreen('landing');openAuth();toast('Signed out.');}
+async function doLogout(){await API.logout();currentUser=null;userActiveSubs=[];document.getElementById('navSignIn').classList.remove('hidden');document.getElementById('navUser').classList.add('hidden');document.querySelectorAll('.dev-only').forEach(el=>el.classList.add('hidden'));document.querySelectorAll('.admin-only').forEach(el=>el.classList.add('hidden'));showScreen('landing');openAuth();toast('Signed out.');}
 
-function showScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+name).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});if(name==='portal'&&currentUser?.role==='developer')refreshPortal();if(name==='profile')refreshMyInterests();}
+function showScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+name).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});if(name==='portal'&&(currentUser?.role==='developer'||currentUser?.role==='admin'))refreshPortal();if(name==='profile'){refreshMyInterests();refreshSubStatus();}if(name==='admin')loadAdminSubs();}
 function goHome(){showScreen('landing');setBN('home');}
 function toggleMobile(){document.getElementById('mobileMenu').classList.toggle('open');}
 function setBN(tab){document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));const el=document.getElementById('bn-'+tab);if(el)el.classList.add('active');}
@@ -1057,6 +1247,7 @@ async function submitForm(){
 function copyRef(){navigator.clipboard?.writeText(document.getElementById('ref-code').textContent);toast('Reference code copied!');}
 
 async function publishListing(){
+  if(!hasSubscription('developer_monthly')){showSubscriptionGate();return;}
   const name=document.getElementById('p-name').value.trim(),loc=document.getElementById('p-loc').value.trim(),minRaw=document.getElementById('p-min').value,raiseRaw=document.getElementById('p-raise').value,irrRaw=document.getElementById('p-irr').value,holdRaw=document.getElementById('p-hold').value;
   const errEl=document.getElementById('portal-form-error'),btn=document.getElementById('publish-btn');
   if(!name||!loc||!minRaw||!raiseRaw||!irrRaw||!holdRaw){errEl.textContent='Please fill in all required fields (marked *).';errEl.style.display='block';return;}
@@ -1071,7 +1262,10 @@ async function publishListing(){
   finally{btn.disabled=false;btn.textContent='🚀 Publish Listing';}
 }
 async function refreshPortal(){
-  if(!currentUser||currentUser.role!=='developer')return;
+  if(!currentUser||(currentUser.role!=='developer'&&currentUser.role!=='admin'))return;
+  // Show upgrade gate in portal if no subscription
+  const gateEl=document.getElementById('portal-sub-gate');
+  if(gateEl)gateEl.classList.toggle('hidden',hasSubscription('developer_monthly'));
   try{const[listings,interests]=await Promise.all([API.getListings(),API.getInterests()]);
   const myListings=listings.filter(l=>l.devId===currentUser.id),refs=interests.filter(i=>i.needsBroker),weekAgo=new Date(Date.now()-7*24*60*60*1000),thisWeek=interests.filter(i=>new Date(i.createdAt)>weekAgo);
   document.getElementById('ps-listings').textContent=myListings.length;document.getElementById('ps-leads').textContent=interests.length;document.getElementById('ps-week').textContent=thisWeek.length;document.getElementById('ps-refs').textContent=refs.length;
@@ -1087,6 +1281,130 @@ function toast(msg){const el=document.getElementById('toast');el.textContent=msg
 document.querySelectorAll('.filter-btn').forEach(btn=>{btn.addEventListener('click',function(){document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('on'));this.classList.add('on');});});
 
 // ═══════════════════════════════════════════════════
+//  SUBSCRIPTION & MONETISATION
+// ═══════════════════════════════════════════════════
+function hasSubscription(plan){
+  if(!currentUser)return false;
+  if(currentUser.role==='admin')return true;
+  return userActiveSubs.includes(plan);
+}
+
+function openSubscribeModal(plan){
+  if(!currentUser){openAuth();return;}
+  if(currentUser.role==='admin'){toast('Admin bypasses all subscription gates.');return;}
+  if(hasSubscription(plan)){toast('✅ You already have this plan active!');return;}
+  const labels={'developer_monthly':'Developer Plan — $299/month + GST'};
+  document.getElementById('sub-plan-label').textContent=labels[plan]||plan;
+  document.getElementById('sub-plan-id').value=plan;
+  document.getElementById('sub-pay-ref').value='';
+  document.getElementById('subModal').classList.remove('hidden');
+}
+
+async function submitSubRequest(){
+  const plan=document.getElementById('sub-plan-id').value;
+  const ref=document.getElementById('sub-pay-ref').value.trim();
+  try{
+    const r=await API.subRequest(plan,ref);
+    document.getElementById('subModal').classList.add('hidden');
+    if(r.alreadyExists){toast('Your request is already '+r.subscription.status+'.');}
+    else{toast('✅ Request submitted! We\'ll activate your plan within 24 hours.');}
+    await refreshSubStatus();
+  }catch(e){toast('Error submitting request — please try again.');}
+}
+
+async function refreshSubStatus(){
+  if(!currentUser)return;
+  try{
+    const r=await API.subStatus();
+    const active=r.subscriptions.filter(s=>s.status==='active');
+    const pending=r.subscriptions.filter(s=>s.status==='pending');
+    // Update global
+    userActiveSubs=active.map(s=>s.plan);
+    if(currentUser)currentUser.activeSubscriptions=userActiveSubs;
+    // Update profile UI
+    const el=document.getElementById('profile-sub-status');
+    if(!el)return;
+    if(currentUser.role==='admin'){
+      el.innerHTML='<span class="sub-status-badge ssb-active">🔐 Platform Administrator — Full Access</span>';
+      return;
+    }
+    if(active.length){
+      el.innerHTML=active.map(s=>`<span class="sub-status-badge ssb-active">✅ ${s.plan==='developer_monthly'?'Developer Plan · $299/month':'Investor Plan'} — Active since ${new Date(s.activatedAt).toLocaleDateString('en-AU')}</span>`).join('<br>');
+    } else if(pending.length){
+      el.innerHTML='<span class="sub-status-badge ssb-pending">⏳ Subscription pending admin approval</span><br><p style="font-size:.82rem;color:var(--muted);margin-top:8px">We\'ll activate your plan within 24 hours of payment confirmation.</p>';
+    } else {
+      el.innerHTML='<span class="sub-status-badge ssb-none">No active subscription</span><br><button onclick="showScreen(\'pricing\')" style="margin-top:12px;background:var(--gold);color:var(--navy);border:none;padding:10px 20px;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:.85rem">View Plans →</button>';
+    }
+    updatePricingCTAs();
+  }catch(e){}
+}
+
+function updatePricingCTAs(){
+  const btn=document.getElementById('dev-plan-cta');
+  if(!btn)return;
+  if(!currentUser){btn.textContent='Sign In to Subscribe →';btn.onclick=openAuth;return;}
+  if(currentUser.role==='admin'){btn.textContent='Admin — Full Access';btn.className='plan-cta ghost';btn.onclick=null;return;}
+  if(hasSubscription('developer_monthly')){btn.textContent='✅ Plan Active';btn.className='plan-cta ghost';btn.onclick=null;}
+  else{btn.textContent='Activate Developer Plan →';btn.className='plan-cta gold';btn.onclick=()=>openSubscribeModal('developer_monthly');}
+}
+
+function showSubscriptionGate(){
+  // Replace the listing form content temporarily
+  toast('⭐ Developer subscription required. Redirecting to plans…');
+  setTimeout(()=>showScreen('pricing'),1200);
+}
+
+async function loadAdminSubs(){
+  const listEl=document.getElementById('admin-subs-list');
+  const statEl=document.getElementById('admin-stat-grid');
+  if(!listEl)return;
+  listEl.innerHTML='<p style="color:var(--muted)">Loading…</p>';
+  try{
+    const [subData,stats]=await Promise.all([API.adminSubs(),API.stats()]);
+    // Stats
+    if(statEl){statEl.innerHTML=`
+      <div class="portal-stat"><div class="p-num">${stats.listings}</div><div class="p-lbl">Listings</div></div>
+      <div class="portal-stat"><div class="p-num">${stats.investors}</div><div class="p-lbl">Investors</div></div>
+      <div class="portal-stat"><div class="p-num">${stats.interests}</div><div class="p-lbl">Leads</div></div>
+      <div class="portal-stat"><div class="p-num">${subData.subscriptions.filter(s=>s.status==='active').length}</div><div class="p-lbl">Active Subs</div></div>
+      <div class="portal-stat"><div class="p-num">${subData.subscriptions.filter(s=>s.status==='pending').length}</div><div class="p-lbl">Pending</div></div>
+      <div class="portal-stat"><div class="p-num">$${subData.subscriptions.filter(s=>s.status==='active').length*299}/mo</div><div class="p-lbl">MRR</div></div>
+    `;}
+    if(!subData.subscriptions.length){listEl.innerHTML='<p style="color:var(--muted);font-size:.9rem">No subscription requests yet.</p>';return;}
+    const statusColor={active:'var(--green)',pending:'#e65100',rejected:'var(--red)',cancelled:'var(--muted)'};
+    listEl.innerHTML=subData.subscriptions.map(s=>`
+      <div class="admin-sub-row">
+        <div class="admin-sub-info">
+          <strong style="color:var(--navy);font-size:.95rem">${s.userName} — ${s.userEmail}</strong>
+          <span style="font-size:.82rem;color:var(--muted)">${s.plan==='developer_monthly'?'Developer Plan ($299/mo)':s.plan} · ${s.userRole} · Requested ${new Date(s.requestedAt).toLocaleDateString('en-AU')}</span>
+          ${s.paymentRef?`<span style="font-size:.78rem;color:var(--muted)">Payment ref: <strong>${s.paymentRef}</strong></span>`:'<span style="font-size:.78rem;color:var(--muted)">No payment reference provided</span>'}
+          ${s.activatedAt?`<span style="font-size:.78rem;color:var(--green)">Activated: ${new Date(s.activatedAt).toLocaleDateString('en-AU')}</span>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+          <span style="font-size:.78rem;font-weight:700;color:${s.status==='active'?'var(--green)':s.status==='pending'?'#e65100':'var(--red)'};background:${s.status==='active'?'#e8f5e9':s.status==='pending'?'#fff8e1':'#ffebee'};padding:4px 12px;border-radius:20px">${s.status.toUpperCase()}</span>
+          <div class="admin-sub-acts">
+            ${s.status==='pending'?`<button class="btn-approve" onclick="doApproveSub('${s.id}')">✓ Approve</button><button class="btn-reject" onclick="doRejectSub('${s.id}')">✗ Reject</button>`:''}
+            ${s.status==='active'?`<button class="btn-cancel" onclick="doCancelSub('${s.id}')">Cancel</button>`:''}
+          </div>
+        </div>
+      </div>`).join('');
+  }catch(e){listEl.innerHTML='<p style="color:var(--red)">Error loading subscriptions. Are you logged in as admin?</p>';}
+}
+
+async function doApproveSub(id){
+  try{await API.approveSub(id);toast('✅ Subscription approved — user now has full access.');loadAdminSubs();}
+  catch(e){toast('Error approving.');}
+}
+async function doRejectSub(id){
+  try{await API.rejectSub(id);toast('Subscription rejected.');loadAdminSubs();}
+  catch(e){toast('Error rejecting.');}
+}
+async function doCancelSub(id){
+  try{await API.cancelSub(id);toast('Subscription cancelled.');loadAdminSubs();}
+  catch(e){toast('Error cancelling.');}
+}
+
+// ═══════════════════════════════════════════════════
 //  FEASO — Feasibility Report Module
 // ═══════════════════════════════════════════════════
 let currentFeasoListingId=null,unitRowCount=1;
@@ -1095,6 +1413,7 @@ function fmtC(v){if(!v&&v!==0)return'—';const a=Math.abs(v);let s=a>=1e6?'$'+(
 function fmtD(v){if(!v&&v!==0)return'—';return(v<0?'-$':'$')+Math.abs(v).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});}
 
 function showFeasoForm(listingId){
+  if(!hasSubscription('developer_monthly')){showSubscriptionGate();return;}
   currentFeasoListingId=listingId;
   showScreen('feaso');
   API.getFeasoData(listingId).then(data=>{
