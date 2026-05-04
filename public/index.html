@@ -327,6 +327,55 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
 @media print{nav,.bottom-nav,.toast,.back-btn,.print-actions{display:none!important}.screen{display:block!important;padding:0}.feaso-report{max-width:100%;padding:20px}body{background:var(--white)}}
 @media(max-width:960px){.feaso-grid{grid-template-columns:1fr}.feaso-sticky{position:static}.rpt-grid{grid-template-columns:1fr}}
 @media(max-width:640px){.metric-chips{flex-direction:column}.mc{min-width:unset}.unit-tbl{font-size:.7rem}.unit-tbl th{font-size:.65rem}}
+/* ── Information Memorandum ───────────────────────── */
+.im-doc{font-family:Georgia,'Times New Roman',serif}
+.im-page{background:#141210;min-height:100vh;padding:60px;position:relative;page-break-after:always;break-after:page}
+.im-badge{display:inline-block;border:1px solid #c97b4b;color:#c97b4b;font-family:system-ui,sans-serif;font-size:.62rem;font-weight:600;letter-spacing:2px;padding:4px 12px;text-transform:uppercase;margin-bottom:16px}
+.im-sec-label{background:rgba(201,123,75,.18);color:#c97b4b;font-family:system-ui,sans-serif;font-size:.62rem;font-weight:700;letter-spacing:2px;padding:4px 10px;text-transform:uppercase;display:inline-block;margin-bottom:14px}
+.im-h1{font-size:clamp(2rem,4vw,3.4rem);font-weight:400;color:#d4b483;line-height:1.2;margin-bottom:20px;letter-spacing:-.5px}
+.im-h2{font-size:clamp(1.5rem,3vw,2.4rem);font-weight:400;color:#d4b483;line-height:1.25;margin-bottom:14px}
+.im-h3{font-size:1rem;font-weight:600;color:#d4b483;margin-bottom:8px;font-family:system-ui,sans-serif}
+.im-body{font-size:.84rem;color:#a09080;line-height:1.75;font-family:system-ui,sans-serif}
+.im-div{height:1px;background:rgba(255,255,255,.1);margin:20px 0}
+.im-bignum{font-size:clamp(2.2rem,5vw,3.8rem);color:#d4b483;font-weight:400;line-height:1;display:block}
+.im-biglabel{font-size:.88rem;color:#c8bba8;margin-top:8px;font-family:system-ui,sans-serif;display:block}
+.im-bigsub{font-size:.75rem;color:#706050;font-family:system-ui,sans-serif;line-height:1.5;margin-top:4px;display:block}
+.im-g2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.im-g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.im-g4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.im-card{border:1px solid rgba(255,255,255,.1);padding:20px;background:rgba(255,255,255,.03)}
+.im-card-accent{background:rgba(201,123,75,.12);border-color:rgba(201,123,75,.3)}
+.im-card-copper{background:#6b3820;border:none;padding:24px}
+.im-footer{position:absolute;bottom:24px;left:60px;right:60px;display:flex;justify-content:space-between;font-size:.68rem;color:#4a3a2a;font-family:system-ui,sans-serif;border-top:1px solid rgba(255,255,255,.06);padding-top:10px}
+.im-cover{display:grid;grid-template-columns:1fr 1fr;min-height:100vh}
+.im-cover-left{background:#141210;padding:60px;display:flex;flex-direction:column;justify-content:space-between}
+.im-cover-right{background-size:cover;background-position:center;background-color:#2a1f15;min-height:50vh}
+.im-tbl{width:100%;border-collapse:collapse;font-family:system-ui,sans-serif;font-size:.8rem}
+.im-tbl th{background:rgba(201,123,75,.18);color:#d4b483;padding:10px 12px;text-align:left;font-weight:600;font-size:.75rem}
+.im-tbl td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.07);color:#c8bba8}
+.im-tbl td:last-child{text-align:right;font-weight:600;color:#e8d5c0}
+.im-tbl .im-tr{background:rgba(201,123,75,.15);border-top:1px solid rgba(201,123,75,.3)}
+.im-tbl .im-tr td{color:#d4b483;font-weight:700;font-size:.85rem}
+.im-hbar{display:flex;flex-direction:column;gap:8px}
+.im-hbar-row{display:flex;align-items:center;gap:10px}
+.im-hbar-lbl{width:150px;font-size:.72rem;color:#a09080;text-align:right;flex-shrink:0;font-family:system-ui,sans-serif;line-height:1.3}
+.im-hbar-track{flex:1;height:28px;background:rgba(255,255,255,.05);overflow:hidden}
+.im-hbar-fill{height:100%;background:linear-gradient(90deg,#c97b4b,#e8a87a);display:flex;align-items:center;padding-left:8px;min-width:2px}
+.im-hbar-v{font-size:.7rem;font-weight:700;color:#141210;font-family:system-ui,sans-serif;white-space:nowrap}
+.im-heat{display:inline-grid;border:1px solid rgba(255,255,255,.1);font-family:system-ui,sans-serif;font-size:.7rem}
+.im-heat-h{background:rgba(255,255,255,.08);padding:7px 14px;text-align:center;color:#a09080;border-right:1px solid rgba(255,255,255,.07)}
+.im-heat-lbl{background:rgba(255,255,255,.04);padding:7px 14px;color:#a09080;border-bottom:1px solid rgba(255,255,255,.07);border-right:1px solid rgba(255,255,255,.07)}
+.im-heat-cell{padding:7px 10px;text-align:center;border-bottom:1px solid rgba(255,255,255,.07);border-right:1px solid rgba(255,255,255,.07);font-weight:700;color:#141210}
+.im-tl{display:flex;flex-direction:column}
+.im-tl-item{display:flex;gap:16px;padding:20px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+.im-tl-icon{width:44px;height:44px;background:rgba(201,123,75,.15);border:1px solid rgba(201,123,75,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:1.1rem}
+.im-quote{font-style:italic;color:#a09080;font-size:.92rem;line-height:1.8;border-left:3px solid #c97b4b;padding-left:20px;margin:16px 0}
+.im-bullet-list{list-style:none;padding:0;display:flex;flex-direction:column;gap:8px}
+.im-bullet-list li{display:flex;gap:10px;font-size:.82rem;color:#c8bba8;font-family:system-ui,sans-serif;line-height:1.6}
+.im-bullet-list li::before{content:'•';color:#c97b4b;flex-shrink:0}
+.im-stat-box{border:1px solid rgba(255,255,255,.12);padding:16px 20px}
+@media print{.im-doc{background:#141210!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.im-page{page-break-after:always;break-after:page;padding:40px}.print-actions{display:none!important}nav,.bottom-nav,.toast{display:none!important}.screen{display:block!important;padding:0}}
+@media(max-width:900px){.im-cover{grid-template-columns:1fr}.im-cover-right{display:none}.im-page{padding:28px}.im-g2,.im-g3,.im-g4{grid-template-columns:1fr}.im-bignum{font-size:2rem}.im-hbar-lbl{width:100px}}
 </style>
 </head>
 <body>
@@ -791,6 +840,47 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
           </div>
           <button class="add-unit-btn" onclick="addUnitRow()">+ Add Unit Type</button>
         </div>
+        <!-- S8: IM DETAILS -->
+<div class="feaso-section">
+  <div class="feaso-section-title"><div class="fsec-badge">8</div>Information Memorandum — Details</div>
+  <p style="font-size:.82rem;color:var(--muted);margin-bottom:16px">These fields populate the full Confidential Investment Memorandum. Financial data is pulled automatically from Sections 1–7.</p>
+  <div class="field-row">
+    <div class="field"><label>Prepared For / Target Funder</label><input type="text" id="im-funder" placeholder="e.g. Trilogy Funds Management, Private Investors"></div>
+    <div class="field"><label>Developer / Company Name</label><input type="text" id="im-company" placeholder="Futureland Property Group"></div>
+  </div>
+  <div class="field"><label>Project Tagline</label><input type="text" id="im-tagline" placeholder="Boutique Coastal Development Opportunity"></div>
+  <div class="field"><label>Executive Summary Headline</label><input type="text" id="im-exh" placeholder="A Rare Boutique Beachfront Development Positioned for Premium Owner-Occupier Demand"></div>
+  <div class="field"><label>Executive Summary Body</label><textarea id="im-exb" rows="4" placeholder="Describe the development, its strategic positioning, and why it represents a compelling investment opportunity..."></textarea></div>
+  <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin:16px 0 10px">Investment Highlights (up to 6 — title + one-liner description)</div>
+  <div id="im-hl-container">
+    <div class="field-row" style="margin-bottom:8px"><div class="field"><label style="font-size:.75rem">Title</label><input type="text" class="im-hl-title" placeholder="Prime Beachfront Location"></div><div class="field"><label style="font-size:.75rem">Description</label><input type="text" class="im-hl-desc" placeholder="One of the last viable beachfront development parcels in the Southern Gold Coast."></div></div>
+    <div class="field-row" style="margin-bottom:8px"><div class="field"><input type="text" class="im-hl-title" placeholder="DA-Approved — Planning Risk Eliminated"></div><div class="field"><input type="text" class="im-hl-desc" placeholder="Development Approval in place at point of investor entry."></div></div>
+    <div class="field-row" style="margin-bottom:8px"><div class="field"><input type="text" class="im-hl-title" placeholder="Scarce Boutique Product"></div><div class="field"><input type="text" class="im-hl-desc" placeholder="Only X residences in a tightly held coastal market."></div></div>
+    <div class="field-row" style="margin-bottom:8px"><div class="field"><input type="text" class="im-hl-title" placeholder="Premium Large-Format Apartments"></div><div class="field"><input type="text" class="im-hl-desc" placeholder="Configurations precisely aligned with owner-occupier demand."></div></div>
+  </div>
+  <button onclick="addIMHighlight()" class="add-unit-btn" style="margin-bottom:16px">+ Add Highlight</button>
+  <div class="field"><label>Architectural Vision Quote</label><textarea id="im-arch-quote" rows="2" placeholder='"This scheme has been designed as a high-end boutique residential offering tailored to the premium owner-occupier and lifestyle market."'></textarea></div>
+  <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin:14px 0 10px">Design Features (3 cards)</div>
+  <div class="field-row" style="margin-bottom:8px"><div class="field"><label style="font-size:.75rem">Feature 1 Title</label><input type="text" id="im-df1t" placeholder="Curved Coastal Façade"></div><div class="field"><label style="font-size:.75rem">Feature 1 Description</label><input type="text" id="im-df1d" placeholder="The sweeping curved form responds directly to the coastal setting..."></div></div>
+  <div class="field-row" style="margin-bottom:8px"><div class="field"><input type="text" id="im-df2t" placeholder="Deep Private Balconies"></div><div class="field"><input type="text" id="im-df2d" placeholder="Each residence features generously proportioned deep balconies..."></div></div>
+  <div class="field-row" style="margin-bottom:8px"><div class="field"><input type="text" id="im-df3t" placeholder="Boutique Scale &amp; Privacy"></div><div class="field"><input type="text" id="im-df3d" placeholder="Bespoke screening elements and resort-quality lobby..."></div></div>
+  <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin:14px 0 10px">Recent Comparable Sales (up to 5)</div>
+  <div id="im-comps-container">
+    <div class="field-row" style="margin-bottom:8px"><div class="field"><label style="font-size:.75rem">Description</label><input type="text" class="im-comp-desc" placeholder="Beachfront 2-bed, Bilinga"></div><div class="field"><label style="font-size:.75rem">Sale Price</label><input type="text" class="im-comp-price" placeholder="$2.1M"></div></div>
+    <div class="field-row" style="margin-bottom:8px"><div class="field"><input type="text" class="im-comp-desc" placeholder="Beachfront 2-bed, Tugun"></div><div class="field"><input type="text" class="im-comp-price" placeholder="$2.4M"></div></div>
+    <div class="field-row" style="margin-bottom:8px"><div class="field"><input type="text" class="im-comp-desc" placeholder="Ocean-view 3-bed, Kirra"></div><div class="field"><input type="text" class="im-comp-price" placeholder="$3.2M"></div></div>
+  </div>
+  <button onclick="addIMComp()" class="add-unit-btn" style="margin-bottom:16px">+ Add Comparable</button>
+  <div style="font-size:.85rem;font-weight:700;color:var(--navy);margin:14px 0 10px">Developer Contact Details</div>
+  <div class="field-row">
+    <div class="field"><label>Contact Name</label><input type="text" id="im-contact-name" placeholder="Ryan Van Der Woude"></div>
+    <div class="field"><label>Phone</label><input type="tel" id="im-contact-phone" placeholder="+61 400 000 000"></div>
+  </div>
+  <div class="field"><label>Email</label><input type="email" id="im-contact-email" placeholder="ryan@developer.com.au"></div>
+  <div class="field"><label>Closing Statement (Back Cover Tagline)</label><textarea id="im-closing" rows="3" placeholder="Genuine coastal scarcity. Architectural distinction. Conservative capital structure. A compelling return profile on a tightly held beachfront opportunity."></textarea></div>
+  <div class="field"><label>Opportunity Summary Bullets (one per line)</label><textarea id="im-bullets" rows="5" placeholder="DA-approved boutique beachfront development&#10;Conservative 65% LTC / LVR structure&#10;Equity confirmed at 35%&#10;Fixed-price construction contract in place&#10;GRV supports strong lender security"></textarea></div>
+  <button onclick="generateIM()" class="publish-btn" style="margin-top:8px;background:linear-gradient(135deg,#8b4513,#c97b4b);color:#fff">📄 Generate Information Memorandum</button>
+</div>
         <!-- GENERATE -->
         <button class="publish-btn" onclick="generateFeasoReport()">📊 Generate FEASO Report</button>
         <p style="font-size:.78rem;color:var(--muted);text-align:center;margin-top:10px">Report auto-saves to this listing. You can edit and regenerate anytime.</p>
@@ -836,6 +926,16 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
     </div>
     <div id="feaso-report-body"></div>
   </div>
+</div>
+
+<!-- IM REPORT SCREEN -->
+<div class="screen" id="screen-im">
+  <div class="print-actions" style="display:flex;gap:12px;padding:16px 24px;background:var(--navy);align-items:center">
+    <button onclick="showScreen('feaso')" style="background:rgba(255,255,255,.1);color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:.88rem">← Back to Edit</button>
+    <div style="flex:1;color:#a8bcd4;font-size:.85rem">Information Memorandum — Print / Save as PDF</div>
+    <button onclick="window.print()" class="print-btn" style="background:#c97b4b">🖨 Print / Save PDF</button>
+  </div>
+  <div id="im-doc-body" class="im-doc"></div>
 </div>
 
 <script>
@@ -1306,6 +1406,499 @@ async function generateFeasoReport(){
       <strong style="color:var(--navy)">Disclaimer:</strong> This feasibility report is indicative only. All figures are estimates and should not be relied upon as financial advice. Independent legal, financial, and development advice should be obtained before making any investment decision. Prepared via PropVest Platform — ${date}.
     </div>`;
   showScreen('feaso-report');
+}
+
+// ═══════════════════════════════════════════════════
+//  Information Memorandum Generator
+// ═══════════════════════════════════════════════════
+function addIMHighlight(){
+  const c=document.getElementById('im-hl-container');
+  const d=document.createElement('div');
+  d.className='field-row';d.style.marginBottom='8px';
+  d.innerHTML='<div class="field"><input type="text" class="im-hl-title" placeholder="Highlight title"></div><div class="field"><input type="text" class="im-hl-desc" placeholder="Brief description"></div>';
+  c.appendChild(d);
+}
+function addIMComp(){
+  const c=document.getElementById('im-comps-container');
+  const d=document.createElement('div');
+  d.className='field-row';d.style.marginBottom='8px';
+  d.innerHTML='<div class="field"><input type="text" class="im-comp-desc" placeholder="e.g. Beachfront 3-bed, Palm Beach"></div><div class="field"><input type="text" class="im-comp-price" placeholder="e.g. $4.5M"></div>';
+  c.appendChild(d);
+}
+function gv(id){return document.getElementById(id)?.value?.trim()||'';}
+
+function generateIM(){
+  const d=getFeasoData();
+  const funder=gv('im-funder')||'Sophisticated Investors';
+  const company=gv('im-company')||'Developer';
+  const tagline=gv('im-tagline')||'Private Development Funding Opportunity';
+  const exh=gv('im-exh')||(d.name||'Development Investment Opportunity');
+  const exb=gv('im-exb')||`${d.name||'This development'} is a ${d.status||'DA-approved'} project ${d.address?'at '+d.address:''} — ${d.desc||'a premium residential development'} comprising ${d.dwellings||'—'} residences. Structured for private credit under conservative debt settings, the project delivers a compelling risk-adjusted return profile.`;
+  const archQuote=gv('im-arch-quote')||`"This development has been designed as a high-end boutique residential offering tailored to the premium owner-occupier and lifestyle market."`;
+  const df1t=gv('im-df1t')||'Premium Design';const df1d=gv('im-df1d')||'Architectural distinction that commands a scarcity premium in the market.';
+  const df2t=gv('im-df2t')||'Private Balconies';const df2d=gv('im-df2d')||'Each residence features generously proportioned deep balconies extending the living area outdoors.';
+  const df3t=gv('im-df3t')||'Boutique Scale';const df3d=gv('im-df3d')||'Bespoke finishes, resort-quality amenity, and low-density exclusivity unavailable at larger competing developments.';
+  const contactName=gv('im-contact-name')||'Development Director';
+  const contactPhone=gv('im-contact-phone')||'';
+  const contactEmail=gv('im-contact-email')||'';
+  const closing=gv('im-closing')||`${d.name||'This development'} — genuine scarcity, architectural distinction, conservative capital structure, and a compelling return profile.`;
+  const bulletsRaw=gv('im-bullets');
+  const bullets=bulletsRaw?bulletsRaw.split('\n').filter(b=>b.trim()):[
+    `${d.status||'DA Approved'} development`,
+    `Conservative ${Math.round((d.lvrPct||0.65)*100)}% LTC / LVR structure`,
+    `Equity required: ${fmtD(d.equity||0)}`,
+    `GRV of ${fmtD(d.grv||0)} supports strong lender security`,
+    `${d.totalMonths||28}-month programme from acquisition to completion`
+  ];
+  // Highlights
+  const hlTitles=[...document.querySelectorAll('.im-hl-title')].map(el=>el.value.trim()).filter(v=>v);
+  const hlDescs=[...document.querySelectorAll('.im-hl-desc')].map(el=>el.value.trim());
+  const highlights=hlTitles.length?hlTitles.map((t,i)=>({title:t,desc:hlDescs[i]||''})):[
+    {title:'Prime Location',desc:'Exceptional positioning in a tightly constrained coastal market.'},
+    {title:`${d.status||'DA Approved'} — Planning Risk Eliminated`,desc:'Development Approval in place at point of investor entry.'},
+    {title:'Scarce Boutique Product',desc:`Only ${d.dwellings||'—'} residences in a supply-constrained market.`},
+    {title:'Conservative Capital Structure',desc:`${Math.round((d.lvrPct||0.65)*100)}% debt / ${Math.round((d.eqPct||0.35)*100)}% equity — aligned to private credit parameters.`},
+    {title:'Sensitivity-Tested Return Profile',desc:`${d.gpm.toFixed(1)}% gross profit margin. Revenue softening scenarios modelled — base case remains profitable.`},
+    {title:'Efficient Cost Management',desc:`All-in TDC of ${fmtD(d.tdc||0)} inclusive of land, construction, finance, and all soft costs.`}
+  ];
+  // Comparables
+  const compDescs=[...document.querySelectorAll('.im-comp-desc')].map(el=>el.value.trim()).filter(v=>v);
+  const compPrices=[...document.querySelectorAll('.im-comp-price')].map(el=>el.value.trim());
+  const comps=compDescs.length?compDescs.map((desc,i)=>({desc,price:compPrices[i]||'—'})):[];
+  // Sensitivity calc
+  const sensGrid=[];
+  const revVars=[0.05,0,-0.05,-0.10,-0.15];
+  const costVars=[0,0.05,0.10,0.15];
+  costVars.forEach(cv=>{
+    const row=[];
+    revVars.forEach(rv=>{
+      const adjGrv=(d.grv||0)*(1+rv),adjGst=adjGrv*(d.gstRate||0.1/(1+0.1)),adjAgent=adjGrv*(d.agentPct||0.03);
+      const adjNrv=adjGrv-adjGst-adjAgent;
+      const adjTdc=(d.tdc||0)*(1+cv);
+      const adjGdp=adjNrv+(d.holdinc||0)-(d.acqfee||0)-(d.licensefee||0)-adjTdc;
+      row.push(adjGdp);
+    });
+    sensGrid.push(row);
+  });
+  // Units grouped by type for apartment mix
+  const unitGroups=d.units.reduce((acc,u)=>{
+    const key=u.beds+'bd';
+    if(!acc[key])acc[key]={label:`${u.beds}-Bedroom`,qty:0,value:0};
+    acc[key].qty+=u.qty;acc[key].value+=u.qty*u.sellValue;
+    return acc;
+  },{});
+  const mixGroups=Object.values(unitGroups);
+  const totalQty=d.units.reduce((s,u)=>s+u.qty,0)||1;
+  // Cost items for bar chart (filter >0)
+  const costItems=[
+    {label:'Construction',val:d.totalConst||0},
+    {label:'Finance Costs',val:d.financeCosts||0},
+    {label:'Land',val:d.land||0},
+    {label:'Design & Planning',val:d.design||0},
+    {label:'Marketing',val:d.marketing||0},
+    {label:'Dev / PM Fees',val:d.devmgmt||0},
+    {label:'Statutory / Council',val:d.statutory||0},
+    {label:'Stamp Duty',val:d.stamp||0},
+    {label:'Legals',val:d.legals||0},
+    {label:'Holding Costs',val:d.holdcost||0},
+  ].filter(c=>c.val>0).sort((a,b)=>b.val-a.val);
+  const maxCostVal=Math.max(...costItems.map(c=>c.val),1);
+  // Revenue bar chart (units by sell value)
+  const maxUnitVal=Math.max(...d.units.map(u=>u.sellValue*u.qty),d.grv/d.units.length||1);
+  const date=new Date().toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'});
+  const roic=d.equity>0?(d.gdp/d.equity*100):0;
+  const bufferToGRV=(d.grv||0)-(d.debt||0);
+  const photoUrl=(typeof allListings!=='undefined'&&typeof currentFeasoListingId!=='undefined')?
+    (allListings.find(l=>l.id===currentFeasoListingId)?.heroPhoto||'https://picsum.photos/seed/imcover2026/800/1200'):
+    'https://picsum.photos/seed/imcover2026/800/1200';
+
+  const html=`
+<!-- PAGE 1: COVER -->
+<div class="im-page" style="padding:0">
+  <div class="im-cover">
+    <div class="im-cover-left">
+      <div>
+        <div class="im-badge">CONFIDENTIAL INVESTMENT MEMORANDUM · PREPARED FOR ${funder.toUpperCase()}</div>
+        <div class="im-h1" style="margin-top:16px">${d.name||d.address||'Development Project'}</div>
+        <p class="im-body"><strong style="color:#d4b483">${tagline}</strong> Prepared for ${funder}</p>
+        <div class="im-div"></div>
+        <p class="im-h3">${d.status||'DA Approved'} · ${d.state||'—'} · ${d.desc||'Premium Development'}</p>
+        <p class="im-body" style="margin-top:8px">${d.desc||''} · ${d.dwellings||'—'} residences · ${d.totalMonths||'—'}-month programme · ${d.address||'—'}</p>
+      </div>
+      <div>
+        <div class="im-div"></div>
+        <p style="font-family:system-ui,sans-serif;font-size:.75rem;color:#5a4a3a;letter-spacing:1px;text-transform:uppercase">${company}</p>
+      </div>
+    </div>
+    <div class="im-cover-right" style="background-image:url('${photoUrl}')"></div>
+  </div>
+  <div class="im-footer">
+    <span>Confidential — Investment Memorandum</span>
+    <span>${d.name||'Development Project'} · ${d.state||'—'}</span>
+  </div>
+</div>
+
+<!-- PAGE 2: EXECUTIVE SUMMARY -->
+<div class="im-page">
+  <div class="im-sec-label">Executive Summary</div>
+  <div class="im-h2">${exh}</div>
+  <p class="im-body" style="max-width:860px;margin-bottom:32px">${exb}</p>
+  <div class="im-g4" style="margin-bottom:28px">
+    <div style="text-align:center"><span class="im-bignum">${fmtC(d.grv)}</span><span class="im-biglabel">Gross Realisation Value</span><span class="im-bigsub">Total projected end value across all ${d.dwellings||'—'} residences</span></div>
+    <div style="text-align:center"><span class="im-bignum">${fmtC(d.tdc)}</span><span class="im-biglabel">Total Development Cost</span><span class="im-bigsub">Disciplined all-in cost inclusive of land, construction and finance</span></div>
+    <div style="text-align:center"><span class="im-bignum">${fmtC(d.gdp)}</span><span class="im-biglabel">Gross Development Profit</span><span class="im-bigsub">Strong absolute return on a boutique-scale project</span></div>
+    <div style="text-align:center"><span class="im-bignum">${roic.toFixed(0)}%</span><span class="im-biglabel">Return on Invested Capital</span><span class="im-bigsub">Attractive ROIC on ${fmtC(d.equity)} equity commitment</span></div>
+  </div>
+  <div class="im-g3">
+    <div class="im-stat-box" style="border-color:rgba(255,255,255,.15)"><p class="im-h3">Land: ${fmtC(d.land)} · TDC: ${fmtC(d.tdc)}</p><p class="im-body">Total cost inclusive of all land, finance, and soft costs.</p></div>
+    <div class="im-stat-box" style="border-color:rgba(255,255,255,.15)"><p class="im-h3">${d.totalMonths||'—'}-Month Programme</p><p class="im-body">Structured acquisition through to completion and settlement</p></div>
+    <div class="im-stat-box" style="border-color:rgba(255,255,255,.15)"><p class="im-h3">Debt: ${Math.round((d.lvrPct||.65)*100)}% · Equity: ${Math.round((d.eqPct||.35)*100)}%</p><p class="im-body">Conservative leverage — ${fmtC(d.equity)} equity commitment. Debt (pre-cap): ${fmtC(d.debt)} at ${d.rate}% p.a.</p></div>
+  </div>
+  <div class="im-stat-box" style="margin-top:12px;border-color:rgba(255,255,255,.15)"><p class="im-h3">Net Revenue: ${fmtC(d.nrv)}</p><p class="im-body">After selling costs and GST across all ${d.dwellings||'—'} residences</p></div>
+  <div class="im-footer"><span>Confidential — Investment Memorandum</span><span>${d.name||'Development Project'} · ${d.state||'—'}</span></div>
+</div>
+
+<!-- PAGE 3: INVESTMENT HIGHLIGHTS -->
+<div class="im-page">
+  <div class="im-sec-label">Investment Highlights</div>
+  <div class="im-h2">Why This Opportunity Stands Out</div>
+  <p class="im-body" style="margin-bottom:28px;max-width:860px">${d.name||'This development'} represents a structurally compelling opportunity — ${d.desc||'a premium development'} in ${d.state||'—'}, where ${d.status||'DA approval'} and disciplined cost management create a risk-adjusted return profile supported by genuine market demand.</p>
+  <div class="im-g3" style="margin-bottom:16px">
+    ${highlights.slice(0,3).map(h=>`<div class="im-card"><p class="im-h3">${h.title}</p><p class="im-body">${h.desc}</p></div>`).join('')}
+  </div>
+  <div class="im-g3">
+    ${highlights.slice(3,6).map(h=>`<div class="im-card"><p class="im-h3">${h.title}</p><p class="im-body">${h.desc}</p></div>`).join('')}
+  </div>
+  <div class="im-footer"><span>Confidential — Investment Memorandum</span><span>${d.name||'Development Project'} · ${d.state||'—'}</span></div>
+</div>
+
+<!-- PAGE 4: PLANNING & DEVELOPMENT OVERVIEW -->
+<div class="im-page">
+  <div class="im-sec-label">Planning & Development Overview</div>
+  <div class="im-h2">Project Overview</div>
+  <p class="im-body" style="margin-bottom:24px;max-width:860px">The development ${d.status==='DA Approved'?'benefits from an existing Development Approval, eliminating the primary planning risk at the point of investor entry':'is progressing through the planning process with all conditions being assessed and costed into the development budget'}.</p>
+  <div class="im-g2" style="gap:12px">
+    <div class="im-card"><p class="im-h3">Address</p><p class="im-body">${d.address||'—'} — ${d.state||'—'}</p></div>
+    <div class="im-card"><p class="im-h3">Development Type</p><p class="im-body">${d.desc||'—'}</p></div>
+    <div class="im-card"><p class="im-h3">Total Dwellings</p><p class="im-body">${d.dwellings||'—'} ${d.sitearea?'across a '+d.sitearea+' m² site':''}</p></div>
+    <div class="im-card"><p class="im-h3">Site Area</p><p class="im-body">${d.sitearea?d.sitearea+' m² — compact and efficient parcel':'—'}</p></div>
+    <div class="im-card" style="border-color:rgba(201,123,75,.4)"><p class="im-h3" style="color:#c97b4b">Zoning</p><p class="im-body">${d.zoning||'—'}</p></div>
+    <div class="im-card" style="border-color:rgba(201,123,75,.4)"><p class="im-h3" style="color:#c97b4b">Status</p><p class="im-body">${d.status||'—'}</p></div>
+  </div>
+  <div class="im-footer"><span>Confidential — Investment Memorandum</span><span>${d.name||'Development Project'} · ${d.state||'—'}</span></div>
+</div>
+
+<!-- PAGE 5: ARCHITECTURAL DESIGN -->
+<div class="im-page">
+  <div class="im-sec-label">Architectural Design</div>
+  <div class="im-h2">Architectural Vision</div>
+  <div class="im-quote">${archQuote}</div>
+  <div class="im-g2" style="margin:24px 0 16px">
+    <div class="im-card"><p class="im-h3">${df1t}</p><p class="im-body">${df1d}</p></div>
+    <div class="im-card"><p class="im-h3">${df2t}</p><p class="im-body">${df2d}</p></div>
+  </div>
+  <div class="im-card" style="margin-bottom:16px"><p class="im-h3">${df3t}</p><p class="im-body">${df3d}</p></div>
+  <div class="im-footer"><span>Confidential — Investment Memorandum</span><span>${d.name||'Development Project'} · ${d.state||'—'}</span></div>
+</div>
+
+<!-- PAGE 6: APARTMENT MIX -->
+<div class="im-page">
+  <div class="im-sec-label">Apartment Mix & Product Strategy</div>
+  <div class="im-h2">Apartment Mix & Product Positioning</div>
+  <p class="im-body" style="margin-bottom:24px">The apartment mix has been structured to address distinct buyer segments within the premium owner-occupier market — ensuring commercial appeal across the sales campaign and a coherent product identity. Total NSA: ${d.units.reduce((s,u)=>s+u.nsa*u.qty,0).toFixed(1)} sqm.</p>
+  ${d.units.length?`
+  <div class="im-g${Math.min(d.units.length,3)}" style="margin-bottom:24px">
+    ${d.units.slice(0,3).map((u,i)=>`<div class="im-card" style="border-top:2px solid #c97b4b"><div style="font-size:1.4rem;color:#c97b4b;margin-bottom:8px">${i+1}</div><p class="im-h3">${u.type} — ${u.beds}-Bedroom</p><p class="im-body">${u.qty} residence${u.qty!==1?'s':''} · ${u.intSqm}m² internal · ${u.priceSqm?'~'+fmtC(u.sellValue*u.qty)+' total':''}</p>${u.weeklyRent?`<p class="im-body" style="margin-top:6px;color:#c97b4b">$${u.weeklyRent.toLocaleString()}/wk rental estimate</p>`:''}</div>`).join('')}
+  </div>
+  <table class="im-tbl">
+    <thead><tr><th>Type</th><th>Qty</th><th>Bed/Bath</th><th>Internal m²</th><th>$/m²</th><th>Sell Value</th><th>Wkly Rent</th></tr></thead>
+    <tbody>${d.units.map(u=>`<tr><td>${u.type}</td><td style="text-align:center">${u.qty}</td><td style="text-align:center">${u.beds}bd / ${u.baths}ba</td><td style="text-align:right">${u.intSqm}</td><td style="text-align:right">${fmtC(u.priceSqm)}</td><td>${fmtD(u.sellValue*u.qty)}</td><td>${u.weeklyRent?'$'+u.weeklyRent.toLocaleString()+'/wk':'—'}</td></tr>`).join('')}</tbody>
+    <tfoot><tr class="im-tr"><td colspan="3">TOTAL / GRV</td><td style="text-align:right">${d.units.reduce((s,u)=>s+u.nsa*u.qty,0).toFixed(1)}</td><td></td><td>${fmtD(d.grv)}</td><td>${d.totalWkRent?'$'+d.totalWkRent.toLocaleString()+'/wk':'—'}</td></tr></tfoot>
+  </table>`:'<p class="im-body">Unit mix data not provided — please complete Section 7 of the FEASO questionnaire.</p>'}
+  <div class="im-footer"><span>Confidential — Investment Memorandum</span><span>${d.name||'Development Project'} · ${d.state||'—'}</span></div>
+</div>
+
+<!-- PAGE 7: REVENUE PROFILE -->
+<div class="im-page">
+  <div class="im-sec-label">Revenue Profile</div>
+  <div class="im-h2">Projected Sales Revenue</div>
+  <p class="im-body" style="margin-bottom:24px">The pricing strategy creates a natural value escalation — with each residence commanding a measurable premium driven by configuration, aspect, and level. ${d.units.length?'The '+d.units[d.units.length-1].type+' at '+fmtC(d.units[d.units.length-1].sellValue)+' anchors prestige positioning across the project':''}</p>
+  <div class="im-hbar" style="margin-bottom:28px">
+    ${d.units.length?d.units.slice().reverse().map(u=>`
+    <div class="im-hbar-row">
+      <div class="im-hbar-lbl">${u.type}</div>
+      <div class="im-hbar-track"><div class="im-hbar-fill" style="width:${Math.min(100,(u.sellValue*u.qty/maxUnitVal*100)).toFixed(1)}%"><span class="im-hbar-v">${fmtC(u.sellValue*u.qty)}</span></div></div>
+    </div>`).join(''):'<p class="im-body">Unit mix not provided.</p>'}
+  </div>
+  <div class="im-g3">
+    <div class="im-stat-box"><span class="im-biglabel">${fmtD(d.grv)}</span><p class="im-body">Gross Realisation Value across all ${d.dwellings||'—'} residences</p></div>
+    <div class="im-stat-box"><span class="im-biglabel">${fmtD(d.nrv)}</span><p class="im-body">Net Revenue after selling costs and adjustments</p></div>
+    <div class="im-stat-box"><span class="im-biglabel">${d.units.length&&d.units.reduce((s,u)=>s+u.nsa*u.qty,0)>0?fmtC(d.grv/d.units.reduce((s,u)=>s+u.nsa*u.qty,0)):'-'}/m²</span><p class="im-body">Average NSA sales rate across the full product ladder</p></div>
+  </div>
+  <div class="im-footer"><span>Confidential — Investment Memorandum</span><span>${d.name||'Development Project'} · ${d.state||'—'}</span></div>
+</div>
+
+<!-- PAGE 8: FUNDING STRUCTURE -->
+<div class="im-page">
+  <div class="im-sec-label">Funding Structure</div>
+  <div class="im-h2">Proposed Funding Structure</div>
+  <p class="im-body" style="margin-bottom:24px;max-width:860px">This structure has been modelled for a private credit construction debt facility consistent with conservative funding parameters. The capital stack reflects a conservative leverage position, with equity contribution at ${Math.round((d.eqPct||.35)*100)}% providing meaningful downside buffer.</p>
+  <div class="im-g2">
+    <div>
+      <div style="margin-bottom:8px;font-size:.75rem;color:#a09080;font-family:system-ui,sans-serif">Capital Stack — Equity ${Math.round((d.eqPct||.35)*100)}% / Debt ${Math.round((d.lvrPct||.65)*100)}%</div>
+      <div style="height:200px;width:200px;position:relative;margin:0 auto 16px">
+        <svg viewBox="0 0 100 100" style="width:100%;height:100%;transform:rotate(-90deg)">
+          <circle cx="50" cy="50" r="35" fill="none" stroke="#3a2a1a" stroke-width="30"/>
+          <circle cx="50" cy="50" r="35" fill="none" stroke="#c97b4b" stroke-width="30" stroke-dasharray="${(d.eqPct||.35)*220} 220" stroke-dashoffset="0"/>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+          <span style="font-size:1.3rem;color:#d4b483;font-family:Georgia">${Math.round((d.eqPct||.35)*100)}%</span>
+          <span style="font-size:.68rem;color:#a09080;font-family:system-ui">Equity</span>
+        </div>
+      </div>
+      <div class="im-g2" style="gap:8px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:.75rem;color:#a09080;font-family:system-ui"><span style="width:12px;height:12px;background:#c97b4b;display:inline-block;flex-shrink:0"></span>Equity (${Math.round((d.eqPct||.35)*100)}%)</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.75rem;color:#a09080;font-family:system-ui"><span style="width:12px;height:12px;background:#3a2a1a;display:inline-block;flex-shrink:0"></span>Senior Debt (${Math.round((d.lvrPct||.65)*100)}%)</div>
+      </div>
+    </div>
+    <div class="im-card-copper">
+      <p class="im-h3" style="color:#e8d5c0;margin-bottom:14px">Funding Parameters</p>
+      <table class="im-tbl" style="color:#e8c8a8">
+        <tr><td style="color:#c8a888;border-color:rgba(255,255,255,.1)">Total Development Cost</td><td style="color:#fff;border-color:rgba(255,255,255,.1)">${fmtD(d.tdc)}</td></tr>
+        <tr><td style="color:#c8a888;border-color:rgba(255,255,255,.1)">Equity Contribution</td><td style="color:#fff;border-color:rgba(255,255,255,.1)">${fmtD(d.equity)}</td></tr>
+        <tr><td style="color:#c8a888;border-color:rgba(255,255,255,.1)">Debt (pre-cap interest)</td><td style="color:#fff;border-color:rgba(255,255,255,.1)">${fmtD(d.debt)}</td></tr>
+        <tr><td style="color:#c8a888;border-color:rgba(255,255,255,.1)">Debt Ratio (LTC)</td><td style="color:#fff;border-color:rgba(255,255,255,.1)">${Math.round((d.lvrPct||.65)*100)}%</td></tr>
+        <tr><td style="color:#c8a888;border-color:rgba(255,255,255,.1)">Interest Rate (p.a.)</td><td style="color:#fff;border-color:rgba(255,255,255,.1)">${d.rate}%</td></tr>
+        <tr><td style="color:#c8a888;border-color:rgba(255,255,255,.1)">Establishment & Line Fees</td><td style="color:#fff;border-color:rgba(255,255,255,.1)">${d.estab}%</td></tr>
+        <tr><td style="color:#c8a888;border-color:rgba(255,255,255,.1)">Debt (post-capitalised interest)</td><td style="color:#fff;border-color:rgba(255,255,255,.1)">~${fmtD(d.debtPostInt)}</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="im-footer"><span>Confidential — Investment Memorandum</span><span>${d.name||'Development Project'} · ${d.state||'—'}</span></div>
+</div>
+
+<!-- PAGE 9: COST SUMMARY -->
+<div class="im-page">
+  <div class="im-sec-label">Cost Summary</div>
+  <div class="im-h2">Development Cost Breakdown</div>
+  <p class="im-body" style="margin-bottom:24px">The total development cost of ${fmtD(d.tdc)} reflects a well-managed all-in cost stack — covering land, construction, professional fees, finance, and all statutory obligations.</p>
+  <div class="im-g2">
+    <div class="im-hbar">
+      ${costItems.map(c=>`<div class="im-hbar-row"><div class="im-hbar-lbl">${c.label}</div><div class="im-hbar-track"><div class="im-hbar-fill" style="width:${Math.min(100,(c.val/maxCostVal*100)).toFixed(1)}%"><span class="im-hbar-v">${fmtC(c.val)}</span></div></div></div>`).join('')}
+    </div>
+    <div class="im-card-copper">
+      <p class="im-h3" style="color:#e8d5c0;margin-bottom:14px">Cost Breakdown</p>
+      <table class="im-tbl">
+        ${costItems.map(c=>`<tr><td style="color:#c8a888;border-color:rgba(255,255,255,.1)">${c.label}</td><td style="color:#fff;border-color:rgba(255,255,255,.1)">${fmtD(c.val)}</td></tr>`).join('')}
+        <tr class="im-tr"><td>Total Development Cost</td><td>${fmtD(d.tdc)}</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="im-footer"><span>Confidential — Investment Memorandum</span><span>${d.name||'Development Project'} · ${d.state||'—'}</span></div>
+</div>
+
+<!-- PAGE 10: PROGRAMME -->
+<div class="im-page">
+  <div class="im-sec-label">Programme</div>
+  <div class="im-h2">Estimated Delivery Programme</div>
+  <p class="im-body" style="margin-bottom:24px">The ${d.totalMonths||'—'}-month programme reflects a structured and well-sequenced delivery pathway from feasibility through to handover and settlement.</p>
+  <div class="im-tl">
+    <div class="im-tl-item"><div class="im-tl-icon">📋</div><div><p class="im-h3">Feasibility</p><p class="im-body"><strong style="color:#d4b483">${d.t1} Month${d.t1!==1?'s':''}</strong> — Feasibility finalisation, funding engagement, and due diligence</p></div></div>
+    <div class="im-tl-item"><div class="im-tl-icon">📐</div><div><p class="im-h3">Design</p><p class="im-body"><strong style="color:#d4b483">${d.t2} Months</strong> — Design development, documentation, and DA amendment if required</p></div></div>
+    <div class="im-tl-item"><div class="im-tl-icon">📝</div><div><p class="im-h3">Tender</p><p class="im-body"><strong style="color:#d4b483">${d.t3} Months</strong> — Builder selection, contract negotiation, and financial close</p></div></div>
+    <div class="im-tl-item"><div class="im-tl-icon">🏗</div><div><p class="im-h3">Construction</p><p class="im-body"><strong style="color:#d4b483">${d.t4} Months</strong> — Fixed-price, lump-sum construction program</p></div></div>
+    <div class="im-tl-item"><div class="im-tl-icon">🔑</div><div><p class="im-h3">Handover</p><p class="im-body"><strong style="color:#d4b483">${d.t5} Months</strong> — Practical completion, settlements, and profit distribution</p></div></div>
+  </div>
+  <div class="im-g4" style="margin-top:28px;text-align:center">
+    <div><span class="im-bignum">${d.totalMonths||'—'}mo</span><span class="im-biglabel">Total Programme</span><span class="im-bigsub">Acquisition to completion</span></div>
+    <div><span class="im-bignum">${d.t4||'—'}mo</span><span class="im-biglabel">Construction</span><span class="im-bigsub">Fixed-price build phase</span></div>
+    <div><span class="im-bignum">${(d.t1||0)+(d.t2||0)+(d.t3||0)}mo</span><span class="im-biglabel">Pre-Construction</span><span class="im-bigsub">Feasibility, design and tender</span></div>
+    <div><span class="im-bignum">${d.t5||'—'}mo</span><span class="im-biglabel">Handover</span><span class="im-bigsub">Completion and distribution</span></div>
+  </div>
+  <div class="im-footer"><span>Confidential — Investment Memorandum</span><span>${d.name||'Development Project'} · ${d.state||'—'}</span></div>
+</div>
+
+<!-- PAGE 11: RETURNS OVERVIEW -->
+<div class="im-page">
+  <div class="im-sec-label">Returns Overview</div>
+  <div class="im-h2">Return Metrics</div>
+  <p class="im-body" style="margin-bottom:28px;max-width:860px">Despite a conservative leverage profile, the project's return metrics remain compelling — underpinned by disciplined cost management and strong end values. Returns are stress-tested and supportable across a range of market conditions.</p>
+  <div class="im-g4" style="margin-bottom:32px;text-align:center">
+    <div><span class="im-bignum">${fmtC(d.gdp)}</span><span class="im-biglabel">Gross Development Profit</span><span class="im-bigsub">Strong absolute return</span></div>
+    <div><span class="im-bignum">~${d.gpm.toFixed(1)}%</span><span class="im-biglabel">Gross Profit Margin</span><span class="im-bigsub">Net revenue less TDC</span></div>
+    <div><span class="im-bignum">${fmtC(d.gdp-d.incomeTax)}</span><span class="im-biglabel">Net Profit (post-tax est.)</span><span class="im-bigsub">After income tax consideration</span></div>
+    <div><span class="im-bignum">${roic.toFixed(0)}%</span><span class="im-biglabel">Return on Invested Capital</span><span class="im-bigsub">ROIC on ${fmtC(d.equity)} equity commitment</span></div>
+  </div>
+  <div class="im-g2">
+    <div class="im-hbar">
+      ${[{l:'Gross Realisation Value',v:d.grv},{l:'Net Revenue',v:d.nrv},{l:'Total Development Cost',v:d.tdc},{l:'Gross Development Profit',v:d.gdp}].map(item=>`<div class="im-hbar-row"><div class="im-hbar-lbl">${item.l}</div><div class="im-hbar-track"><div class="im-hbar-fill" style="width:${Math.min(100,(item.v/d.grv*100)).toFixed(1)}%"><span class="im-hbar-v">${fmtC(item.v)}</span></div></div></div>`).join('')}
+    </div>
+    <div>
+      <table class="im-tbl">
+        <tr><td>Total Development Cost</td><td>${fmtD(d.tdc)}</td></tr>
+        <tr><td>Gross Realisation Value (GRV)</td><td>${fmtD(d.grv)}</td></tr>
+        <tr><td>Net Revenue (NRV)</td><td>${fmtD(d.nrv)}</td></tr>
+        <tr class="im-tr"><td>Gross Development Profit</td><td>${fmtD(d.gdp)}</td></tr>
+        <tr><td>Gross Profit Margin</td><td>${d.gpm.toFixed(1)}%</td></tr>
+        <tr><td>Return on Invested Capital</td><td>${roic.toFixed(0)}%</td></tr>
+        <tr><td>Income Tax (${d.taxrate}%)</td><td>${fmtD(d.incomeTax)}</td></tr>
+        <tr><td>Net Profit (post-tax est.)</td><td>${fmtD(d.gdp-d.incomeTax)}</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="im-footer"><span>Confidential — Investment Memorandum</span><span>${d.name||'Development Project'} · ${d.state||'—'}</span></div>
+</div>
+
+<!-- PAGE 12: SENSITIVITY ANALYSIS -->
+<div class="im-page">
+  <div class="im-sec-label">Sensitivity Analysis</div>
+  <div class="im-h2">Sensitivity & Downside Testing</div>
+  <p class="im-body" style="margin-bottom:24px">Revenue softening and cost escalation scenarios have been modelled across a range of assumptions. The base case remains profitable under moderate downside scenarios. Green zones represent profitable outcomes.</p>
+  <div style="overflow-x:auto;margin-bottom:24px">
+    <div class="im-heat" style="grid-template-columns:120px repeat(5,1fr)">
+      <div class="im-heat-h"></div>
+      ${['Rev +5%','Rev Base','Rev -5%','Rev -10%','Rev -15%'].map(h=>`<div class="im-heat-h">${h}</div>`).join('')}
+      ${sensGrid.map((row,ri)=>`
+        <div class="im-heat-lbl">Cost +${ri*5}%</div>
+        ${row.map(val=>{
+          const pct=d.grv>0?val/d.grv*100:0;
+          const bg=val>3000000?'#8b5e2a':val>1000000?'#a0723a':val>0?'#c8956a':'#5a2a1a';
+          return `<div class="im-heat-cell" style="background:${bg}">${fmtC(val)}</div>`;
+        }).join('')}
+      `).join('')}
+    </div>
+  </div>
+  <div class="im-g3">
+    <div class="im-card"><p class="im-h3">Revenue Resilience</p><p class="im-body">Project remains profitable at revenue softening up to ${d.gpm>15?'10-15%':'moderate levels'} against flat costs — providing meaningful protection against market timing risk.</p></div>
+    <div class="im-card"><p class="im-h3">Cost Escalation Buffer</p><p class="im-body">${n(d.conting)||10}% contingency line specifically allocated. Disciplined cost management and fixed-price construction contract protect against material and labour cost movements.</p></div>
+    <div class="im-card"><p class="im-h3">Conservative Base Case</p><p class="im-body">Base case assumptions are grounded in current market evidence — not aspirational projections. The model has been stress-tested across multiple scenarios.</p></div>
+  </div>
+  <div class="im-footer"><span>Confidential — Investment Memorandum</span><span>${d.name||'Development Project'} · ${d.state||'—'}</span></div>
+</div>
+
+<!-- PAGE 13: COMPARABLE SALES (only if comps provided) -->
+${comps.length?`
+<div class="im-page">
+  <div class="im-sec-label">Comparable Sales & Pricing Matrix</div>
+  <div class="im-h2">Indicative Apartment Pricing</div>
+  <p class="im-body" style="margin-bottom:24px">Pricing is anchored in a demonstrable body of recent comparable evidence drawn from sales and active listings in the market corridor.</p>
+  <div class="im-g2" style="margin-bottom:20px">
+    <div>
+      <p class="im-h3">Recent Comparable Sales</p>
+      <table class="im-tbl" style="margin-top:10px">
+        <thead><tr><th>Transaction</th><th>Price</th></tr></thead>
+        <tbody>${comps.map(c=>`<tr><td>${c.desc}</td><td>${c.price}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>
+    ${d.units.length?`<div class="im-card-copper"><p class="im-h3" style="color:#e8d5c0;margin-bottom:14px">Our Pricing Position</p>${d.units.map(u=>`<div style="display:flex;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.1);padding:8px 0;font-family:system-ui,sans-serif;font-size:.8rem"><span style="color:#c8a888">${u.type}</span><span style="color:#fff;font-weight:600">${fmtC(u.sellValue)}</span></div>`).join('')}<p class="im-body" style="margin-top:12px;color:#c8a888">Positioned within the premium segment, with clear headroom to the top of market.</p></div>`:''}
+  </div>
+  <div class="im-footer"><span>Confidential — Investment Memorandum</span><span>${d.name||'Development Project'} · ${d.state||'—'}</span></div>
+</div>`:''}
+
+<!-- PAGE 14: RISK & MITIGATION -->
+<div class="im-page">
+  <div class="im-sec-label">Risk & Mitigation</div>
+  <div class="im-h2">Risk Review & Mitigants</div>
+  <p class="im-body" style="margin-bottom:24px">Every development carries inherent risk. The following identifies the principal risk categories and specific mitigation strategies. The overall risk profile is considered appropriate for a development at this price point and equity commitment level.</p>
+  <div class="im-g2">
+    <div>
+      <p class="im-h3" style="color:#c97b4b;margin-bottom:12px">Key Risks</p>
+      ${[
+        {t:'Sales Rate Execution',d:'Achieving target price points in a market subject to sentiment shifts and buyer timing risk.'},
+        {t:'Build Cost Escalation',d:'Material or labour cost increases during the construction programme.'},
+        {t:'Delivery Timing',d:'Programme slippage extending the construction period and increasing capitalised interest costs.'},
+        {t:'Funding Conditions',d:'Pre-sale coverage requirements or conditions imposed by the lending facility.'},
+        {t:'Buyer Absorption Risk',d:'Premium stock absorption may require extended campaign in a softening market.'},
+      ].map(r=>`<div class="im-card" style="margin-bottom:10px;border-color:rgba(201,123,75,.2)"><p class="im-h3">${r.t}</p><p class="im-body">${r.d}</p></div>`).join('')}
+    </div>
+    <div>
+      <p class="im-h3" style="color:#c97b4b;margin-bottom:12px">Mitigants</p>
+      ${[
+        {t:`${d.status||'DA Approved'} Scheme`,d:'Planning risk eliminated at point of funding entry. All conditions assessed and costed into the budget.'},
+        {t:'Boutique Scale',d:`Only ${d.dwellings||'—'} residences — boutique scale limits stock exposure and absorbed stock risk.`},
+        {t:'Premium Differentiated Product',d:'Premium design and large-format configurations are fundamentally differentiated from generic investor stock.'},
+        {t:'Sensitivity-Tested Feasibility',d:`Modelled across revenue and cost scenarios. Base case remains profitable across moderate downside conditions. ${d.gpm.toFixed(1)}% gross margin provides buffer.`},
+        {t:`${n(d.conting)||10}% Contingency & Fixed-Price Contract`,d:`${n(d.conting)||10}% contingency line allocated. Fixed-price lump-sum contract protects against material and labour cost movements.`},
+      ].map(r=>`<div class="im-card" style="margin-bottom:10px;border-color:rgba(255,255,255,.1)"><p class="im-h3">${r.t}</p><p class="im-body">${r.d}</p></div>`).join('')}
+    </div>
+  </div>
+  <div class="im-footer"><span>Confidential — Investment Memorandum</span><span>${d.name||'Development Project'} · ${d.state||'—'}</span></div>
+</div>
+
+<!-- PAGE 15: FUNDING REQUEST -->
+<div class="im-page">
+  <div class="im-sec-label">Funding Request</div>
+  <div class="im-h2">Funding Request</div>
+  <p class="im-body" style="margin-bottom:28px;max-width:860px">${d.name||'This development'} is seeking senior development funding support for acquisition and delivery — structured as a private credit construction debt facility. The equity position is confirmed and the project is finance-ready for lender engagement.</p>
+  <div class="im-g4" style="margin-bottom:28px;text-align:center">
+    <div><span class="im-bignum">${fmtC(d.debt)}</span><span class="im-biglabel">Debt Facility Requested</span><span class="im-bigsub">Senior construction debt, pre-capitalised interest</span></div>
+    <div><span class="im-bignum">${Math.round((d.lvrPct||.65)*100)}%</span><span class="im-biglabel">LTC / LVR Framework</span><span class="im-bigsub">Conservative private credit parameters</span></div>
+    <div><span class="im-bignum">${d.rate}%</span><span class="im-biglabel">Interest Rate Assumed</span><span class="im-bigsub">Capitalised interest p.a.</span></div>
+    <div><span class="im-bignum">${fmtC(d.equity)}</span><span class="im-biglabel">Equity Confirmed</span><span class="im-bigsub">${Math.round((d.eqPct||.35)*100)}% equity contribution</span></div>
+  </div>
+  <div class="im-g2">
+    <table class="im-tbl">
+      <tr><td>Land Acquisition</td><td>${fmtD(d.land)}</td></tr>
+      <tr><td>Total Development Cost</td><td>${fmtD(d.tdc)}</td></tr>
+      <tr><td>Requested Debt (pre-cap interest)</td><td>${fmtD(d.debt)}</td></tr>
+      <tr><td>Debt Structure</td><td>${Math.round((d.lvrPct||.65)*100)}% LTC / LVR</td></tr>
+      <tr><td>Interest Rate</td><td>${d.rate}% p.a. (capitalised)</td></tr>
+      <tr><td>Establishment & Line Fees</td><td>${d.estab}%</td></tr>
+      <tr><td>Equity Contribution</td><td>${fmtD(d.equity)} (${Math.round((d.eqPct||.35)*100)}%)</td></tr>
+      <tr><td>Gross Realisation Value</td><td>${fmtD(d.grv)}</td></tr>
+      <tr><td>Security Headroom (GRV vs. Debt)</td><td>~${fmtC(bufferToGRV)}</td></tr>
+      <tr class="im-tr"><td>Programme Duration</td><td>${d.totalMonths||'—'} months</td></tr>
+    </table>
+    <div class="im-card-copper">
+      <p class="im-h3" style="color:#e8d5c0;margin-bottom:12px">Opportunity Summary</p>
+      <p class="im-body" style="color:#c8a888;margin-bottom:14px">Seeking an experienced private credit partner for a senior construction debt facility aligned to established lending parameters.</p>
+      <ul class="im-bullet-list">
+        ${bullets.map(b=>`<li style="color:#e8d5c0">${b}</li>`).join('')}
+      </ul>
+    </div>
+  </div>
+  <div class="im-footer"><span>Confidential — Investment Memorandum</span><span>${d.name||'Development Project'} · ${d.state||'—'}</span></div>
+</div>
+
+<!-- PAGE 16: BACK COVER -->
+<div class="im-page" style="padding:0">
+  <div class="im-cover">
+    <div class="im-cover-left">
+      <div>
+        <div class="im-badge">CONFIDENTIAL INVESTMENT MEMORANDUM · PREPARED FOR ${funder.toUpperCase()}</div>
+        <div class="im-h1" style="margin-top:20px">${d.name||d.address||'Development Project'}</div>
+        <p class="im-h3" style="margin-bottom:12px">${tagline}</p>
+        <p class="im-body" style="max-width:480px;margin-bottom:28px">${closing}</p>
+        <p class="im-body" style="color:#5a4a3a;font-size:.8rem;max-width:480px">This is a carefully structured, finance-ready development opportunity for a private credit partner who values quality, security, and credible return metrics.</p>
+        <div class="im-div"></div>
+        <div class="im-g2" style="margin-top:20px">
+          <div class="im-card" style="border-color:rgba(255,255,255,.1)">
+            <p class="im-h3" style="font-size:.82rem">${contactName||'Development Director'}</p>
+            ${contactPhone?`<p class="im-body" style="font-size:.78rem">📞 ${contactPhone}</p>`:''}
+            ${contactEmail?`<p class="im-body" style="font-size:.78rem">✉ ${contactEmail}</p>`:''}
+          </div>
+          <div class="im-card" style="border-color:rgba(255,255,255,.1)">
+            <p class="im-h3" style="font-size:.82rem">Prepared for ${funder}</p>
+            <p class="im-body" style="font-size:.75rem">This document is a confidential investment memorandum. It does not constitute financial product advice.</p>
+          </div>
+        </div>
+        <div class="im-div"></div>
+        <p style="font-size:.75rem;color:#5a4a3a;font-family:system-ui">${d.status||'DA Approved'} · ${d.dwellings||'—'} Residences · ${d.totalMonths||'—'}-Month Programme · ${d.state||'—'}</p>
+      </div>
+      <div>
+        <p style="font-size:1.2rem;font-weight:600;color:#5a4a3a;font-family:system-ui,sans-serif;letter-spacing:2px;text-transform:uppercase">${company}</p>
+      </div>
+    </div>
+    <div class="im-cover-right" style="background-image:url('${photoUrl}')"></div>
+  </div>
+  <div class="im-footer" style="background:#141210">
+    <span>Confidential — Investment Memorandum</span>
+    <span>${d.name||'Development Project'} · ${d.state||'—'}</span>
+  </div>
+</div>`;
+
+  document.getElementById('im-doc-body').innerHTML=html;
+  showScreen('im');
 }
 </script>
 </body>
