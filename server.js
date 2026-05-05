@@ -115,9 +115,9 @@ function seedDB() {
     listings: DEFAULT_LISTINGS,
     interests: [],
     subscriptions: [
-      // Pre-activate the demo developer so it works out of the box
       { id:'sub-demo-dev', userId:'u-demo-dev', userEmail:'developer@demo.com', userName:'Sam Demo', userRole:'developer', plan:'developer_monthly', paymentRef:'DEMO', status:'active', requestedAt: new Date().toISOString(), activatedAt: new Date().toISOString() }
-    ]
+    ],
+    imReviews: []
   };
   if (!fs.existsSync(path.dirname(DB_FILE))) {
     fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
@@ -394,6 +394,108 @@ app.post('/api/admin/subscriptions/:id/cancel', requireAuth, requireAdmin, (req,
   const sub = db.subscriptions.find(s => s.id === req.params.id);
   if (!sub) return res.status(404).json({ error: 'Subscription not found.' });
   sub.status = 'cancelled';
+  writeDB(db);
+  res.json({ ok: true });
+});
+
+// ── IM Review & Amendment Workflow ────────────────
+app.post('/api/listings/:id/im-review', requireAuth, requireDev, (req, res) => {
+  const db = readDB();
+  const listing = db.listings.find(l => l.id === req.params.id);
+  if (!listing) return res.status(404).json({ error: 'Listing not found.' });
+  const user = db.users.find(u => u.id === req.session.userId);
+  if (!db.imReviews) db.imReviews = [];
+
+  const { devResponse } = req.body;
+  const existing = db.imReviews.find(r =>
+    r.listingId === req.params.id && !['approved','withdrawn'].includes(r.status)
+  );
+
+  if (existing) {
+    // Resubmission after amendments
+    if (!existing.history) existing.history = [];
+    existing.history.push({
+      round: existing.round, status: existing.status,
+      at: new Date().toISOString(), amendments: (existing.amendments||[]).length
+    });
+    existing.status = 'submitted';
+    existing.round = (existing.round || 1) + 1;
+    existing.devResponse = devResponse || '';
+    existing.resubmittedAt = new Date().toISOString();
+    existing.amendments = [];
+    existing.adminNotes = '';
+    writeDB(db);
+    return res.json({ ok: true, review: existing, isResubmission: true });
+  }
+
+  const review = {
+    id: 'imr-' + Date.now(),
+    listingId: req.params.id,
+    listingName: listing.name || 'Unnamed Listing',
+    devId: req.session.userId,
+    devEmail: user.email,
+    devName: (user.fname + ' ' + (user.lname || '')).trim(),
+    status: 'submitted',
+    round: 1,
+    submittedAt: new Date().toISOString(),
+    resubmittedAt: null,
+    amendments: [],
+    adminNotes: '',
+    devResponse: devResponse || '',
+    approvedAt: null,
+    approvedBy: null,
+    history: []
+  };
+  db.imReviews.push(review);
+  writeDB(db);
+  res.json({ ok: true, review, isResubmission: false });
+});
+
+app.get('/api/listings/:id/im-review', requireAuth, (req, res) => {
+  const db = readDB();
+  const reviews = (db.imReviews || []).filter(r => r.listingId === req.params.id);
+  // Return most recent
+  const review = reviews.sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt))[0] || null;
+  res.json({ review });
+});
+
+app.get('/api/admin/im-reviews', requireAuth, requireAdmin, (req, res) => {
+  const db = readDB();
+  const reviews = (db.imReviews || []).slice().reverse();
+  res.json({ reviews });
+});
+
+app.post('/api/admin/im-reviews/:id/approve', requireAuth, requireAdmin, (req, res) => {
+  const db = readDB();
+  if (!db.imReviews) return res.status(404).json({ error: 'Not found.' });
+  const review = db.imReviews.find(r => r.id === req.params.id);
+  if (!review) return res.status(404).json({ error: 'Review not found.' });
+  const adminUser = db.users.find(u => u.id === req.session.userId);
+  if (!review.history) review.history = [];
+  review.history.push({ round: review.round, status: 'approved', at: new Date().toISOString() });
+  review.status = 'approved';
+  review.approvedAt = new Date().toISOString();
+  review.approvedBy = (adminUser.fname + ' ' + (adminUser.lname || '')).trim();
+  review.adminNotes = req.body.notes || '';
+  review.amendments = [];
+  writeDB(db);
+  res.json({ ok: true });
+});
+
+app.post('/api/admin/im-reviews/:id/request-amendments', requireAuth, requireAdmin, (req, res) => {
+  const db = readDB();
+  if (!db.imReviews) return res.status(404).json({ error: 'Not found.' });
+  const review = db.imReviews.find(r => r.id === req.params.id);
+  if (!review) return res.status(404).json({ error: 'Review not found.' });
+  if (!review.history) review.history = [];
+  review.history.push({
+    round: review.round, status: 'amendments_requested',
+    at: new Date().toISOString(), amendmentCount: (req.body.amendments||[]).length
+  });
+  review.status = 'amendments_requested';
+  review.amendments = req.body.amendments || [];
+  review.adminNotes = req.body.adminNotes || '';
+  review.reviewedAt = new Date().toISOString();
   writeDB(db);
   res.json({ ok: true });
 });

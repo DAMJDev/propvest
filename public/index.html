@@ -418,6 +418,40 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
 .upgrade-gate h3{font-size:1.2rem;font-weight:800;color:var(--navy);margin-bottom:8px}
 .upgrade-gate p{color:var(--muted);font-size:.9rem;margin-bottom:20px;line-height:1.6}
 @media(max-width:640px){.pricing-grid{grid-template-columns:1fr}}
+/* ── IM Review Workflow ───────────────────────────── */
+.review-bar{display:flex;gap:12px;padding:14px 24px;background:#1a1a18;align-items:center;flex-wrap:wrap;border-top:1px solid rgba(255,255,255,.08)}
+.review-status-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:.78rem;font-weight:700;font-family:system-ui,sans-serif}
+.rsp-none{background:rgba(255,255,255,.07);color:#a09080}
+.rsp-submitted{background:rgba(201,123,75,.2);color:#c97b4b}
+.rsp-amend{background:rgba(231,76,60,.2);color:#e74c3c}
+.rsp-approved{background:rgba(39,174,96,.2);color:#27ae60}
+.im-submit-btn{background:#c97b4b;color:#fff;border:none;padding:10px 20px;border-radius:7px;cursor:pointer;font-family:inherit;font-size:.88rem;font-weight:700;transition:background .2s}
+.im-submit-btn:hover{background:#b8693a}
+/* IM Review screen */
+.review-page{max-width:860px;margin:0 auto;padding:36px 24px}
+.review-timeline{display:flex;flex-direction:column;gap:0}
+.rtl-item{display:flex;gap:16px;padding:20px 0;border-bottom:1px solid var(--border)}
+.rtl-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;margin-top:2px}
+.rtl-submitted{background:#fff8e1;color:#e65100}
+.rtl-amend{background:#ffebee;color:var(--red)}
+.rtl-approved{background:#e8f5e9;color:var(--green)}
+.rtl-resubmit{background:#e3f2fd;color:#1565c0}
+.amendment-card{background:#fff8f5;border:1.5px solid #f0d0c0;border-radius:12px;padding:18px 20px;margin-bottom:12px}
+.amendment-card h4{font-size:.88rem;font-weight:700;color:var(--navy);margin-bottom:4px}
+.amendment-section-tag{display:inline-block;background:var(--navy);color:var(--white);font-size:.68rem;font-weight:700;padding:3px 8px;border-radius:4px;margin-bottom:8px;letter-spacing:.3px}
+.amendment-priority{display:inline-block;font-size:.7rem;font-weight:700;padding:2px 8px;border-radius:10px;margin-left:6px}
+.pri-high{background:#ffebee;color:var(--red)}
+.pri-med{background:#fff8e1;color:#e65100}
+.pri-low{background:#e8f5e9;color:var(--green)}
+.amendment-done{opacity:.45;text-decoration:line-through}
+.approve-certificate{background:linear-gradient(135deg,#1a2d42,#0d1b2a);border:2px solid var(--gold);border-radius:16px;padding:36px;text-align:center;color:var(--white)}
+/* Admin amendment builder */
+.amend-builder{display:flex;flex-direction:column;gap:12px;margin-top:12px}
+.amend-row{display:grid;grid-template-columns:160px 1fr 1fr 80px 36px;gap:8px;align-items:start}
+.amend-select{padding:9px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:.82rem;background:var(--white)}
+.amend-input{padding:9px 10px;border:1.5px solid var(--border);border-radius:7px;font-family:inherit;font-size:.82rem;width:100%}
+.amend-del-btn{background:var(--red);color:#fff;border:none;border-radius:7px;width:36px;height:36px;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center}
+@media(max-width:640px){.amend-row{grid-template-columns:1fr 1fr;gap:6px}.amend-row>*:nth-child(5){grid-column:span 2}}
 </style>
 </head>
 <body>
@@ -1066,7 +1100,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
         <h2 style="font-size:1.6rem;font-weight:800;color:var(--navy)">🔐 Admin Panel</h2>
         <p style="color:var(--muted);margin-top:4px">Manage subscriptions and platform activity</p>
       </div>
-      <button class="btn-secondary" onclick="loadAdminSubs()" style="padding:10px 20px;font-size:.9rem">🔄 Refresh</button>
+      <button class="btn-secondary" onclick="loadAdminSubs();loadAdminIMReviews()" style="padding:10px 20px;font-size:.9rem">🔄 Refresh</button>
     </div>
     <!-- Stats -->
     <div class="card" style="margin-bottom:24px">
@@ -1074,9 +1108,36 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
       <div class="admin-stat-grid" id="admin-stat-grid"><p style="color:var(--muted);font-size:.9rem">Loading…</p></div>
     </div>
     <!-- Subscriptions -->
-    <div class="card">
+    <div class="card" style="margin-bottom:24px">
       <div class="card-title"><span>💳</span> Subscription Requests</div>
       <div id="admin-subs-list" style="margin-top:8px"><p style="color:var(--muted);font-size:.9rem">Loading…</p></div>
+    </div>
+    <!-- IM Reviews -->
+    <div class="card">
+      <div class="card-title"><span>📋</span> Information Memorandum Review Queue</div>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px">Review submitted IMs, request amendments, and issue sign-off certificates.</p>
+      <div id="admin-im-reviews-list" style="margin-top:8px"><p style="color:var(--muted);font-size:.9rem">Loading…</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN: AMENDMENT REQUEST MODAL -->
+<div class="sub-overlay hidden" id="amendModal">
+  <div class="sub-box" style="max-width:780px;width:100%">
+    <h3 style="font-size:1.2rem;font-weight:800;color:var(--navy);margin-bottom:4px">✏️ Request Amendments</h3>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:20px" id="amend-modal-subtitle">Add specific amendment requests below. Be clear and actionable.</p>
+    <input type="hidden" id="amend-review-id">
+    <!-- Amendment rows -->
+    <div class="amend-builder" id="amend-rows"></div>
+    <button onclick="addAmendRow()" style="background:none;border:1.5px dashed var(--border);color:var(--muted);padding:10px 16px;border-radius:8px;width:100%;cursor:pointer;font-family:inherit;font-size:.88rem;margin-top:4px">+ Add Amendment Request</button>
+    <!-- General notes -->
+    <div class="field" style="margin-top:16px;margin-bottom:20px">
+      <label style="font-size:.85rem;font-weight:600;color:var(--navy);display:block;margin-bottom:6px">General Notes to Developer</label>
+      <textarea id="amend-general-notes" rows="2" placeholder="e.g. Overall the structure is strong — a few refinements will make this investor-ready." style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.88rem;resize:vertical"></textarea>
+    </div>
+    <div style="display:flex;gap:12px">
+      <button style="flex:1;padding:13px;border-radius:10px;border:1.5px solid var(--border);background:none;font-family:inherit;font-weight:600;cursor:pointer;color:var(--muted)" onclick="document.getElementById('amendModal').classList.add('hidden')">Cancel</button>
+      <button style="flex:2;padding:13px;border-radius:10px;background:var(--red);border:none;font-family:inherit;font-weight:700;font-size:.95rem;color:var(--white);cursor:pointer" onclick="sendAmendments()">Send Amendment Requests →</button>
     </div>
   </div>
 </div>
@@ -1109,12 +1170,93 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
 
 <!-- IM REPORT SCREEN -->
 <div class="screen" id="screen-im">
-  <div class="print-actions" style="display:flex;gap:12px;padding:16px 24px;background:var(--navy);align-items:center">
+  <div class="print-actions" style="display:flex;gap:12px;padding:16px 24px;background:var(--navy);align-items:center;flex-wrap:wrap">
     <button onclick="showScreen('feaso')" style="background:rgba(255,255,255,.1);color:#fff;border:none;padding:10px 20px;border-radius:6px;cursor:pointer;font-family:inherit;font-size:.88rem">← Back to Edit</button>
     <div style="flex:1;color:#a8bcd4;font-size:.85rem">Information Memorandum — Print / Save as PDF</div>
     <button onclick="window.print()" class="print-btn" style="background:#c97b4b">🖨 Print / Save PDF</button>
   </div>
+  <!-- Review Status Bar -->
+  <div class="review-bar" id="im-review-bar">
+    <div id="im-review-pill"><span class="review-status-pill rsp-none">📋 Not yet submitted for review</span></div>
+    <div style="flex:1"></div>
+    <button class="im-submit-btn" id="im-review-submit-btn" onclick="openIMReviewSubmit()">📋 Submit for PropVest Quality Review</button>
+    <button id="im-review-amend-btn" class="hidden" onclick="showIMReviewScreen()" style="background:rgba(231,76,60,.9);color:#fff;border:none;padding:10px 18px;border-radius:7px;cursor:pointer;font-family:inherit;font-size:.88rem;font-weight:700">⚠️ View Amendment Requests</button>
+    <button id="im-review-cert-btn" class="hidden" onclick="showIMReviewScreen()" style="background:rgba(39,174,96,.9);color:#fff;border:none;padding:10px 18px;border-radius:7px;cursor:pointer;font-family:inherit;font-size:.88rem;font-weight:700">✅ View Sign-Off Certificate</button>
+  </div>
   <div id="im-doc-body" class="im-doc"></div>
+</div>
+
+<!-- IM REVIEW STATUS (Developer view) -->
+<div class="screen" id="screen-im-review">
+  <button class="back-btn" onclick="showScreen('im')">← Back to IM</button>
+  <div class="review-page">
+    <h2 style="font-size:1.5rem;font-weight:800;color:var(--navy);margin-bottom:4px">📋 IM Quality Review</h2>
+    <p style="color:var(--muted);margin-bottom:28px">Track review rounds, respond to amendments, and receive your sign-off certificate.</p>
+
+    <!-- Current status card -->
+    <div class="card" style="margin-bottom:24px" id="im-review-status-card">
+      <div class="card-title"><span>🔄</span> Current Review Status</div>
+      <div id="im-review-status-body" style="margin-top:8px">
+        <p style="color:var(--muted);font-size:.9rem">Loading…</p>
+      </div>
+    </div>
+
+    <!-- Amendment requests -->
+    <div class="card" style="margin-bottom:24px" id="im-amendments-card">
+      <div class="card-title"><span>✏️</span> Amendment Requests</div>
+      <div id="im-amendments-body" style="margin-top:8px">
+        <p style="color:var(--muted);font-size:.9rem">No amendments requested yet.</p>
+      </div>
+    </div>
+
+    <!-- Resubmit section -->
+    <div class="card" id="im-resubmit-card" style="margin-bottom:24px">
+      <div class="card-title"><span>📤</span> Resubmit for Review</div>
+      <p style="font-size:.88rem;color:var(--muted);margin-bottom:16px">Once you've addressed all amendment requests, add any notes below and resubmit.</p>
+      <div class="field" style="margin-bottom:16px">
+        <label style="font-size:.85rem;font-weight:600;color:var(--navy);display:block;margin-bottom:6px">Notes to reviewer (optional)</label>
+        <textarea id="im-dev-response" rows="3" placeholder="e.g. I've updated the executive summary and adjusted the sensitivity grid as requested…" style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.88rem;resize:vertical"></textarea>
+      </div>
+      <button onclick="resubmitIM()" style="background:var(--navy);color:var(--white);border:none;padding:13px 28px;border-radius:10px;font-weight:700;font-size:.95rem;cursor:pointer;font-family:inherit">📤 Resubmit for Review →</button>
+      <p style="font-size:.78rem;color:var(--muted);margin-top:10px">Make sure you've regenerated the IM from the FEASO form with your corrections before resubmitting.</p>
+    </div>
+
+    <!-- Review history timeline -->
+    <div class="card">
+      <div class="card-title"><span>🕐</span> Review History</div>
+      <div class="review-timeline" id="im-review-timeline" style="margin-top:8px">
+        <p style="color:var(--muted);font-size:.9rem">No history yet.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- IM REVIEW SUBMIT MODAL -->
+<div class="sub-overlay hidden" id="imReviewModal">
+  <div class="sub-box">
+    <h3 style="font-size:1.2rem;font-weight:800;color:var(--navy);margin-bottom:6px">📋 Submit IM for Quality Review</h3>
+    <p style="font-size:.88rem;color:var(--muted);margin-bottom:20px">Our team will review your Information Memorandum for quality, accuracy, and professional presentation. We typically respond within 1 business day.</p>
+    <div style="background:var(--off-white);border-radius:10px;padding:16px;margin-bottom:20px">
+      <p style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:8px">We check for:</p>
+      <div style="display:flex;flex-direction:column;gap:6px;font-size:.82rem;color:var(--text)">
+        <div>✓ Cover page completeness — project name, developer, target funder</div>
+        <div>✓ Financial accuracy — figures consistent across all pages</div>
+        <div>✓ Executive summary — clear, professional, compelling</div>
+        <div>✓ Investment highlights — specific, factual, well-worded</div>
+        <div>✓ Sensitivity analysis — grid populated, realistic ranges</div>
+        <div>✓ Developer profile — credible, complete contact details</div>
+        <div>✓ Overall formatting — page balance, no truncated text</div>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:20px">
+      <label style="font-size:.85rem;font-weight:600;color:var(--navy);display:block;margin-bottom:6px">Notes for reviewer (optional)</label>
+      <textarea id="im-submit-notes" rows="2" placeholder="e.g. Please pay attention to the funding structure page — I want to make sure the equity split reads clearly." style="width:100%;padding:12px 14px;border:1.5px solid var(--border);border-radius:8px;font-family:inherit;font-size:.88rem;resize:vertical"></textarea>
+    </div>
+    <div style="display:flex;gap:12px">
+      <button style="flex:1;padding:13px;border-radius:10px;border:1.5px solid var(--border);background:none;font-family:inherit;font-weight:600;cursor:pointer;color:var(--muted)" onclick="document.getElementById('imReviewModal').classList.add('hidden')">Cancel</button>
+      <button style="flex:2;padding:13px;border-radius:10px;background:var(--navy);border:none;font-family:inherit;font-weight:700;font-size:.95rem;color:var(--white);cursor:pointer" onclick="submitIMForReview()">Submit for Review →</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -1139,6 +1281,11 @@ const API={
   approveSub:(id)=>API.post('/api/admin/subscriptions/'+id+'/approve',{}),
   rejectSub:(id)=>API.post('/api/admin/subscriptions/'+id+'/reject',{}),
   cancelSub:(id)=>API.post('/api/admin/subscriptions/'+id+'/cancel',{}),
+  submitIMReview:(listingId,devResponse)=>API.post('/api/listings/'+listingId+'/im-review',{devResponse}),
+  getIMReview:(listingId)=>API.get('/api/listings/'+listingId+'/im-review'),
+  adminIMReviews:()=>API.get('/api/admin/im-reviews'),
+  approveIM:(id,notes)=>API.post('/api/admin/im-reviews/'+id+'/approve',{notes}),
+  requestAmendments:(id,amendments,adminNotes)=>API.post('/api/admin/im-reviews/'+id+'/request-amendments',{amendments,adminNotes}),
 };
 let currentUser=null,currentListingId=null,needsBroker=false,selectedRole='investor',allListings=[],activeFilter='all',userActiveSubs=[];
 
@@ -1191,7 +1338,7 @@ function onLoggedIn(){
 }
 async function doLogout(){await API.logout();currentUser=null;userActiveSubs=[];document.getElementById('navSignIn').classList.remove('hidden');document.getElementById('navUser').classList.add('hidden');document.querySelectorAll('.dev-only').forEach(el=>el.classList.add('hidden'));document.querySelectorAll('.admin-only').forEach(el=>el.classList.add('hidden'));showScreen('landing');openAuth();toast('Signed out.');}
 
-function showScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+name).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});if(name==='portal'&&(currentUser?.role==='developer'||currentUser?.role==='admin'))refreshPortal();if(name==='profile'){refreshMyInterests();refreshSubStatus();}if(name==='admin')loadAdminSubs();}
+function showScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+name).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});if(name==='portal'&&(currentUser?.role==='developer'||currentUser?.role==='admin'))refreshPortal();if(name==='profile'){refreshMyInterests();refreshSubStatus();}if(name==='admin'){loadAdminSubs();loadAdminIMReviews();}if(name==='im-review')loadIMReviewDetail();}
 function goHome(){showScreen('landing');setBN('home');}
 function toggleMobile(){document.getElementById('mobileMenu').classList.toggle('open');}
 function setBN(tab){document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));const el=document.getElementById('bn-'+tab);if(el)el.classList.add('active');}
@@ -1405,6 +1552,228 @@ async function doCancelSub(id){
 }
 
 // ═══════════════════════════════════════════════════
+//  IM REVIEW & AMENDMENT WORKFLOW
+// ═══════════════════════════════════════════════════
+let currentIMReview=null;
+const IM_SECTIONS=['Cover Page','Executive Summary','Investment Highlights','Site & Location','Development Overview','Apartment Mix','Revenue Profile','Funding Structure','Financial Summary','Sensitivity Analysis','Development Programme','Risk Profile','Comparable Sales','Developer Profile','Opportunity Summary','Back Cover'];
+
+function openIMReviewSubmit(){
+  if(!currentFeasoListingId){toast('Open an IM first via the FEASO form.');return;}
+  document.getElementById('im-submit-notes').value='';
+  document.getElementById('imReviewModal').classList.remove('hidden');
+}
+
+async function submitIMForReview(){
+  if(!currentFeasoListingId){toast('No listing selected.');return;}
+  const notes=document.getElementById('im-submit-notes').value.trim();
+  try{
+    const r=await API.submitIMReview(currentFeasoListingId,notes);
+    document.getElementById('imReviewModal').classList.add('hidden');
+    currentIMReview=r.review;
+    updateIMReviewBar(r.review);
+    if(r.isResubmission)toast('✅ IM resubmitted for review! We\'ll get back to you within 1 business day.');
+    else toast('✅ IM submitted for review! We\'ll respond within 1 business day.');
+  }catch(e){toast('Error submitting review request.');}
+}
+
+async function loadIMReview(listingId){
+  if(!listingId)return;
+  try{
+    const r=await API.getIMReview(listingId);
+    currentIMReview=r.review;
+    updateIMReviewBar(r.review);
+  }catch(e){}
+}
+
+function updateIMReviewBar(review){
+  const pill=document.getElementById('im-review-pill');
+  const submitBtn=document.getElementById('im-review-submit-btn');
+  const amendBtn=document.getElementById('im-review-amend-btn');
+  const certBtn=document.getElementById('im-review-cert-btn');
+  if(!pill)return;
+  if(!review){
+    pill.innerHTML='<span class="review-status-pill rsp-none">📋 Not yet submitted for review</span>';
+    if(submitBtn)submitBtn.classList.remove('hidden');
+    if(amendBtn)amendBtn.classList.add('hidden');
+    if(certBtn)certBtn.classList.add('hidden');
+    return;
+  }
+  const statusMap={
+    submitted:'<span class="review-status-pill rsp-submitted">⏳ Under Review — Round '+review.round+'</span>',
+    amendments_requested:'<span class="review-status-pill rsp-amend">⚠️ '+review.amendments.length+' Amendment'+(review.amendments.length!==1?'s':'')+' Requested — Round '+review.round+'</span>',
+    approved:'<span class="review-status-pill rsp-approved">✅ IM Approved — Sign-Off Issued</span>'
+  };
+  pill.innerHTML=statusMap[review.status]||'<span class="review-status-pill rsp-none">Unknown status</span>';
+  if(submitBtn)submitBtn.classList.toggle('hidden',review.status!=='amendments_requested');
+  if(amendBtn)amendBtn.classList.toggle('hidden',review.status!=='amendments_requested');
+  if(certBtn)certBtn.classList.toggle('hidden',review.status!=='approved');
+}
+
+async function showIMReviewScreen(){
+  showScreen('im-review');
+  await loadIMReviewDetail();
+}
+
+async function loadIMReviewDetail(){
+  if(!currentFeasoListingId){
+    document.getElementById('im-review-status-body').innerHTML='<p style="color:var(--muted)">No listing selected. Return to portal and open an IM first.</p>';
+    return;
+  }
+  try{
+    const r=await API.getIMReview(currentFeasoListingId);
+    const review=r.review;
+    currentIMReview=review;
+    updateIMReviewBar(review);
+    const statusBody=document.getElementById('im-review-status-body');
+    const amendBody=document.getElementById('im-amendments-body');
+    const resubCard=document.getElementById('im-resubmit-card');
+    const timeline=document.getElementById('im-review-timeline');
+    if(!review){
+      statusBody.innerHTML='<p style="color:var(--muted)">Not yet submitted. Generate your IM and click <strong>Submit for PropVest Quality Review</strong>.</p>';
+      amendBody.innerHTML='<p style="color:var(--muted);font-size:.9rem">No amendments requested yet.</p>';
+      if(resubCard)resubCard.classList.add('hidden');
+      timeline.innerHTML='<p style="color:var(--muted);font-size:.9rem">No history yet.</p>';
+      return;
+    }
+    // Status card
+    const statusColour={submitted:'#e65100',amendments_requested:'var(--red)',approved:'var(--green)'};
+    const statusLabel={submitted:'⏳ Under Review',amendments_requested:'⚠️ Amendments Requested',approved:'✅ Approved'};
+    statusBody.innerHTML=`
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <div style="background:${statusColour[review.status]||'var(--muted)'};color:#fff;padding:8px 18px;border-radius:20px;font-weight:700;font-size:.88rem">${statusLabel[review.status]||review.status}</div>
+        <div style="font-size:.85rem;color:var(--muted)">Round ${review.round} · Submitted ${new Date(review.submittedAt).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}</div>
+      </div>
+      ${review.adminNotes?`<div style="margin-top:14px;background:var(--off-white);border-radius:10px;padding:14px 16px"><p style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:6px">Notes from PropVest team:</p><p style="font-size:.85rem;color:var(--text);line-height:1.7">${review.adminNotes}</p></div>`:''}
+      ${review.status==='approved'?`<div class="approve-certificate" style="margin-top:20px"><div style="font-size:2rem;margin-bottom:10px">🏆</div><div style="font-size:1.1rem;font-weight:800;color:var(--gold);margin-bottom:8px">PropVest Quality Approval</div><p style="color:#a8bcd4;font-size:.88rem;margin-bottom:12px">This Information Memorandum has been reviewed and approved by ${review.approvedBy||'the PropVest team'} on ${new Date(review.approvedAt).toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'})}.</p><div style="display:inline-block;border:1.5px solid var(--gold);padding:6px 20px;border-radius:6px;font-size:.75rem;color:var(--gold);letter-spacing:1.5px">✓ PROPVEST APPROVED · ${review.id.toUpperCase()}</div></div>`:''}`;
+    // Amendments
+    if(review.amendments&&review.amendments.length){
+      amendBody.innerHTML=`<p style="font-size:.85rem;color:var(--muted);margin-bottom:14px">Address each amendment below, then regenerate your IM and resubmit.</p>`+
+        review.amendments.map((a,i)=>`
+        <div class="amendment-card" id="acard-${i}">
+          <div><span class="amendment-section-tag">${a.section||'General'}</span><span class="amendment-priority pri-${(a.priority||'med').toLowerCase().slice(0,3)}">${a.priority||'Medium'} priority</span></div>
+          <h4>${a.issue||'Amendment required'}</h4>
+          ${a.suggestion?`<p style="font-size:.83rem;color:var(--muted);line-height:1.6;margin-top:4px"><strong>Suggestion:</strong> ${a.suggestion}</p>`:''}
+          <label style="display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer;font-size:.82rem;color:var(--muted)">
+            <input type="checkbox" onchange="this.closest('.amendment-card').classList.toggle('amendment-done',this.checked)" style="accent-color:var(--green);width:16px;height:16px">
+            Mark as addressed
+          </label>
+        </div>`).join('');
+      if(resubCard)resubCard.classList.remove('hidden');
+    } else {
+      amendBody.innerHTML='<p style="color:var(--muted);font-size:.9rem">No amendments requested yet.</p>';
+      if(resubCard)resubCard.classList.toggle('hidden',review.status!=='amendments_requested');
+    }
+    // Timeline
+    const hist=review.history||[];
+    timeline.innerHTML=hist.length===0?'<p style="color:var(--muted);font-size:.9rem">No prior rounds.</p>':hist.slice().reverse().map(h=>{
+      const icons={submitted:'📤',resubmitted:'🔄',amendments_requested:'⚠️',approved:'✅'};
+      const classes={submitted:'rtl-submitted',resubmitted:'rtl-resubmit',amendments_requested:'rtl-amend',approved:'rtl-approved'};
+      const labels={submitted:'Submitted for review',resubmitted:'Resubmitted after amendments',amendments_requested:`${h.amendments||h.amendmentCount||0} amendment(s) requested`,approved:'Approved — sign-off issued'};
+      return `<div class="rtl-item"><div class="rtl-dot ${classes[h.status]||'rtl-submitted'}">${icons[h.status]||'📋'}</div><div><strong style="font-size:.88rem;color:var(--navy)">${labels[h.status]||h.status}</strong><br><span style="font-size:.78rem;color:var(--muted)">${new Date(h.at).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'})}</span></div></div>`;
+    }).join('');
+  }catch(e){console.error(e);}
+}
+
+async function resubmitIM(){
+  if(!currentFeasoListingId){toast('No listing selected.');return;}
+  const devResponse=document.getElementById('im-dev-response').value.trim();
+  try{
+    const r=await API.submitIMReview(currentFeasoListingId,devResponse);
+    currentIMReview=r.review;
+    updateIMReviewBar(r.review);
+    toast('✅ Resubmitted! The PropVest team will review within 1 business day.');
+    await loadIMReviewDetail();
+  }catch(e){toast('Error resubmitting.');}
+}
+
+// Admin IM review functions
+let currentAmendReviewId=null;
+
+async function loadAdminIMReviews(){
+  const el=document.getElementById('admin-im-reviews-list');
+  if(!el)return;
+  try{
+    const r=await API.adminIMReviews();
+    if(!r.reviews||!r.reviews.length){el.innerHTML='<p style="color:var(--muted);font-size:.9rem">No IM reviews submitted yet.</p>';return;}
+    const statusStyle={
+      submitted:'background:#fff8e1;color:#e65100',
+      amendments_requested:'background:#ffebee;color:var(--red)',
+      approved:'background:#e8f5e9;color:var(--green)'
+    };
+    const statusLabel={submitted:'⏳ Pending Review',amendments_requested:'⚠️ Awaiting Resubmission',approved:'✅ Approved'};
+    el.innerHTML=r.reviews.map(rev=>`
+      <div class="admin-sub-row" style="flex-direction:column;align-items:flex-start">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;width:100%;flex-wrap:wrap;gap:10px">
+          <div class="admin-sub-info">
+            <strong style="color:var(--navy);font-size:.95rem">${rev.listingName}</strong>
+            <span style="font-size:.82rem;color:var(--muted)">${rev.devName} (${rev.devEmail}) · Round ${rev.round} · ${new Date(rev.submittedAt).toLocaleDateString('en-AU')}</span>
+            ${rev.devResponse?`<span style="font-size:.8rem;color:var(--text);font-style:italic">"${rev.devResponse}"</span>`:''}
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px">
+            <span style="font-size:.75rem;font-weight:700;padding:4px 12px;border-radius:20px;${statusStyle[rev.status]||''}">${statusLabel[rev.status]||rev.status}</span>
+            <div class="admin-sub-acts">
+              ${rev.status!=='approved'?`<button class="btn-approve" onclick="doApproveIM('${rev.id}')">✓ Approve IM</button>
+              <button class="btn-reject" style="background:var(--navy)" onclick="openAmendModal('${rev.id}','${rev.listingName}')">✏️ Request Amendments</button>`:'<span style="font-size:.78rem;color:var(--green)">Approved by '+rev.approvedBy+' on '+new Date(rev.approvedAt).toLocaleDateString('en-AU')+'</span>'}
+            </div>
+          </div>
+        </div>
+        ${rev.amendments&&rev.amendments.length?`<div style="margin-top:10px;width:100%;font-size:.8rem;color:var(--muted)">${rev.amendments.length} amendment(s) sent: `+rev.amendments.map(a=>`<span style="background:var(--off-white);padding:2px 8px;border-radius:6px;margin-right:4px">${a.section}</span>`).join('')+'</div>':''}</div>`).join('');
+  }catch(e){el.innerHTML='<p style="color:var(--red);font-size:.9rem">Error loading IM reviews.</p>';}
+}
+
+async function doApproveIM(id){
+  const notes=prompt('Add an approval note (optional):','Your IM is professionally presented and investment-ready. Approved.')||'';
+  try{await API.approveIM(id,notes);toast('✅ IM Approved — developer will see their sign-off certificate.');loadAdminIMReviews();}
+  catch(e){toast('Error approving IM.');}
+}
+
+function openAmendModal(reviewId,listingName){
+  currentAmendReviewId=reviewId;
+  document.getElementById('amend-modal-subtitle').textContent='Listing: '+listingName+' — Add specific amendment requests below.';
+  document.getElementById('amend-review-id').value=reviewId;
+  document.getElementById('amend-general-notes').value='';
+  document.getElementById('amend-rows').innerHTML='';
+  addAmendRow();addAmendRow(); // Start with 2 rows
+  document.getElementById('amendModal').classList.remove('hidden');
+}
+
+function addAmendRow(){
+  const row=document.createElement('div');
+  row.className='amend-row';
+  row.innerHTML=`
+    <select class="amend-select amend-section">${IM_SECTIONS.map(s=>`<option>${s}</option>`).join('')}</select>
+    <input class="amend-input amend-issue" placeholder="Issue — what's wrong or missing">
+    <input class="amend-input amend-suggest" placeholder="Suggestion — how to fix it">
+    <select class="amend-select amend-pri"><option value="High">High</option><option value="Medium" selected>Medium</option><option value="Low">Low</option></select>
+    <button class="amend-del-btn" onclick="this.parentElement.remove()">✕</button>`;
+  document.getElementById('amend-rows').appendChild(row);
+}
+
+async function sendAmendments(){
+  const rows=document.querySelectorAll('#amend-rows .amend-row');
+  const amendments=[];
+  rows.forEach(row=>{
+    const issue=row.querySelector('.amend-issue').value.trim();
+    if(!issue)return;
+    amendments.push({
+      section:row.querySelector('.amend-section').value,
+      issue,
+      suggestion:row.querySelector('.amend-suggest').value.trim(),
+      priority:row.querySelector('.amend-pri').value
+    });
+  });
+  if(!amendments.length){toast('Add at least one amendment request.');return;}
+  const notes=document.getElementById('amend-general-notes').value.trim();
+  const id=document.getElementById('amend-review-id').value;
+  try{
+    await API.requestAmendments(id,amendments,notes);
+    document.getElementById('amendModal').classList.add('hidden');
+    toast('✅ Amendment requests sent — developer has been notified.');
+    loadAdminIMReviews();
+  }catch(e){toast('Error sending amendments.');}
+}
+
+// ═══════════════════════════════════════════════════
 //  FEASO — Feasibility Report Module
 // ═══════════════════════════════════════════════════
 let currentFeasoListingId=null,unitRowCount=1;
@@ -1416,6 +1785,7 @@ function showFeasoForm(listingId){
   if(!hasSubscription('developer_monthly')){showSubscriptionGate();return;}
   currentFeasoListingId=listingId;
   showScreen('feaso');
+  loadIMReview(listingId);
   API.getFeasoData(listingId).then(data=>{
     if(data&&data.formData)loadFeasoForm(data.formData);
     fUpdate();
@@ -2218,6 +2588,8 @@ ${comps.length?`
 
   document.getElementById('im-doc-body').innerHTML=html;
   showScreen('im');
+  // Load any existing review status for this listing
+  if(currentFeasoListingId)loadIMReview(currentFeasoListingId);
 }
 </script>
 </body>
