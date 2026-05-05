@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PropVest — Premium Property Investment</title>
+<title>Prop Dev DNA — Property Development Investment Platform</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -462,8 +462,8 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
 <div class="modal-overlay hidden" id="authModal">
   <div class="modal-box">
     <button class="modal-close" onclick="document.getElementById('authModal').classList.add('hidden')">✕</button>
-    <div class="modal-logo">🏛 Prop<em>Vest</em></div>
-    <div class="modal-sub">Premium Property Investment Platform</div>
+    <div class="modal-logo">🧬 Prop Dev <em>DNA</em></div>
+    <div class="modal-sub">Property Development Investment Platform</div>
     <div class="auth-tabs">
       <button class="auth-tab active" onclick="switchAuthTab('login',this)">Sign In</button>
       <button class="auth-tab" onclick="switchAuthTab('register',this)">Create Account</button>
@@ -478,7 +478,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
         <strong style="color:var(--navy)">Demo accounts:</strong><br>
         Investor: investor@demo.com / demo123<br>
         Developer: developer@demo.com / demo123<br>
-        Admin: admin@propvest.com.au / PropVest2026Admin!
+        Admin: admin@propdevdna.com.au / PropDevDNA2026!
       </div>
     </div>
     <div id="auth-register" class="hidden">
@@ -503,7 +503,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo" onclick="goHome()">🏛 Prop<span>Vest</span></div>
+  <div class="nav-logo" onclick="goHome()">🧬 Prop Dev <span>DNA</span></div>
   <div class="nav-links">
     <button class="nav-btn" onclick="goHome()">Home</button>
     <button class="nav-btn" onclick="showScreen('listings')">Investments</button>
@@ -541,9 +541,9 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
 <!-- LANDING -->
 <div class="screen active" id="screen-landing">
   <div class="hero">
-    <div class="hero-badge">Exclusive Investment Opportunities</div>
-    <h1>Invest in <em>Premium Properties</em> With Confidence</h1>
-    <p>Access carefully curated off-market property investments — complete with full financial feasibility reports, floorplans, and projected returns.</p>
+    <div class="hero-badge">🧬 The DNA of Property Development</div>
+    <h1>Where <em>Property Developers</em> Meet Serious Investors</h1>
+    <p>Australia's professional property development investment platform — full FEASO feasibility reports, Information Memorandums, and direct developer connections, all in one place.</p>
     <div class="hero-buttons">
       <button class="btn-primary" onclick="showScreen('listings')">View Opportunities</button>
       <button class="btn-secondary" onclick="openAuth()">Get Started Free</button>
@@ -567,9 +567,9 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
   </div>
   <div style="background:var(--navy);padding:60px 24px;text-align:center;color:var(--white)">
     <div style="max-width:600px;margin:0 auto">
-      <div style="font-size:.8rem;letter-spacing:1.5px;color:var(--gold);font-weight:700;text-transform:uppercase;margin-bottom:16px">For Developers & Investment Providers</div>
-      <h2 style="font-size:1.8rem;font-weight:800;margin-bottom:12px">List Your Property Investment</h2>
-      <p style="color:#a8bcd4;margin-bottom:28px;line-height:1.7">Upload your full investment package and connect with qualified investors actively looking for opportunities like yours.</p>
+      <div style="font-size:.8rem;letter-spacing:1.5px;color:var(--gold);font-weight:700;text-transform:uppercase;margin-bottom:16px">For Developers & Buyers Agents</div>
+      <h2 style="font-size:1.8rem;font-weight:800;margin-bottom:12px">List Your Development Opportunity</h2>
+      <p style="color:#a8bcd4;margin-bottom:28px;line-height:1.7">Build a professional FEASO and Information Memorandum in minutes. Publish your opportunity and connect directly with qualified investors and private credit partners.</p>
       <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
         <button class="btn-primary" onclick="showScreen('portal')">Access Developer Portal →</button>
         <button class="btn-secondary" onclick="showScreen('pricing')" style="border-color:rgba(255,255,255,.3);color:#a8bcd4">View Pricing →</button>
@@ -672,7 +672,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
       </div>
       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:20px">
         <input type="checkbox" id="agreeBox" style="margin-top:3px;width:16px;height:16px;accent-color:var(--gold)">
-        <label for="agreeBox" style="font-size:.85rem;color:var(--muted);line-height:1.6;cursor:pointer">I consent to PropVest contacting me regarding this investment opportunity. My details will be shared with the developer and, if applicable, a broker referral partner.</label>
+        <label for="agreeBox" style="font-size:.85rem;color:var(--muted);line-height:1.6;cursor:pointer">I consent to Prop Dev DNA contacting me regarding this investment opportunity. My details will be shared with the developer and, if applicable, a broker referral partner.</label>
       </div>
       <div class="form-actions"><button class="btn-back-form" onclick="nextStep(2)">Back</button><button class="btn-submit" id="submit-btn" onclick="submitForm()">Submit Interest →</button></div>
     </div>
@@ -1030,7 +1030,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
     <div class="pricing-hdr">
       <div style="font-size:.75rem;font-weight:700;color:var(--gold);text-transform:uppercase;letter-spacing:1.8px;margin-bottom:14px">Transparent Pricing</div>
       <h2 style="font-size:2rem;font-weight:900;color:var(--navy);margin-bottom:14px">Plans for Every Participant</h2>
-      <p style="color:var(--muted);max-width:580px;margin:0 auto;line-height:1.8">PropVest is a professional investment marketplace. Developers pay to list; investors browse for free. No surprises.</p>
+      <p style="color:var(--muted);max-width:580px;margin:0 auto;line-height:1.8">Prop Dev DNA is a professional investment marketplace. Developers pay to list; investors browse for free. No surprises.</p>
     </div>
     <div class="pricing-grid">
       <!-- Developer -->
@@ -1081,13 +1081,13 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
           <li><span class="ck">✓</span>Invoiced within 7 days of settlement confirmation</li>
           <li><span class="ck">✓</span>All matching, documentation & follow-up included</li>
         </ul>
-        <button class="plan-cta ghost" onclick="window.location.href='mailto:info@propvest.com.au'">Discuss Your Project →</button>
+        <button class="plan-cta ghost" onclick="window.location.href='mailto:info@propdevdna.com.au'">Discuss Your Project →</button>
       </div>
     </div>
     <div style="background:var(--navy);border-radius:20px;padding:44px;text-align:center;color:var(--white)">
       <h3 style="font-size:1.5rem;font-weight:800;margin-bottom:12px">Questions about pricing?</h3>
       <p style="color:#a8bcd4;margin-bottom:28px;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.8">Our team is happy to walk you through the platform and discuss the right setup for your project.</p>
-      <a href="mailto:info@propvest.com.au" style="display:inline-block;background:var(--gold);color:var(--navy);padding:14px 36px;border-radius:10px;font-weight:700;text-decoration:none;font-size:1rem">✉ info@propvest.com.au</a>
+      <a href="mailto:info@propdevdna.com.au" style="display:inline-block;background:var(--gold);color:var(--navy);padding:14px 36px;border-radius:10px;font-weight:700;text-decoration:none;font-size:1rem">✉ info@propdevdna.com.au</a>
     </div>
   </div>
 </div>
@@ -1150,7 +1150,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
     <div style="background:var(--off-white);border-radius:12px;padding:20px;margin-bottom:20px">
       <p style="font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:10px">Payment Instructions</p>
       <ol style="padding-left:18px;font-size:.88rem;color:var(--text);display:flex;flex-direction:column;gap:8px;line-height:1.7">
-        <li>Transfer your first month to:<br><strong>BSB 062-000 · ACC 12345678</strong><br><span style="font-size:.8rem;color:var(--muted)">Account name: PropVest Pty Ltd · Use your email as reference</span></li>
+        <li>Transfer your first month to:<br><strong>BSB 062-000 · ACC 12345678</strong><br><span style="font-size:.8rem;color:var(--muted)">Account name: Prop Dev DNA Pty Ltd · Use your email as reference</span></li>
         <li>Enter your bank transaction ID or receipt number below</li>
         <li>Submit — we'll activate your plan within 24 hours</li>
       </ol>
@@ -1179,7 +1179,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
   <div class="review-bar" id="im-review-bar">
     <div id="im-review-pill"><span class="review-status-pill rsp-none">📋 Not yet submitted for review</span></div>
     <div style="flex:1"></div>
-    <button class="im-submit-btn" id="im-review-submit-btn" onclick="openIMReviewSubmit()">📋 Submit for PropVest Quality Review</button>
+    <button class="im-submit-btn" id="im-review-submit-btn" onclick="openIMReviewSubmit()">📋 Submit for Prop Dev DNA Quality Review</button>
     <button id="im-review-amend-btn" class="hidden" onclick="showIMReviewScreen()" style="background:rgba(231,76,60,.9);color:#fff;border:none;padding:10px 18px;border-radius:7px;cursor:pointer;font-family:inherit;font-size:.88rem;font-weight:700">⚠️ View Amendment Requests</button>
     <button id="im-review-cert-btn" class="hidden" onclick="showIMReviewScreen()" style="background:rgba(39,174,96,.9);color:#fff;border:none;padding:10px 18px;border-radius:7px;cursor:pointer;font-family:inherit;font-size:.88rem;font-weight:700">✅ View Sign-Off Certificate</button>
   </div>
@@ -1311,7 +1311,7 @@ async function doRegister(){
   const fname=document.getElementById('reg-fname').value.trim(),lname=document.getElementById('reg-lname').value.trim(),email=document.getElementById('reg-email').value.trim(),password=document.getElementById('reg-pass').value;
   const errEl=document.getElementById('reg-error'),btn=document.getElementById('reg-btn');
   errEl.style.display='none';btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Creating account…';
-  try{const res=await API.register({fname,lname,email,password,role:selectedRole});if(res.error){errEl.textContent=res.error;errEl.style.display='block';return;}currentUser=res.user;document.getElementById('authModal').classList.add('hidden');onLoggedIn();toast('Welcome to PropVest, '+res.user.fname+'!');}
+  try{const res=await API.register({fname,lname,email,password,role:selectedRole});if(res.error){errEl.textContent=res.error;errEl.style.display='block';return;}currentUser=res.user;document.getElementById('authModal').classList.add('hidden');onLoggedIn();toast('Welcome to Prop Dev DNA, '+res.user.fname+'!');}
   catch{errEl.textContent='Connection error.';errEl.style.display='block';}
   finally{btn.disabled=false;btn.textContent='Create Account →';}
 }
@@ -1401,7 +1401,7 @@ async function publishListing(){
   errEl.style.display='none';btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Publishing…';
   try{const cost=document.getElementById('p-cost').value,grv=document.getElementById('p-grv').value,profit=cost&&grv?'$'+Math.round((Number(grv)-Number(cost))/1000000*10)/10+'M':'TBC';
   const typeEl=document.getElementById('p-type'),ts=Date.now(),complete=document.getElementById('p-complete').value,completeFmt=complete?new Date(complete+'-01').toLocaleDateString('en-AU',{month:'short',year:'numeric'}):'TBC';
-  const listing={type:typeEl.value,badge:'NEW',badgeClass:'',name,loc:'📍 '+loc,irr:parseFloat(irrRaw),hold:holdRaw+' yr',profit,fundedPct:0,minInvest:'$'+Number(minRaw).toLocaleString(),raise:'$'+Number(raiseRaw).toLocaleString(),structure:document.getElementById('p-structure').value,spotsLeft:20,photo:'https://picsum.photos/seed/lst'+ts+'/800/400',heroPhoto:'https://picsum.photos/seed/lsth'+ts+'/1200/400',category:typeEl.options[typeEl.selectedIndex].text,overview:document.getElementById('p-desc').value.trim()||'Investment opportunity. Full details available upon expression of interest.',stats:[[completeFmt,'Est. Completion'],[document.getElementById('p-status').value,'Planning Status'],['$'+Number(minRaw).toLocaleString(),'Min. Investment'],['$'+Number(raiseRaw).toLocaleString(),'Total Raise']],floorplans:[['📐','Floorplans','Available upon request'],['📊','Feasibility','Available upon request'],['🏗','DA Documents','Available upon request'],['🤝','Term Sheet','Available upon request']],financials:cost&&grv?[['Total Dev. Cost','$'+Number(cost).toLocaleString()],['Gross Realisable Value','$'+Number(grv).toLocaleString()],['Estimated Profit','$'+Number(Number(grv)-Number(cost)).toLocaleString(),'profit'],['Margin on Cost',Math.round((Number(grv)-Number(cost))/Number(cost)*1000)/10+'%','profit']]:[['Financial details','Contact developer for details']],roi:{intro:'Contact developer for detailed return modelling.',bars:[['Exit','100%','+'+Math.round(parseFloat(irrRaw)*parseFloat(holdRaw))+'%','TBC']],summary:'IRR: '+irrRaw+'% p.a. over '+holdRaw+' year hold'},developer:{name:(currentUser?.fname||'')+' '+(currentUser?.lname||''),est:'Registered '+new Date().getFullYear(),completed:0,gdv:'New listing',bio:'Contact the developer for full credentials and track record.',badges:['✓ Registered on PropVest']}};
+  const listing={type:typeEl.value,badge:'NEW',badgeClass:'',name,loc:'📍 '+loc,irr:parseFloat(irrRaw),hold:holdRaw+' yr',profit,fundedPct:0,minInvest:'$'+Number(minRaw).toLocaleString(),raise:'$'+Number(raiseRaw).toLocaleString(),structure:document.getElementById('p-structure').value,spotsLeft:20,photo:'https://picsum.photos/seed/lst'+ts+'/800/400',heroPhoto:'https://picsum.photos/seed/lsth'+ts+'/1200/400',category:typeEl.options[typeEl.selectedIndex].text,overview:document.getElementById('p-desc').value.trim()||'Investment opportunity. Full details available upon expression of interest.',stats:[[completeFmt,'Est. Completion'],[document.getElementById('p-status').value,'Planning Status'],['$'+Number(minRaw).toLocaleString(),'Min. Investment'],['$'+Number(raiseRaw).toLocaleString(),'Total Raise']],floorplans:[['📐','Floorplans','Available upon request'],['📊','Feasibility','Available upon request'],['🏗','DA Documents','Available upon request'],['🤝','Term Sheet','Available upon request']],financials:cost&&grv?[['Total Dev. Cost','$'+Number(cost).toLocaleString()],['Gross Realisable Value','$'+Number(grv).toLocaleString()],['Estimated Profit','$'+Number(Number(grv)-Number(cost)).toLocaleString(),'profit'],['Margin on Cost',Math.round((Number(grv)-Number(cost))/Number(cost)*1000)/10+'%','profit']]:[['Financial details','Contact developer for details']],roi:{intro:'Contact developer for detailed return modelling.',bars:[['Exit','100%','+'+Math.round(parseFloat(irrRaw)*parseFloat(holdRaw))+'%','TBC']],summary:'IRR: '+irrRaw+'% p.a. over '+holdRaw+' year hold'},developer:{name:(currentUser?.fname||'')+' '+(currentUser?.lname||''),est:'Registered '+new Date().getFullYear(),completed:0,gdv:'New listing',bio:'Contact the developer for full credentials and track record.',badges:['✓ Registered on Prop Dev DNA']}};
   const res=await API.createListing(listing);if(res.error){errEl.textContent=res.error;errEl.style.display='block';return;}
   allListings.unshift(res.listing);['p-name','p-loc','p-min','p-raise','p-irr','p-hold','p-cost','p-grv','p-desc','p-complete'].forEach(id=>document.getElementById(id).value='');
   renderListings();await refreshPortal();await loadStats();toast('✅ Listing published! Investors can now view it.');}
@@ -1629,7 +1629,7 @@ async function loadIMReviewDetail(){
     const resubCard=document.getElementById('im-resubmit-card');
     const timeline=document.getElementById('im-review-timeline');
     if(!review){
-      statusBody.innerHTML='<p style="color:var(--muted)">Not yet submitted. Generate your IM and click <strong>Submit for PropVest Quality Review</strong>.</p>';
+      statusBody.innerHTML='<p style="color:var(--muted)">Not yet submitted. Generate your IM and click <strong>Submit for Prop Dev DNA Quality Review</strong>.</p>';
       amendBody.innerHTML='<p style="color:var(--muted);font-size:.9rem">No amendments requested yet.</p>';
       if(resubCard)resubCard.classList.add('hidden');
       timeline.innerHTML='<p style="color:var(--muted);font-size:.9rem">No history yet.</p>';
@@ -1643,8 +1643,8 @@ async function loadIMReviewDetail(){
         <div style="background:${statusColour[review.status]||'var(--muted)'};color:#fff;padding:8px 18px;border-radius:20px;font-weight:700;font-size:.88rem">${statusLabel[review.status]||review.status}</div>
         <div style="font-size:.85rem;color:var(--muted)">Round ${review.round} · Submitted ${new Date(review.submittedAt).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}</div>
       </div>
-      ${review.adminNotes?`<div style="margin-top:14px;background:var(--off-white);border-radius:10px;padding:14px 16px"><p style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:6px">Notes from PropVest team:</p><p style="font-size:.85rem;color:var(--text);line-height:1.7">${review.adminNotes}</p></div>`:''}
-      ${review.status==='approved'?`<div class="approve-certificate" style="margin-top:20px"><div style="font-size:2rem;margin-bottom:10px">🏆</div><div style="font-size:1.1rem;font-weight:800;color:var(--gold);margin-bottom:8px">PropVest Quality Approval</div><p style="color:#a8bcd4;font-size:.88rem;margin-bottom:12px">This Information Memorandum has been reviewed and approved by ${review.approvedBy||'the PropVest team'} on ${new Date(review.approvedAt).toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'})}.</p><div style="display:inline-block;border:1.5px solid var(--gold);padding:6px 20px;border-radius:6px;font-size:.75rem;color:var(--gold);letter-spacing:1.5px">✓ PROPVEST APPROVED · ${review.id.toUpperCase()}</div></div>`:''}`;
+      ${review.adminNotes?`<div style="margin-top:14px;background:var(--off-white);border-radius:10px;padding:14px 16px"><p style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:6px">Notes from Prop Dev DNA team:</p><p style="font-size:.85rem;color:var(--text);line-height:1.7">${review.adminNotes}</p></div>`:''}
+      ${review.status==='approved'?`<div class="approve-certificate" style="margin-top:20px"><div style="font-size:2rem;margin-bottom:10px">🏆</div><div style="font-size:1.1rem;font-weight:800;color:var(--gold);margin-bottom:8px">Prop Dev DNA Quality Approval</div><p style="color:#a8bcd4;font-size:.88rem;margin-bottom:12px">This Information Memorandum has been reviewed and approved by ${review.approvedBy||'the Prop Dev DNA team'} on ${new Date(review.approvedAt).toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'})}.</p><div style="display:inline-block;border:1.5px solid var(--gold);padding:6px 20px;border-radius:6px;font-size:.75rem;color:var(--gold);letter-spacing:1.5px">✓ PROP DEV DNA APPROVED · ${review.id.toUpperCase()}</div></div>`:''}`;
     // Amendments
     if(review.amendments&&review.amendments.length){
       amendBody.innerHTML=`<p style="font-size:.85rem;color:var(--muted);margin-bottom:14px">Address each amendment below, then regenerate your IM and resubmit.</p>`+
@@ -1681,7 +1681,7 @@ async function resubmitIM(){
     const r=await API.submitIMReview(currentFeasoListingId,devResponse);
     currentIMReview=r.review;
     updateIMReviewBar(r.review);
-    toast('✅ Resubmitted! The PropVest team will review within 1 business day.');
+    toast('✅ Resubmitted! The Prop Dev DNA team will review within 1 business day.');
     await loadIMReviewDetail();
   }catch(e){toast('Error resubmitting.');}
 }
@@ -1968,7 +1968,7 @@ async function generateFeasoReport(){
   const body=document.getElementById('feaso-report-body');
   body.innerHTML=`
     <div class="rpt-header">
-      <div class="rh-brand">🏛 PropVest</div>
+      <div class="rh-brand">🧬 Prop Dev DNA</div>
       <div style="font-size:.75rem;color:#a8bcd4;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px">Feasibility Summary Report</div>
       <h1>${d.name||'Development Feasibility Report'}</h1>
       <div class="rh-sub">${d.address||'—'}</div>
@@ -2092,7 +2092,7 @@ async function generateFeasoReport(){
       </div>
     </div>`:''}
     <div style="background:var(--off-white);border-radius:10px;padding:14px 18px;font-size:.75rem;color:var(--muted);line-height:1.7">
-      <strong style="color:var(--navy)">Disclaimer:</strong> This feasibility report is indicative only. All figures are estimates and should not be relied upon as financial advice. Independent legal, financial, and development advice should be obtained before making any investment decision. Prepared via PropVest Platform — ${date}.
+      <strong style="color:var(--navy)">Disclaimer:</strong> This feasibility report is indicative only. All figures are estimates and should not be relied upon as financial advice. Independent legal, financial, and development advice should be obtained before making any investment decision. Prepared via Prop Dev DNA Platform — ${date}.
     </div>`;
   showScreen('feaso-report');
 }

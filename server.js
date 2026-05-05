@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════
-//  PropVest — Backend Server
+//  Prop Dev DNA — Backend Server
 //  Express + JSON file database + session auth
 // ═══════════════════════════════════════════════════
 const express  = require('express');
@@ -16,7 +16,7 @@ const DB_FILE = path.join(__dirname, 'data', 'db.json');
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'propvest-secret-2026-xK9mP',
+  secret: process.env.SESSION_SECRET || 'propdevdna-secret-2026-xK9mP',
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 7 * 24 * 60 * 60 * 1000, sameSite: 'lax' }
@@ -110,7 +110,7 @@ function seedDB() {
     users: [
       { id:'u-demo-inv', email:'investor@demo.com', password: hashPw('demo123'), fname:'Alex', lname:'Demo', role:'investor', joined: new Date().toISOString() },
       { id:'u-demo-dev', email:'developer@demo.com', password: hashPw('demo123'), fname:'Sam', lname:'Demo', role:'developer', joined: new Date().toISOString() },
-      { id:'u-admin-001', email:'admin@propvest.com.au', password: hashPw('PropVest2026Admin!'), fname:'Anthony', lname:'Admin', role:'admin', joined: new Date().toISOString() }
+      { id:'u-admin-001', email:'admin@propdevdna.com.au', password: hashPw('PropDevDNA2026!'), fname:'Anthony', lname:'Admin', role:'admin', joined: new Date().toISOString() }
     ],
     listings: DEFAULT_LISTINGS,
     interests: [],
@@ -508,7 +508,7 @@ readDB(); // Ensure DB exists
 app.listen(PORT, () => {
   console.log('');
   console.log('  ╔══════════════════════════════════════╗');
-  console.log('  ║   🏛  PropVest Server Running         ║');
+  console.log('  ║   🧬  Prop Dev DNA Server Running     ║');
   console.log(`  ║   Open:  http://localhost:${PORT}       ║`);
   console.log('  ║   Press Ctrl+C to stop               ║');
   console.log('  ╚══════════════════════════════════════╝');
