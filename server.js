@@ -117,7 +117,8 @@ function seedDB() {
     subscriptions: [
       { id:'sub-demo-dev', userId:'u-demo-dev', userEmail:'developer@demo.com', userName:'Sam Demo', userRole:'developer', plan:'developer_monthly', paymentRef:'DEMO', status:'active', requestedAt: new Date().toISOString(), activatedAt: new Date().toISOString() }
     ],
-    imReviews: []
+    imReviews: [],
+    imViewLogs: []
   };
   if (!fs.existsSync(path.dirname(DB_FILE))) {
     fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
@@ -498,6 +499,35 @@ app.post('/api/admin/im-reviews/:id/request-amendments', requireAuth, requireAdm
   review.reviewedAt = new Date().toISOString();
   writeDB(db);
   res.json({ ok: true });
+});
+
+// ── IM View Audit Log ─────────────────────────────
+app.post('/api/listings/:id/im-view-log', requireAuth, (req, res) => {
+  const db = readDB();
+  if (!db.imViewLogs) db.imViewLogs = [];
+  const user = db.users.find(u => u.id === req.session.userId);
+  const listing = db.listings.find(l => l.id === req.params.id);
+  const log = {
+    id: 'ivl-' + Date.now(),
+    listingId: req.params.id,
+    listingName: listing?.name || '—',
+    userId: req.session.userId,
+    userEmail: user?.email || '—',
+    userName: user ? (user.fname + ' ' + (user.lname || '')).trim() : '—',
+    userRole: user?.role || '—',
+    wholesaleConfirmed: !!req.body.wholesaleConfirmed,
+    riskConfirmed: !!req.body.riskConfirmed,
+    viewedAt: new Date().toISOString()
+  };
+  db.imViewLogs.push(log);
+  writeDB(db);
+  res.json({ ok: true, log });
+});
+
+app.get('/api/admin/im-view-logs', requireAuth, requireAdmin, (req, res) => {
+  const db = readDB();
+  const logs = (db.imViewLogs || []).slice().reverse();
+  res.json({ logs });
 });
 
 // ── Health check ──────────────────────────────────

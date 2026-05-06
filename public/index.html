@@ -374,6 +374,13 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
 .im-bullet-list li{display:flex;gap:10px;font-size:.82rem;color:#c8bba8;font-family:system-ui,sans-serif;line-height:1.6}
 .im-bullet-list li::before{content:'•';color:#c97b4b;flex-shrink:0}
 .im-stat-box{border:1px solid rgba(255,255,255,.12);padding:16px 20px}
+/* ── IM Compliance UI ───────────────────────────── */
+.im-disclaimer-block{background:linear-gradient(135deg,#fff8e7,#fffdf0);border:2px solid var(--gold);border-radius:12px;padding:20px;margin-bottom:16px}
+.im-disclaimer-header{font-size:.82rem;font-weight:700;color:#8b6914;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.im-disclaimer-item{font-size:.8rem;color:#5c4a1c;padding:7px 0;border-bottom:1px solid rgba(201,168,76,.2);line-height:1.6}
+.im-disclaimer-item:last-child{border-bottom:none}
+.ack-checkbox-row{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border:1.5px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color .2s}
+.ack-checkbox-row:has(input:checked){border-color:var(--gold);background:rgba(201,168,76,.05)}
 @media print{.im-doc{background:#141210!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.im-page{page-break-after:always;break-after:page;padding:40px}.print-actions{display:none!important}nav,.bottom-nav,.toast{display:none!important}.screen{display:block!important;padding:0}}
 @media(max-width:900px){.im-cover{grid-template-columns:1fr}.im-cover-right{display:none}.im-page{padding:28px}.im-g2,.im-g3,.im-g4{grid-template-columns:1fr}.im-bignum{font-size:2rem}.im-hbar-lbl{width:100px}}
 /* ── Pricing ──────────────────────────────────────── */
@@ -612,7 +619,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
           <div id="tab-financials" class="hidden"><table class="fin-table" id="d-fin-table"></table></div>
           <div id="tab-roi" class="hidden"><p style="font-size:.85rem;color:var(--muted);margin-bottom:20px" id="d-roi-intro"></p><div class="roi-bars" id="d-roi-bars"></div><div id="d-roi-summary" style="margin-top:20px;padding:16px;background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border-radius:10px"></div></div>
         </div>
-        <div class="card"><div class="card-title"><span>📎</span> Available Documents</div><div class="doc-list"><div class="doc-item"><span>📐</span> Architectural Floorplans <span class="doc-size">PDF · 8.4 MB</span></div><div class="doc-item"><span>📊</span> Financial Feasibility Report <span class="doc-size">PDF · 3.1 MB</span></div><div class="doc-item"><span>🏗</span> Development Application <span class="doc-size">PDF · 12 MB</span></div><div class="doc-item"><span>📋</span> Independent Valuation <span class="doc-size">PDF · 2.8 MB</span></div><div class="doc-item"><span>🤝</span> Investor Term Sheet <span class="doc-size">PDF · 1.2 MB</span></div></div><p style="font-size:.8rem;color:var(--muted);margin-top:12px">🔒 Full document access granted upon expressing interest and ID verification</p></div>
+        <div class="card"><div class="card-title"><span>📎</span> Available Documents</div><div class="doc-list"><div class="doc-item" onclick="openIMViewModal(currentListingId)" style="background:linear-gradient(135deg,#fff8e7,#fffdf0);border:1.5px solid var(--gold);cursor:pointer"><span>📋</span> Information Memorandum <span style="margin-left:auto;font-size:.72rem;background:var(--gold);color:var(--navy);padding:2px 8px;border-radius:10px;font-weight:700">WHOLESALE ONLY</span></div><div class="doc-item"><span>📐</span> Architectural Floorplans <span class="doc-size">PDF · 8.4 MB</span></div><div class="doc-item"><span>📊</span> Financial Feasibility Report <span class="doc-size">PDF · 3.1 MB</span></div><div class="doc-item"><span>🏗</span> Development Application <span class="doc-size">PDF · 12 MB</span></div><div class="doc-item"><span>📋</span> Independent Valuation <span class="doc-size">PDF · 2.8 MB</span></div><div class="doc-item"><span>🤝</span> Investor Term Sheet <span class="doc-size">PDF · 1.2 MB</span></div></div><p style="font-size:.8rem;color:var(--muted);margin-top:12px">🔒 Full document access granted upon expressing interest and ID verification</p></div>
       </div>
       <div class="detail-sidebar">
         <div class="card"><div class="card-title"><span>💎</span> Investment Summary</div><div class="invest-summary" id="d-summary"></div><div style="margin-top:16px"><div class="progress-label"><span style="font-size:.8rem;color:var(--muted)">Funding Progress</span><span id="d-prog-pct" style="font-size:.8rem;font-weight:700;color:var(--gold)"></span></div><div class="progress-bar" style="height:10px"><div class="progress-fill" id="d-prog-fill"></div></div></div><button class="express-btn" style="margin-top:20px" onclick="showScreen('interest')">Express Interest →</button></div>
@@ -975,6 +982,15 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
   <div class="field"><label>Email</label><input type="email" id="im-contact-email" placeholder="ryan@developer.com.au"></div>
   <div class="field"><label>Closing Statement (Back Cover Tagline)</label><textarea id="im-closing" rows="3" placeholder="Genuine coastal scarcity. Architectural distinction. Conservative capital structure. A compelling return profile on a tightly held beachfront opportunity."></textarea></div>
   <div class="field"><label>Opportunity Summary Bullets (one per line)</label><textarea id="im-bullets" rows="5" placeholder="DA-approved boutique beachfront development&#10;Conservative 65% LTC / LVR structure&#10;Equity confirmed at 35%&#10;Fixed-price construction contract in place&#10;GRV supports strong lender security"></textarea></div>
+  <div class="im-disclaimer-block">
+    <div class="im-disclaimer-header">🔒 Mandatory Compliance Disclaimers — Auto-Inserted, Cannot Be Removed</div>
+    <div class="im-disclaimer-item">📌 <strong>General Advice Warning:</strong> This document does not constitute financial product advice. It has been prepared without taking into account your objectives, financial situation or needs.</div>
+    <div class="im-disclaimer-item">📌 <strong>Wholesale Investor Notice:</strong> This offer is only available to wholesale investors as defined under section 761G of the Corporations Act 2001 (Cth). It is not available to retail investors.</div>
+    <div class="im-disclaimer-item">📌 <strong>No ASIC Registration:</strong> This Information Memorandum has not been lodged with or approved by ASIC.</div>
+    <div class="im-disclaimer-item">📌 <strong>Forward-Looking Statements:</strong> Projections and forecasts are based on assumptions and involve known and unknown risks. Actual results may differ materially.</div>
+    <div class="im-disclaimer-item">📌 <strong>Not a Prospectus:</strong> This document is not a prospectus, product disclosure statement or other disclosure document under the Corporations Act 2001.</div>
+    <p style="font-size:.75rem;color:var(--red);margin-top:10px;font-style:italic">These disclaimers are automatically included in every IM generated on this platform and cannot be modified or removed by the developer.</p>
+  </div>
   <button onclick="generateIM()" class="publish-btn" style="margin-top:8px;background:linear-gradient(135deg,#8b4513,#c97b4b);color:#fff">📄 Generate Information Memorandum</button>
 </div>
         <!-- GENERATE -->
@@ -1100,7 +1116,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
         <h2 style="font-size:1.6rem;font-weight:800;color:var(--navy)">🔐 Admin Panel</h2>
         <p style="color:var(--muted);margin-top:4px">Manage subscriptions and platform activity</p>
       </div>
-      <button class="btn-secondary" onclick="loadAdminSubs();loadAdminIMReviews()" style="padding:10px 20px;font-size:.9rem">🔄 Refresh</button>
+      <button class="btn-secondary" onclick="loadAdminSubs();loadAdminIMReviews();loadAdminViewLogs()" style="padding:10px 20px;font-size:.9rem">🔄 Refresh</button>
     </div>
     <!-- Stats -->
     <div class="card" style="margin-bottom:24px">
@@ -1113,10 +1129,16 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
       <div id="admin-subs-list" style="margin-top:8px"><p style="color:var(--muted);font-size:.9rem">Loading…</p></div>
     </div>
     <!-- IM Reviews -->
-    <div class="card">
+    <div class="card" style="margin-bottom:24px">
       <div class="card-title"><span>📋</span> Information Memorandum Review Queue</div>
       <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px">Review submitted IMs, request amendments, and issue sign-off certificates.</p>
       <div id="admin-im-reviews-list" style="margin-top:8px"><p style="color:var(--muted);font-size:.9rem">Loading…</p></div>
+    </div>
+    <!-- IM View Audit Log -->
+    <div class="card">
+      <div class="card-title"><span>👁</span> Investor IM View Audit Log</div>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px">Every investor who confirmed wholesale status and risk disclosures before accessing an IM is logged here with a timestamp.</p>
+      <div id="admin-view-logs-list" style="margin-top:8px"><p style="color:var(--muted);font-size:.9rem">Loading…</p></div>
     </div>
   </div>
 </div>
@@ -1259,6 +1281,54 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
   </div>
 </div>
 
+<!-- INVESTOR IM ACKNOWLEDGMENT MODAL -->
+<div class="modal-overlay hidden" id="imViewModal">
+  <div class="modal-box" style="max-width:520px">
+    <button class="modal-close" onclick="closeIMViewModal()">×</button>
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:2.5rem;margin-bottom:8px">📋</div>
+      <h3 style="font-size:1.2rem;font-weight:800;color:var(--navy)">Information Memorandum</h3>
+      <p style="font-size:.85rem;color:var(--muted);margin-top:4px">Before accessing this document, please confirm the following</p>
+    </div>
+    <div style="background:#fff8e7;border:1.5px solid var(--gold);border-radius:12px;padding:18px;margin-bottom:20px">
+      <p style="font-size:.78rem;font-weight:700;color:#8b6914;margin-bottom:10px">⚠️ MANDATORY DISCLOSURE NOTICES</p>
+      <div style="font-size:.8rem;color:#5c4a1c;line-height:1.9;display:flex;flex-direction:column;gap:4px">
+        <div>📌 This document has <strong>not</strong> been lodged with or approved by ASIC.</div>
+        <div>📌 This is <strong>not financial product advice</strong> and does not consider your objectives, financial situation or needs.</div>
+        <div>📌 This offer is only available to <strong>wholesale investors</strong> under s.761G of the Corporations Act 2001 (Cth).</div>
+        <div>📌 Projections are based on assumptions — <strong>actual results may differ materially</strong>.</div>
+        <div>📌 This is <strong>not a prospectus</strong> or product disclosure statement.</div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
+      <label class="ack-checkbox-row">
+        <input type="checkbox" id="ack-wholesale" onchange="updateIMViewBtn()" style="margin-top:3px;accent-color:var(--gold);width:16px;height:16px;flex-shrink:0">
+        <span style="font-size:.85rem;color:var(--text);line-height:1.5"><strong>I confirm I am a wholesale investor</strong> as defined under s.761G of the Corporations Act 2001 — I have net assets exceeding $2.5 million or gross income exceeding $250,000 per annum in each of the last two financial years.</span>
+      </label>
+      <label class="ack-checkbox-row">
+        <input type="checkbox" id="ack-risk" onchange="updateIMViewBtn()" style="margin-top:3px;accent-color:var(--gold);width:16px;height:16px;flex-shrink:0">
+        <span style="font-size:.85rem;color:var(--text);line-height:1.5"><strong>I have read and understood</strong> the risk warnings and disclaimers above, and confirm that projections in this document are not guarantees of future performance.</span>
+      </label>
+    </div>
+    <button onclick="confirmIMView()" id="imViewConfirmBtn" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--navy),var(--navy3));color:var(--white);border:none;border-radius:10px;font-weight:700;font-size:.95rem;cursor:pointer;font-family:inherit;opacity:.4;pointer-events:none">Access Information Memorandum →</button>
+    <p style="font-size:.75rem;color:var(--muted);text-align:center;margin-top:10px">Your confirmation is logged with a timestamp for compliance purposes.</p>
+  </div>
+</div>
+
+<!-- IM REQUIRED FIELDS MODAL -->
+<div class="modal-overlay hidden" id="imChecklistModal">
+  <div class="modal-box" style="max-width:480px">
+    <button class="modal-close" onclick="document.getElementById('imChecklistModal').classList.add('hidden')">×</button>
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:2rem;margin-bottom:8px">⚠️</div>
+      <h3 style="font-size:1.1rem;font-weight:800;color:var(--navy)">Required Fields Incomplete</h3>
+      <p style="font-size:.85rem;color:var(--muted);margin-top:4px">Complete all required fields before generating the IM</p>
+    </div>
+    <div id="im-checklist-items" style="display:flex;flex-direction:column;gap:8px;margin-bottom:20px"></div>
+    <button onclick="document.getElementById('imChecklistModal').classList.add('hidden')" style="width:100%;padding:12px;background:var(--navy);color:var(--white);border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit">Go Back &amp; Complete →</button>
+  </div>
+</div>
+
 <script>
 const API={
   async _r(r){return r.json()},
@@ -1286,8 +1356,10 @@ const API={
   adminIMReviews:()=>API.get('/api/admin/im-reviews'),
   approveIM:(id,notes)=>API.post('/api/admin/im-reviews/'+id+'/approve',{notes}),
   requestAmendments:(id,amendments,adminNotes)=>API.post('/api/admin/im-reviews/'+id+'/request-amendments',{amendments,adminNotes}),
+  logIMView:(id,wholesale,risk)=>API.post('/api/listings/'+id+'/im-view-log',{wholesaleConfirmed:wholesale,riskConfirmed:risk}),
+  adminViewLogs:()=>API.get('/api/admin/im-view-logs'),
 };
-let currentUser=null,currentListingId=null,needsBroker=false,selectedRole='investor',allListings=[],activeFilter='all',userActiveSubs=[];
+let currentUser=null,currentListingId=null,needsBroker=false,selectedRole='investor',allListings=[],activeFilter='all',userActiveSubs=[],currentIMViewListingId=null;
 
 window.addEventListener('DOMContentLoaded',async()=>{
   try{const{user}=await API.me();if(user){currentUser=user;onLoggedIn();}else{openAuth();}}catch{openAuth();}
@@ -1338,7 +1410,7 @@ function onLoggedIn(){
 }
 async function doLogout(){await API.logout();currentUser=null;userActiveSubs=[];document.getElementById('navSignIn').classList.remove('hidden');document.getElementById('navUser').classList.add('hidden');document.querySelectorAll('.dev-only').forEach(el=>el.classList.add('hidden'));document.querySelectorAll('.admin-only').forEach(el=>el.classList.add('hidden'));showScreen('landing');openAuth();toast('Signed out.');}
 
-function showScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+name).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});if(name==='portal'&&(currentUser?.role==='developer'||currentUser?.role==='admin'))refreshPortal();if(name==='profile'){refreshMyInterests();refreshSubStatus();}if(name==='admin'){loadAdminSubs();loadAdminIMReviews();}if(name==='im-review')loadIMReviewDetail();}
+function showScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+name).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});if(name==='portal'&&(currentUser?.role==='developer'||currentUser?.role==='admin'))refreshPortal();if(name==='profile'){refreshMyInterests();refreshSubStatus();}if(name==='admin'){loadAdminSubs();loadAdminIMReviews();loadAdminViewLogs();}if(name==='im-review')loadIMReviewDetail();}
 function goHome(){showScreen('landing');setBN('home');}
 function toggleMobile(){document.getElementById('mobileMenu').classList.toggle('open');}
 function setBN(tab){document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));const el=document.getElementById('bn-'+tab);if(el)el.classList.add('active');}
@@ -1688,6 +1760,89 @@ async function resubmitIM(){
 
 // Admin IM review functions
 let currentAmendReviewId=null;
+
+// ═══════════════════════════════════════════════════
+//  Investor IM Acknowledgment Modal
+// ═══════════════════════════════════════════════════
+function openIMViewModal(listingId){
+  if(!currentUser){toast('Please sign in to access this document.');openAuth();return;}
+  currentIMViewListingId=listingId;
+  document.getElementById('ack-wholesale').checked=false;
+  document.getElementById('ack-risk').checked=false;
+  updateIMViewBtn();
+  document.getElementById('imViewModal').classList.remove('hidden');
+}
+function closeIMViewModal(){
+  document.getElementById('imViewModal').classList.add('hidden');
+  currentIMViewListingId=null;
+}
+function updateIMViewBtn(){
+  const ok=document.getElementById('ack-wholesale').checked&&document.getElementById('ack-risk').checked;
+  const btn=document.getElementById('imViewConfirmBtn');
+  btn.style.opacity=ok?'1':'0.4';
+  btn.style.pointerEvents=ok?'auto':'none';
+}
+async function confirmIMView(){
+  const listingId=currentIMViewListingId;
+  if(!listingId)return;
+  try{
+    await API.logIMView(listingId,true,true);
+    closeIMViewModal();
+    const listing=allListings.find(l=>l.id===listingId);
+    toast('✅ Confirmed — access logged. Document request recorded for '+( listing?.name||'this listing')+'.');
+    // Show a confirmation card with audit reference
+    const modal=document.getElementById('imViewModal');
+    modal.classList.remove('hidden');
+    modal.querySelector('.modal-box').innerHTML=`
+      <div style="text-align:center;padding:16px 0">
+        <div style="font-size:3rem;margin-bottom:16px">✅</div>
+        <h3 style="font-size:1.15rem;font-weight:800;color:var(--navy);margin-bottom:8px">Access Confirmed & Logged</h3>
+        <p style="font-size:.85rem;color:var(--muted);margin-bottom:20px">Your wholesale investor confirmation and risk acknowledgment have been recorded with a timestamp.</p>
+        <div style="background:var(--off-white);border-radius:10px;padding:16px;text-align:left;margin-bottom:20px">
+          <div style="font-size:.8rem;display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Investor</span><span style="font-weight:600">${currentUser.fname} ${currentUser.lname||''}</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Listing</span><span style="font-weight:600">${listing?.name||listingId}</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Wholesale Confirmed</span><span style="color:var(--green);font-weight:700">✓ Yes</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Risk Acknowledged</span><span style="color:var(--green);font-weight:700">✓ Yes</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Timestamp</span><span style="font-weight:600">${new Date().toLocaleString('en-AU')}</span></div>
+          </div>
+        </div>
+        <p style="font-size:.78rem;color:var(--muted);margin-bottom:20px">The full IM will be made available by the developer's team. Express interest below to receive direct access.</p>
+        <div style="display:flex;gap:10px">
+          <button onclick="document.getElementById('imViewModal').classList.add('hidden')" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:8px;background:none;font-family:inherit;font-weight:600;cursor:pointer">Close</button>
+          <button onclick="document.getElementById('imViewModal').classList.add('hidden');showScreen('interest')" style="flex:2;padding:12px;background:var(--gold);color:var(--navy);border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit">Express Interest →</button>
+        </div>
+      </div>`;
+  }catch(e){toast('Error logging view. Please try again.');}
+}
+
+// ═══════════════════════════════════════════════════
+//  Admin View Logs
+// ═══════════════════════════════════════════════════
+async function loadAdminViewLogs(){
+  const el=document.getElementById('admin-view-logs-list');
+  if(!el)return;
+  try{
+    const{logs}=await API.adminViewLogs();
+    if(!logs||!logs.length){el.innerHTML='<p style="color:var(--muted);font-size:.9rem">No IM views logged yet. Investor confirmations will appear here.</p>';return;}
+    el.innerHTML=logs.map(l=>`
+      <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);flex-wrap:wrap">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--navy),var(--navy3));display:flex;align-items:center;justify-content:center;color:var(--gold);font-weight:800;font-size:.85rem;flex-shrink:0">${(l.userName||'?')[0].toUpperCase()}</div>
+        <div style="flex:1;min-width:180px">
+          <div style="font-weight:700;font-size:.9rem;color:var(--navy)">${l.userName}</div>
+          <div style="font-size:.78rem;color:var(--muted)">${l.userEmail} · ${l.userRole}</div>
+        </div>
+        <div style="flex:2;min-width:160px">
+          <div style="font-size:.85rem;font-weight:600;color:var(--text)">${l.listingName}</div>
+          <div style="font-size:.75rem;color:var(--muted)">${new Date(l.viewedAt).toLocaleString('en-AU')}</div>
+        </div>
+        <div style="display:flex;gap:6px">
+          <span style="font-size:.72rem;padding:3px 8px;border-radius:10px;background:${l.wholesaleConfirmed?'#e8f5e9':'#fdecea'};color:${l.wholesaleConfirmed?'var(--green)':'var(--red)'};font-weight:700">Wholesale ${l.wholesaleConfirmed?'✓':'✗'}</span>
+          <span style="font-size:.72rem;padding:3px 8px;border-radius:10px;background:${l.riskConfirmed?'#e8f5e9':'#fdecea'};color:${l.riskConfirmed?'var(--green)':'var(--red)'};font-weight:700">Risk ACK ${l.riskConfirmed?'✓':'✗'}</span>
+        </div>
+      </div>`).join('');
+  }catch(e){el.innerHTML='<p style="color:var(--red);font-size:.9rem">Error loading logs.</p>';}
+}
 
 async function loadAdminIMReviews(){
   const el=document.getElementById('admin-im-reviews-list');
@@ -2116,8 +2271,23 @@ function addIMComp(){
 }
 function gv(id){return document.getElementById(id)?.value?.trim()||'';}
 
-function generateIM(){
+async function generateIM(){
   const d=getFeasoData();
+  // ── Required fields gate ───────────────────────
+  const missing=[];
+  if(!gv('im-funder')) missing.push('Target Funder / Prepared For');
+  if(!gv('im-contact-name')) missing.push('Contact Name (Section 8)');
+  if(!gv('im-contact-email')) missing.push('Contact Email (Section 8)');
+  if(!d.address&&!d.name) missing.push('Project Address or Name (FEASO Section 1)');
+  if(!(d.grv>0)) missing.push('Gross Realisable Value — ensure FEASO units are filled');
+  if(!(d.tdc>0)) missing.push('Total Development Cost — complete FEASO cost inputs');
+  if(missing.length){
+    document.getElementById('im-checklist-items').innerHTML=missing.map(m=>`<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:#fdecea;border-radius:8px;font-size:.85rem"><span style="color:var(--red);font-size:1.1rem">✗</span><span style="color:var(--text)">${m}</span></div>`).join('');
+    document.getElementById('imChecklistModal').classList.remove('hidden');
+    return;
+  }
+  // ── Reload review status for cert ─────────────
+  if(currentFeasoListingId){try{const r=await API.getIMReview(currentFeasoListingId);currentIMReview=r.review;}catch{}}
   const funder=gv('im-funder')||'Sophisticated Investors';
   const company=gv('im-company')||'Developer';
   const tagline=gv('im-tagline')||'Private Development Funding Opportunity';
@@ -2200,6 +2370,62 @@ function generateIM(){
   const photoUrl=(typeof allListings!=='undefined'&&typeof currentFeasoListingId!=='undefined')?
     (allListings.find(l=>l.id===currentFeasoListingId)?.heroPhoto||'https://picsum.photos/seed/imcover2026/800/1200'):
     'https://picsum.photos/seed/imcover2026/800/1200';
+
+  // ── Compliance cert page (prepended when approved) ─
+  let certPage='';
+  if(currentIMReview&&currentIMReview.status==='approved'){
+    const r=currentIMReview;
+    const approvedDate=new Date(r.approvedAt).toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'});
+    certPage=`<div class="im-page" style="display:flex;flex-direction:column;justify-content:center;align-items:center;background:#0a1628;min-height:100vh">
+  <div style="max-width:620px;width:100%;text-align:center;padding:60px 40px">
+    <div style="border:2px solid #c9a84c;border-radius:16px;padding:48px 40px;background:rgba(201,168,76,.05)">
+      <div style="font-size:3rem;margin-bottom:16px">✅</div>
+      <div style="font-family:system-ui,sans-serif;font-size:.6rem;letter-spacing:3px;color:#c97b4b;text-transform:uppercase;margin-bottom:14px">PROP DEV DNA — COMPLIANCE REVIEW CERTIFICATE</div>
+      <div style="font-size:1.5rem;font-weight:700;color:#e8c76a;font-family:system-ui,sans-serif;margin-bottom:8px">Quality Review Certificate</div>
+      <div style="height:1px;background:rgba(201,168,76,.3);margin:20px 0"></div>
+      <p style="font-family:system-ui,sans-serif;font-size:.85rem;color:#c8bba8;line-height:1.9;margin-bottom:24px">This Information Memorandum has been reviewed and approved by the Prop Dev DNA compliance team. All mandatory ASIC-aligned disclaimers, disclosure requirements, and quality standards have been verified prior to release.</p>
+      <div style="background:rgba(255,255,255,.04);border-radius:10px;padding:20px 24px;text-align:left;margin-bottom:24px">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;font-family:system-ui,sans-serif;font-size:.82rem">
+          <div><span style="color:#7a8ba0;display:block;margin-bottom:3px;font-size:.72rem;text-transform:uppercase;letter-spacing:1px">Reference</span><span style="color:#e8c76a;font-weight:700">#${r.id}</span></div>
+          <div><span style="color:#7a8ba0;display:block;margin-bottom:3px;font-size:.72rem;text-transform:uppercase;letter-spacing:1px">Review Round</span><span style="color:#c8bba8">Round ${r.round}</span></div>
+          <div><span style="color:#7a8ba0;display:block;margin-bottom:3px;font-size:.72rem;text-transform:uppercase;letter-spacing:1px">Approved By</span><span style="color:#c8bba8">${r.approvedBy}</span></div>
+          <div><span style="color:#7a8ba0;display:block;margin-bottom:3px;font-size:.72rem;text-transform:uppercase;letter-spacing:1px">Approved Date</span><span style="color:#c8bba8">${approvedDate}</span></div>
+        </div>
+      </div>
+      <div style="background:rgba(39,174,96,.1);border:1px solid rgba(39,174,96,.3);border-radius:8px;padding:14px 18px;margin-bottom:24px">
+        <div style="display:flex;flex-direction:column;gap:6px;font-family:system-ui,sans-serif;font-size:.78rem;color:#6dbf8a;text-align:left">
+          <div>✓ Mandatory ASIC disclaimers present and unmodified</div>
+          <div>✓ Wholesale investor notice included</div>
+          <div>✓ Forward-looking statements caveat confirmed</div>
+          <div>✓ Financial figures reviewed for internal consistency</div>
+          <div>✓ Developer profile and contact details verified</div>
+        </div>
+      </div>
+      <div style="font-family:system-ui,sans-serif;font-size:.72rem;color:#4a6070;line-height:1.7">This certificate confirms the document meets Prop Dev DNA minimum disclosure standards. It does not constitute an endorsement of the investment or financial advice.</div>
+    </div>
+    <p style="font-family:system-ui,sans-serif;font-size:.68rem;color:#2a3a4a;margin-top:16px">🧬 Prop Dev DNA · propdevdna.com.au</p>
+  </div>
+  <div class="im-footer" style="position:absolute;bottom:0;left:0;right:0"><span>Compliance Review Certificate · ${r.id}</span><span>Prop Dev DNA</span></div>
+</div>`;
+  }
+
+  // ── Mandatory disclaimer page (always appended) ─
+  const mandatoryDisclaimer=`<div class="im-page" style="background:#0f1a2a">
+  <div class="im-sec-label">Mandatory Disclosures & Disclaimers</div>
+  <div class="im-h2">Important Notices — Please Read Carefully</div>
+  <p class="im-body" style="margin-bottom:28px;max-width:860px;color:#a09080">The following disclosures are mandatory and form part of this Information Memorandum. They cannot be modified or removed by the developer.</p>
+  <div style="display:flex;flex-direction:column;gap:16px">
+    <div class="im-stat-box" style="border-color:rgba(201,123,75,.5)"><p class="im-h3" style="color:#c97b4b;margin-bottom:6px">General Advice Warning</p><p class="im-body">This document does not constitute financial product advice. It has been prepared without taking into account your objectives, financial situation or needs. Before acting on any information in this document, you should consider the appropriateness of the information having regard to your own objectives, financial situation and needs, and seek independent financial advice if necessary.</p></div>
+    <div class="im-stat-box" style="border-color:rgba(201,123,75,.5)"><p class="im-h3" style="color:#c97b4b;margin-bottom:6px">Wholesale Investor Notice</p><p class="im-body">This offer is only available to wholesale investors as defined under section 761G of the Corporations Act 2001 (Cth). It is not available to retail investors. By accessing this document, you confirm you meet the wholesale investor threshold — net assets exceeding $2.5 million or gross income exceeding $250,000 per annum in each of the last two financial years, or hold a current accountant's certificate.</p></div>
+    <div class="im-stat-box" style="border-color:rgba(201,123,75,.5)"><p class="im-h3" style="color:#c97b4b;margin-bottom:6px">No ASIC Registration</p><p class="im-body">This Information Memorandum has not been lodged with or approved by the Australian Securities and Investments Commission (ASIC). ASIC takes no responsibility for the contents of this document.</p></div>
+    <div class="im-stat-box" style="border-color:rgba(201,123,75,.5)"><p class="im-h3" style="color:#c97b4b;margin-bottom:6px">Forward-Looking Statements</p><p class="im-body">Projections, forecasts, and forward-looking statements contained in this document are based on assumptions and involve known and unknown risks. Actual results, performance, or achievements may differ materially from those projected. No guarantee, representation, or warranty is made that any projection will be achieved.</p></div>
+    <div class="im-stat-box" style="border-color:rgba(201,123,75,.5)"><p class="im-h3" style="color:#c97b4b;margin-bottom:6px">Not a Prospectus</p><p class="im-body">This document is not a prospectus, product disclosure statement, or other disclosure document within the meaning of the Corporations Act 2001 (Cth). It does not purport to contain all information that an investor may require in evaluating a possible investment.</p></div>
+  </div>
+  <div style="margin-top:28px;padding:16px 20px;border:1px solid rgba(201,168,76,.3);border-radius:8px;font-family:system-ui,sans-serif;font-size:.72rem;color:#5a4a3a;text-align:center;letter-spacing:.5px">
+    THESE DISCLOSURES ARE AUTOMATICALLY GENERATED BY PROP DEV DNA AND CANNOT BE MODIFIED BY THE DEVELOPER · propdevdna.com.au
+  </div>
+  <div class="im-footer"><span>Confidential — Mandatory Disclosures</span><span>${d.name||'Development Project'} · ${d.state||'—'}</span></div>
+</div>`;
 
   const html=`
 <!-- PAGE 1: COVER -->
@@ -2586,7 +2812,7 @@ ${comps.length?`
   </div>
 </div>`;
 
-  document.getElementById('im-doc-body').innerHTML=html;
+  document.getElementById('im-doc-body').innerHTML=certPage+html+mandatoryDisclaimer;
   showScreen('im');
   // Load any existing review status for this listing
   if(currentFeasoListingId)loadIMReview(currentFeasoListingId);
