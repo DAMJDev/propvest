@@ -1425,11 +1425,11 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
       </label>
       <label class="ack-checkbox-row">
         <input type="checkbox" id="ack-independent" onchange="updateIMViewBtn()" style="margin-top:3px;accent-color:var(--gold);width:16px;height:16px;flex-shrink:0">
-        <span style="font-size:.82rem;color:var(--text);line-height:1.5"><strong>I am making this investment decision independently.</strong> I have not relied on Prop Dev DNA, the developer, or any referring party as my financial adviser.</span>
+        <span style="font-size:.82rem;color:var(--text);line-height:1.5"><strong>I acknowledge the party who listed this opportunity has a direct financial interest in my participation.</strong> This includes the developer, builder, buyers agent, or any other party who submitted this deal. I have conducted my own independent due diligence and am not relying solely on representations made by the listing party. No party on this platform is acting as my financial adviser.</span>
       </label>
       <label class="ack-checkbox-row">
         <input type="checkbox" id="ack-responsibility" onchange="updateIMViewBtn()" style="margin-top:3px;accent-color:var(--gold);width:16px;height:16px;flex-shrink:0">
-        <span style="font-size:.82rem;color:var(--text);line-height:1.5"><strong>I accept full personal responsibility</strong> for any investment I make through this platform. I understand all parties involved — including the developer, platform, and any referring party — bear no liability for investment outcomes provided risks were disclosed.</span>
+        <span style="font-size:.82rem;color:var(--text);line-height:1.5"><strong>I accept full personal responsibility for any investment decision I make.</strong> I understand that all risks have been disclosed in the Information Memorandum and FEASO, and that Prop Dev DNA, the listing party, and any referring party bear no liability for investment outcomes where those risks were disclosed prior to my decision.</span>
       </label>
     </div>
 
@@ -2099,7 +2099,7 @@ async function confirmIMView(){
           <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Listing</span><strong>${listing?.name||listingId}</strong></div>
           <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Wholesale ✓</span><span style="color:#16a34a;font-weight:700">Confirmed</span></div>
           <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Risk Acknowledged ✓</span><span style="color:#16a34a;font-weight:700">Confirmed</span></div>
-          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Independent Decision ✓</span><span style="color:#16a34a;font-weight:700">Confirmed</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Vested Interest Disclosed ✓</span><span style="color:#16a34a;font-weight:700">Confirmed</span></div>
           <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Personal Responsibility ✓</span><span style="color:#16a34a;font-weight:700">Confirmed</span></div>
           ${currentUser.referredByName?`<div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Referral Disclaimer ✓</span><span style="color:#16a34a;font-weight:700">Shown &amp; Acknowledged</span></div>`:''}
           <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:8px"><span style="color:var(--muted)">Timestamp</span><strong>${ts}</strong></div>
