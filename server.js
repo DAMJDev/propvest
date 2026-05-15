@@ -7,10 +7,32 @@ const session  = require('express-session');
 const path     = require('path');
 const fs       = require('fs');
 const crypto   = require('crypto');
+const multer   = require('multer');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
-const DB_FILE = path.join(__dirname, 'data', 'db.json');
+const DB_FILE    = path.join(__dirname, 'data', 'db.json');
+const UPLOAD_DIR = path.join(__dirname, 'data', 'uploads');
+if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+
+// ── Multer — wholesale cert PDF upload ────────────
+const certStorage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, UPLOAD_DIR),
+  filename:    (req, file, cb) => {
+    const ext  = path.extname(file.originalname).toLowerCase();
+    const safe = 'wc-' + req.session.userId + '-' + Date.now() + ext;
+    cb(null, safe);
+  }
+});
+const certUpload = multer({
+  storage: certStorage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB max
+  fileFilter: (req, file, cb) => {
+    const allowed = ['.pdf', '.jpg', '.jpeg', '.png'];
+    const ext = path.extname(file.originalname).toLowerCase();
+    allowed.includes(ext) ? cb(null, true) : cb(new Error('Only PDF, JPG, or PNG files are accepted.'));
+  }
+});
 
 // ── Middleware ─────────────────────────────────────
 app.use(express.json());
@@ -118,7 +140,8 @@ function seedDB() {
       { id:'sub-demo-dev', userId:'u-demo-dev', userEmail:'developer@demo.com', userName:'Sam Demo', userRole:'developer', plan:'developer_monthly', paymentRef:'DEMO', status:'active', requestedAt: new Date().toISOString(), activatedAt: new Date().toISOString() }
     ],
     imReviews: [],
-    imViewLogs: []
+    imViewLogs: [],
+    wholesaleCerts: []
   };
   if (!fs.existsSync(path.dirname(DB_FILE))) {
     fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
@@ -528,6 +551,128 @@ app.get('/api/admin/im-view-logs', requireAuth, requireAdmin, (req, res) => {
   const db = readDB();
   const logs = (db.imViewLogs || []).slice().reverse();
   res.json({ logs });
+});
+
+// ── Wholesale Certification ───────────────────────
+app.post('/api/wholesale-cert', requireAuth, (req, res, next) => {
+  certUpload.single('certFile')(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message });
+
+    const db = readDB();
+    if (!db.wholesaleCerts) db.wholesaleCerts = [];
+    const user = db.users.find(u => u.id === req.session.userId);
+    if (!user) return res.status(404).json({ error: 'User not found.' });
+
+    // Block if already pending or verified
+    const existing = db.wholesaleCerts.find(c => c.userId === req.session.userId && ['pending','verified'].includes(c.status));
+    if (existing) return res.status(400).json({ error: 'You already have a ' + existing.status + ' wholesale certificate on file.' });
+
+    // File is mandatory
+    if (!req.file) return res.status(400).json({ error: 'You must upload the signed Qualified Accountant\'s Certificate (PDF, JPG, or PNG).' });
+
+    const {
+      investorName, investorDOB, investorAddress,
+      acctName, acctFirm, acctAddress, acctPhone, acctEmail, acctMembership, acctMembershipNumber,
+      certBasis, approxNetAssets, confirmedBothYears, investorDeclared
+    } = req.body;
+
+    if (!investorName || !acctName || !acctFirm || !acctMembership || !acctMembershipNumber || !certBasis || !investorDeclared) {
+      // Clean up uploaded file if validation fails
+      fs.unlinkSync(req.file.path);
+      return res.status(400).json({ error: 'All required fields must be completed.' });
+    }
+
+    const cert = {
+      id: 'wc-' + Date.now(),
+      userId: req.session.userId,
+      userEmail: user.email,
+      userName: (user.fname + ' ' + (user.lname || '')).trim(),
+      status: 'pending',
+      submittedAt: new Date().toISOString(),
+      reviewedAt: null,
+      reviewedBy: null,
+      expiresAt: null,
+      // Uploaded file
+      fileName: req.file.originalname,
+      filePath: req.file.filename, // stored filename in uploads/
+      // Investor details
+      investorName, investorDOB: investorDOB || '', investorAddress: investorAddress || '',
+      // Accountant details
+      acctName, acctFirm, acctAddress: acctAddress || '', acctPhone: acctPhone || '',
+      acctEmail: acctEmail || '', acctMembership, acctMembershipNumber,
+      // Certification basis
+      certBasis,
+      approxNetAssets: approxNetAssets || '',
+      confirmedBothYears: confirmedBothYears === 'true' || confirmedBothYears === true,
+      investorDeclared: true,
+      adminNotes: ''
+    };
+
+    db.wholesaleCerts.push(cert);
+    const userIdx = db.users.findIndex(u => u.id === req.session.userId);
+    if (userIdx !== -1) db.users[userIdx].wholesaleStatus = 'pending';
+    writeDB(db);
+    res.json({ ok: true, cert });
+  });
+});
+
+app.get('/api/wholesale-cert/status', requireAuth, (req, res) => {
+  const db = readDB();
+  if (!db.wholesaleCerts) db.wholesaleCerts = [];
+  const certs = db.wholesaleCerts.filter(c => c.userId === req.session.userId).sort((a,b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+  const latest = certs[0] || null;
+  const user = db.users.find(u => u.id === req.session.userId);
+  res.json({ cert: latest, wholesaleStatus: user?.wholesaleStatus || 'none' });
+});
+
+app.get('/api/admin/wholesale-certs', requireAuth, requireAdmin, (req, res) => {
+  const db = readDB();
+  const certs = (db.wholesaleCerts || []).slice().reverse();
+  res.json({ certs });
+});
+
+app.post('/api/admin/wholesale-certs/:id/approve', requireAuth, requireAdmin, (req, res) => {
+  const db = readDB();
+  if (!db.wholesaleCerts) return res.status(404).json({ error: 'Not found.' });
+  const cert = db.wholesaleCerts.find(c => c.id === req.params.id);
+  if (!cert) return res.status(404).json({ error: 'Certificate not found.' });
+  const admin = db.users.find(u => u.id === req.session.userId);
+  cert.status = 'verified';
+  cert.reviewedAt = new Date().toISOString();
+  cert.reviewedBy = admin?.email || 'admin';
+  // Expires 2 years from now (s761G — certificate valid for 2 years)
+  cert.expiresAt = new Date(Date.now() + 2 * 365 * 24 * 60 * 60 * 1000).toISOString();
+  cert.adminNotes = req.body.notes || '';
+  // Update user wholesale status
+  const userIdx = db.users.findIndex(u => u.id === cert.userId);
+  if (userIdx !== -1) { db.users[userIdx].wholesaleStatus = 'verified'; db.users[userIdx].wholesaleVerifiedAt = cert.reviewedAt; db.users[userIdx].wholesaleExpiresAt = cert.expiresAt; }
+  writeDB(db);
+  res.json({ ok: true, cert });
+});
+
+app.get('/api/admin/wholesale-certs/:id/download', requireAuth, requireAdmin, (req, res) => {
+  const db = readDB();
+  const cert = (db.wholesaleCerts || []).find(c => c.id === req.params.id);
+  if (!cert || !cert.filePath) return res.status(404).json({ error: 'File not found.' });
+  const filePath = path.join(UPLOAD_DIR, cert.filePath);
+  if (!fs.existsSync(filePath)) return res.status(404).json({ error: 'File missing from server.' });
+  res.download(filePath, cert.fileName || cert.filePath);
+});
+
+app.post('/api/admin/wholesale-certs/:id/reject', requireAuth, requireAdmin, (req, res) => {
+  const db = readDB();
+  if (!db.wholesaleCerts) return res.status(404).json({ error: 'Not found.' });
+  const cert = db.wholesaleCerts.find(c => c.id === req.params.id);
+  if (!cert) return res.status(404).json({ error: 'Certificate not found.' });
+  const admin = db.users.find(u => u.id === req.session.userId);
+  cert.status = 'rejected';
+  cert.reviewedAt = new Date().toISOString();
+  cert.reviewedBy = admin?.email || 'admin';
+  cert.adminNotes = req.body.notes || '';
+  const userIdx = db.users.findIndex(u => u.id === cert.userId);
+  if (userIdx !== -1) db.users[userIdx].wholesaleStatus = 'rejected';
+  writeDB(db);
+  res.json({ ok: true, cert });
 });
 
 // ── Health check ──────────────────────────────────

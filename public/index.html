@@ -375,6 +375,19 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
 .im-bullet-list li::before{content:'•';color:#c97b4b;flex-shrink:0}
 .im-stat-box{border:1px solid rgba(255,255,255,.12);padding:16px 20px}
 /* ── IM Compliance UI ───────────────────────────── */
+.wc-status-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:20px;font-size:.78rem;font-weight:700}
+.wc-none{background:#f3f4f6;color:#6b7280}
+.wc-pending{background:#fef3c7;color:#92400e}
+.wc-verified{background:#d1fae5;color:#065f46}
+.wc-rejected{background:#fee2e2;color:#991b1b}
+.wc-expired{background:#f3f4f6;color:#6b7280}
+.wc-form-section{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:18px;margin-bottom:16px}
+.wc-form-section-title{font-size:.82rem;font-weight:800;color:var(--navy);text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px;display:flex;align-items:center;gap:6px}
+.wc-legal-box{background:linear-gradient(135deg,#0d1b2a,#1a2d42);color:#a8bcd4;border-radius:10px;padding:16px;font-size:.75rem;line-height:1.7;margin-bottom:16px}
+.wc-legal-box strong{color:var(--gold)}
+.upload-btn-zone{border:2px dashed var(--gold);border-radius:10px;padding:20px;text-align:center;cursor:pointer;background:rgba(201,168,76,.03);transition:background .2s}
+.upload-btn-zone:hover{background:rgba(201,168,76,.08)}
+.upload-btn-zone.has-file{border-color:#16a34a;background:rgba(22,163,74,.05)}
 .im-disclaimer-block{background:linear-gradient(135deg,#fff8e7,#fffdf0);border:2px solid var(--gold);border-radius:12px;padding:20px;margin-bottom:16px}
 .im-disclaimer-header{font-size:.82rem;font-weight:700;color:#8b6914;margin-bottom:12px;display:flex;align-items:center;gap:6px}
 .im-disclaimer-item{font-size:.8rem;color:#5c4a1c;padding:7px 0;border-bottom:1px solid rgba(201,168,76,.2);line-height:1.6}
@@ -823,6 +836,16 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
       <div class="card-title"><span>💳</span> My Subscription</div>
       <div id="profile-sub-status" style="margin-top:4px"><span class="sub-status-badge ssb-none">Not subscribed — <a href="#" onclick="showScreen('pricing');return false" style="color:var(--gold);font-weight:700">View Plans</a></span></div>
     </div>
+    <div id="wholesale-cert-card" class="card hidden" style="margin-bottom:20px">
+      <div class="card-title"><span>🏛️</span> Wholesale Investor Status</div>
+      <div id="wholesale-cert-status-body">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px">
+          <span id="wholesale-badge" class="wc-status-badge wc-none">⬜ Not Verified</span>
+          <button id="wholesale-cert-btn" onclick="openWholesaleCertModal()" style="background:var(--gold);color:var(--navy);border:none;padding:8px 18px;border-radius:8px;font-weight:700;font-size:.82rem;cursor:pointer;font-family:inherit">Submit Certificate →</button>
+        </div>
+        <div id="wholesale-cert-detail" style="font-size:.8rem;color:var(--muted)"></div>
+      </div>
+    </div>
     <div class="card" style="margin-bottom:20px"><div class="card-title"><span>⭐</span> My Submitted Interests</div><div id="my-interests-list"><p style="color:var(--muted);font-size:.85rem">No interests submitted yet.</p></div></div>
     <button class="logout-btn" onclick="doLogout()">Sign Out</button>
   </div>
@@ -1146,7 +1169,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
         <h2 style="font-size:1.6rem;font-weight:800;color:var(--navy)">🔐 Admin Panel</h2>
         <p style="color:var(--muted);margin-top:4px">Manage subscriptions and platform activity</p>
       </div>
-      <button class="btn-secondary" onclick="loadAdminSubs();loadAdminIMReviews();loadAdminViewLogs()" style="padding:10px 20px;font-size:.9rem">🔄 Refresh</button>
+      <button class="btn-secondary" onclick="loadAdminSubs();loadAdminIMReviews();loadAdminViewLogs();loadAdminWholesaleCerts()" style="padding:10px 20px;font-size:.9rem">🔄 Refresh</button>
     </div>
     <!-- Stats -->
     <div class="card" style="margin-bottom:24px">
@@ -1163,6 +1186,12 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
       <div class="card-title"><span>📋</span> Information Memorandum Review Queue</div>
       <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px">Review submitted IMs, request amendments, and issue sign-off certificates.</p>
       <div id="admin-im-reviews-list" style="margin-top:8px"><p style="color:var(--muted);font-size:.9rem">Loading…</p></div>
+    </div>
+    <!-- Wholesale Cert Review -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title"><span>🏛️</span> Wholesale Investor Certificates</div>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px">Review and approve investor wholesale certifications submitted under <strong>s761G(7)(c) Corporations Act 2001</strong>. Download the uploaded accountant's certificate before approving.</p>
+      <div id="admin-wholesale-list" style="margin-top:8px"><p style="color:var(--muted);font-size:.9rem">Loading…</p></div>
     </div>
     <!-- IM View Audit Log -->
     <div class="card">
@@ -1346,6 +1375,142 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
 </div>
 
 <!-- IM REQUIRED FIELDS MODAL -->
+<!-- ══════════════════════════════════════════════ -->
+<!-- WHOLESALE INVESTOR CERTIFICATE MODAL           -->
+<!-- s761G(7)(c) Corporations Act 2001 (Cth)        -->
+<!-- ══════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="wholesaleCertModal">
+  <div class="modal-box" style="max-width:680px;max-height:90vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeWholesaleCertModal()">×</button>
+
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="font-size:2rem;margin-bottom:8px">🏛️</div>
+      <h3 style="font-size:1.15rem;font-weight:800;color:var(--navy)">Wholesale Investor Certification</h3>
+      <p style="font-size:.82rem;color:var(--muted);margin-top:4px">Required under <strong>s761G(7)(c) Corporations Act 2001 (Cth)</strong></p>
+    </div>
+
+    <!-- Status display (shown when already submitted) -->
+    <div id="wc-status-display" class="hidden" style="margin-bottom:20px"></div>
+
+    <!-- The form (hidden when cert already exists) -->
+    <div id="wc-form-wrapper">
+      <div class="wc-legal-box">
+        <strong>Why is this required?</strong><br>
+        Under the <strong>Corporations Act 2001 (Cth)</strong>, only <strong>Wholesale Investors</strong> may access information memorandums and investment offers on this platform. To qualify, you must provide a certificate signed by a <strong>Qualified Accountant</strong> confirming you meet either the <strong>Net Assets Test</strong> (≥ $2.5M) or the <strong>Gross Income Test</strong> (≥ $250,000 p.a. for each of the last 2 financial years).<br><br>
+        <strong>This certificate is valid for 2 years</strong> from the date your accountant signs it. After 2 years you will need to resubmit.<br><br>
+        <strong>Your accountant must be</strong> a member of CPA Australia, Chartered Accountants Australia &amp; New Zealand (CA ANZ), or the Institute of Public Accountants (IPA).
+      </div>
+
+      <form id="wholesaleCertForm" onsubmit="return false">
+
+        <!-- SECTION 1: INVESTOR DETAILS -->
+        <div class="wc-form-section">
+          <div class="wc-form-section-title">👤 Section 1 — Investor Details</div>
+          <div class="field-row">
+            <div class="field"><label>Full Legal Name *</label><input type="text" id="wc-investor-name" placeholder="As it appears on your ID"></div>
+            <div class="field"><label>Date of Birth</label><input type="date" id="wc-investor-dob"></div>
+          </div>
+          <div class="field"><label>Residential Address</label><input type="text" id="wc-investor-address" placeholder="Street, Suburb, State, Postcode"></div>
+        </div>
+
+        <!-- SECTION 2: ACCOUNTANT DETAILS -->
+        <div class="wc-form-section">
+          <div class="wc-form-section-title">🧾 Section 2 — Qualified Accountant Details</div>
+          <div class="field-row">
+            <div class="field"><label>Accountant Full Name *</label><input type="text" id="wc-acct-name" placeholder="e.g. John Smith"></div>
+            <div class="field"><label>Firm / Practice Name *</label><input type="text" id="wc-acct-firm" placeholder="e.g. Smith &amp; Partners CPA"></div>
+          </div>
+          <div class="field"><label>Business Address</label><input type="text" id="wc-acct-address" placeholder="Street, Suburb, State, Postcode"></div>
+          <div class="field-row">
+            <div class="field"><label>Phone</label><input type="tel" id="wc-acct-phone" placeholder="e.g. 07 3000 0000"></div>
+            <div class="field"><label>Email</label><input type="email" id="wc-acct-email" placeholder="accountant@firm.com.au"></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Professional Membership *</label>
+              <select id="wc-acct-membership">
+                <option value="">— Select —</option>
+                <option value="CPA Australia">CPA Australia</option>
+                <option value="CA ANZ">Chartered Accountants ANZ (CA ANZ)</option>
+                <option value="IPA">Institute of Public Accountants (IPA)</option>
+              </select>
+            </div>
+            <div class="field"><label>Membership / Registration No. *</label><input type="text" id="wc-acct-number" placeholder="e.g. 12345678"></div>
+          </div>
+        </div>
+
+        <!-- SECTION 3: CERTIFICATION BASIS -->
+        <div class="wc-form-section">
+          <div class="wc-form-section-title">✅ Section 3 — Certification Basis</div>
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px">Select the test your accountant is certifying you meet. Your accountant must have examined your financial records to make this certification.</p>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">
+            <label class="ack-checkbox-row" style="cursor:pointer">
+              <input type="radio" name="wc-cert-basis" value="net_assets" id="wc-basis-assets" onchange="wcBasisChange()" style="margin-top:2px;flex-shrink:0">
+              <div>
+                <div style="font-weight:700;font-size:.88rem;color:var(--navy)">Net Assets Test</div>
+                <div style="font-size:.78rem;color:var(--muted);margin-top:2px">I have net assets of at least <strong>$2,500,000</strong>. My accountant has examined my financial records and confirms this.</div>
+              </div>
+            </label>
+            <label class="ack-checkbox-row" style="cursor:pointer">
+              <input type="radio" name="wc-cert-basis" value="gross_income" id="wc-basis-income" onchange="wcBasisChange()" style="margin-top:2px;flex-shrink:0">
+              <div>
+                <div style="font-weight:700;font-size:.88rem;color:var(--navy)">Gross Income Test</div>
+                <div style="font-size:.78rem;color:var(--muted);margin-top:2px">I have had a gross income of at least <strong>$250,000 per annum</strong> for each of the last 2 financial years. My accountant has examined my financial records and confirms this.</div>
+              </div>
+            </label>
+          </div>
+          <div id="wc-assets-field" class="hidden">
+            <div class="field"><label>Approximate Net Asset Value (optional)</label><input type="text" id="wc-approx-assets" placeholder="e.g. $3.2M — for verification purposes only"></div>
+          </div>
+          <div id="wc-income-field" class="hidden">
+            <label class="ack-checkbox-row" style="cursor:pointer">
+              <input type="checkbox" id="wc-both-years" style="margin-top:2px;flex-shrink:0">
+              <div style="font-size:.82rem;color:var(--navy)">I confirm my gross income exceeded $250,000 p.a. in <strong>both</strong> of the last two financial years</div>
+            </label>
+          </div>
+        </div>
+
+        <!-- SECTION 4: CERTIFICATE UPLOAD -->
+        <div class="wc-form-section">
+          <div class="wc-form-section-title">📎 Section 4 — Upload Signed Certificate *</div>
+          <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px">Upload the original signed certificate from your accountant. Accepted formats: <strong>PDF, JPG, PNG</strong> (max 10 MB). You can use the <a href="https://centuria.com.au/wp-content/uploads/2022/01/Qualified-Accountants-Certificate-WHOLESALE.pdf" target="_blank" style="color:var(--gold);font-weight:600">standard ASIC Qualified Accountant's Certificate template ↗</a> or your accountant's own letterhead.</p>
+          <div class="upload-btn-zone" id="wc-upload-zone" onclick="document.getElementById('wc-file-input').click()">
+            <div style="font-size:2rem;margin-bottom:8px">📄</div>
+            <div id="wc-upload-label" style="font-weight:700;color:var(--navy);font-size:.9rem">Click to upload signed certificate</div>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:4px">PDF, JPG, or PNG — max 10 MB</div>
+          </div>
+          <input type="file" id="wc-file-input" accept=".pdf,.jpg,.jpeg,.png" style="display:none" onchange="wcFileSelected(this)">
+          <div id="wc-file-error" style="color:var(--red);font-size:.8rem;margin-top:8px;display:none"></div>
+        </div>
+
+        <!-- SECTION 5: INVESTOR DECLARATION -->
+        <div class="wc-form-section" style="background:linear-gradient(135deg,#fff8e7,#fffdf0);border-color:var(--gold)">
+          <div class="wc-form-section-title" style="color:#8b6914">⚖️ Section 5 — Investor Declaration</div>
+          <p style="font-size:.8rem;color:#5c4a1c;line-height:1.7;margin-bottom:14px">
+            I declare that the information provided in this form is true and correct. I understand that:<br>
+            (a) This certification is made for the purposes of <strong>s761G(7)(c) of the Corporations Act 2001 (Cth)</strong>;<br>
+            (b) Providing false or misleading information may constitute an offence;<br>
+            (c) This certificate will be held on file and may be provided to regulators if required;<br>
+            (d) I am responsible for notifying Prop Dev DNA if my wholesale investor status changes;<br>
+            (e) This platform does not provide financial advice — any investment decision is my own.
+          </p>
+          <label class="ack-checkbox-row" style="cursor:pointer">
+            <input type="checkbox" id="wc-investor-declared" onchange="wcValidateForm()" style="margin-top:2px;flex-shrink:0">
+            <div style="font-size:.82rem;color:#5c4a1c;font-weight:600">I have read and agree to the above declaration, and confirm I have authorised my accountant to provide the attached certificate</div>
+          </label>
+        </div>
+
+        <!-- FA REFERRAL NOTICE -->
+        <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:14px;margin-bottom:20px;font-size:.78rem;color:#0369a1;line-height:1.6">
+          <strong>Note for Financial Adviser referrals:</strong> If you were referred to this platform by a financial adviser, please note that Prop Dev DNA does not provide financial advice. Your adviser's recommendations are subject to their own AFSL obligations. Your wholesale certification is independent of any adviser referral.
+        </div>
+
+        <div id="wc-submit-error" style="color:var(--red);font-size:.83rem;margin-bottom:12px;display:none"></div>
+        <button id="wc-submit-btn" onclick="submitWholesaleCert()" disabled style="width:100%;padding:14px;background:#9ca3af;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.95rem;cursor:not-allowed;font-family:inherit">Complete All Sections to Submit</button>
+      </form>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay hidden" id="imChecklistModal">
   <div class="modal-box" style="max-width:480px">
     <button class="modal-close" onclick="document.getElementById('imChecklistModal').classList.add('hidden')">×</button>
@@ -1388,6 +1553,10 @@ const API={
   requestAmendments:(id,amendments,adminNotes)=>API.post('/api/admin/im-reviews/'+id+'/request-amendments',{amendments,adminNotes}),
   logIMView:(id,wholesale,risk)=>API.post('/api/listings/'+id+'/im-view-log',{wholesaleConfirmed:wholesale,riskConfirmed:risk}),
   adminViewLogs:()=>API.get('/api/admin/im-view-logs'),
+  wholesaleCertStatus:()=>API.get('/api/wholesale-cert/status'),
+  adminWholesaleCerts:()=>API.get('/api/admin/wholesale-certs'),
+  approveWholesaleCert:(id,notes)=>API.post('/api/admin/wholesale-certs/'+id+'/approve',{notes}),
+  rejectWholesaleCert:(id,notes)=>API.post('/api/admin/wholesale-certs/'+id+'/reject',{notes}),
 };
 let currentUser=null,currentListingId=null,needsBroker=false,selectedRole='investor',allListings=[],activeFilter='all',userActiveSubs=[],currentIMViewListingId=null;
 
@@ -1440,7 +1609,7 @@ function onLoggedIn(){
 }
 async function doLogout(){await API.logout();currentUser=null;userActiveSubs=[];document.getElementById('navSignIn').classList.remove('hidden');document.getElementById('navUser').classList.add('hidden');document.querySelectorAll('.dev-only').forEach(el=>el.classList.add('hidden'));document.querySelectorAll('.admin-only').forEach(el=>el.classList.add('hidden'));showScreen('landing');openAuth();toast('Signed out.');}
 
-function showScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+name).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});if(name==='portal'&&(currentUser?.role==='developer'||currentUser?.role==='admin'))refreshPortal();if(name==='profile'){refreshMyInterests();refreshSubStatus();}if(name==='admin'){loadAdminSubs();loadAdminIMReviews();loadAdminViewLogs();}if(name==='im-review')loadIMReviewDetail();}
+function showScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+name).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});if(name==='portal'&&(currentUser?.role==='developer'||currentUser?.role==='admin'))refreshPortal();if(name==='profile'){refreshMyInterests();refreshSubStatus();loadWholesaleStatus();}if(name==='admin'){loadAdminSubs();loadAdminIMReviews();loadAdminViewLogs();loadAdminWholesaleCerts();}if(name==='im-review')loadIMReviewDetail();}
 function goHome(){showScreen('landing');setBN('home');}
 function toggleMobile(){document.getElementById('mobileMenu').classList.toggle('open');}
 function setBN(tab){document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));const el=document.getElementById('bn-'+tab);if(el)el.classList.add('active');}
@@ -2867,6 +3036,210 @@ ${comps.length?`
   showScreen('im');
   // Load any existing review status for this listing
   if(currentFeasoListingId)loadIMReview(currentFeasoListingId);
+}
+
+// ═══════════════════════════════════════════════════
+//  WHOLESALE INVESTOR CERTIFICATION
+// ═══════════════════════════════════════════════════
+
+let wcSelectedFile = null;
+
+function openWholesaleCertModal(){
+  document.getElementById('wholesaleCertModal').classList.remove('hidden');
+  loadWholesaleStatusInModal();
+}
+
+function closeWholesaleCertModal(){
+  document.getElementById('wholesaleCertModal').classList.add('hidden');
+}
+
+async function loadWholesaleStatusInModal(){
+  if(!currentUser) return;
+  try{
+    const {cert, wholesaleStatus} = await API.wholesaleCertStatus();
+    const formWrap = document.getElementById('wc-form-wrapper');
+    const statusDiv = document.getElementById('wc-status-display');
+    if(cert && ['pending','verified'].includes(cert.status)){
+      formWrap.classList.add('hidden');
+      statusDiv.classList.remove('hidden');
+      if(cert.status === 'verified'){
+        statusDiv.innerHTML=`
+          <div style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:10px;padding:18px;text-align:center">
+            <div style="font-size:2rem;margin-bottom:8px">✅</div>
+            <div style="font-weight:800;color:#065f46;font-size:1rem;margin-bottom:4px">Wholesale Status Verified</div>
+            <div style="font-size:.82rem;color:#047857">Certified by ${cert.acctName} (${cert.acctMembership}) · Valid until ${new Date(cert.expiresAt).toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'})}</div>
+            <div style="font-size:.78rem;color:#6b7280;margin-top:8px">Basis: ${cert.certBasis==='net_assets'?'Net Assets ≥ $2.5M':'Gross Income ≥ $250k p.a.'}</div>
+          </div>`;
+      } else {
+        statusDiv.innerHTML=`
+          <div style="background:#fef3c7;border:1px solid #fcd34d;border-radius:10px;padding:18px;text-align:center">
+            <div style="font-size:2rem;margin-bottom:8px">⏳</div>
+            <div style="font-weight:800;color:#92400e;font-size:1rem;margin-bottom:4px">Certificate Under Review</div>
+            <div style="font-size:.82rem;color:#92400e">Submitted ${new Date(cert.submittedAt).toLocaleDateString('en-AU')} · Document: <strong>${cert.fileName}</strong></div>
+            <div style="font-size:.78rem;color:#6b7280;margin-top:8px">We review certificates within 1 business day. You'll have full IM access once approved.</div>
+          </div>`;
+      }
+    } else if(cert && cert.status === 'rejected'){
+      statusDiv.classList.remove('hidden');
+      statusDiv.innerHTML=`
+        <div style="background:#fee2e2;border:1px solid #fca5a5;border-radius:10px;padding:14px;margin-bottom:16px">
+          <div style="font-weight:700;color:#991b1b;margin-bottom:4px">❌ Certificate Rejected</div>
+          <div style="font-size:.82rem;color:#b91c1c">${cert.adminNotes||'Please resubmit with a valid signed certificate.'}</div>
+        </div>`;
+    }
+  } catch(e){}
+}
+
+async function loadWholesaleStatus(){
+  if(!currentUser || currentUser.role !== 'investor') return;
+  const card = document.getElementById('wholesale-cert-card');
+  if(!card) return;
+  card.classList.remove('hidden');
+  try{
+    const {cert, wholesaleStatus} = await API.wholesaleCertStatus();
+    const badge = document.getElementById('wholesale-badge');
+    const detail = document.getElementById('wholesale-cert-detail');
+    const btn = document.getElementById('wholesale-cert-btn');
+    if(wholesaleStatus === 'verified' && cert){
+      badge.className='wc-status-badge wc-verified'; badge.textContent='✅ Verified Wholesale Investor';
+      detail.innerHTML=`Certified by <strong>${cert.acctName}</strong> (${cert.acctMembership}) · Valid until <strong>${new Date(cert.expiresAt).toLocaleDateString('en-AU')}</strong>`;
+      btn.textContent='View Certificate'; btn.style.background='#d1fae5'; btn.style.color='#065f46';
+    } else if(wholesaleStatus === 'pending'){
+      badge.className='wc-status-badge wc-pending'; badge.textContent='⏳ Pending Review';
+      detail.textContent='Your certificate is being reviewed. We\'ll notify you within 1 business day.';
+      btn.textContent='View Status'; btn.style.background='#fef3c7'; btn.style.color='#92400e';
+    } else if(wholesaleStatus === 'rejected'){
+      badge.className='wc-status-badge wc-rejected'; badge.textContent='❌ Rejected — Resubmit';
+      detail.textContent=cert?.adminNotes||'Your certificate was rejected. Please resubmit.';
+      btn.textContent='Resubmit Certificate →';
+    } else {
+      badge.className='wc-status-badge wc-none'; badge.textContent='⬜ Not Verified';
+      detail.innerHTML='Submit a Qualified Accountant\'s Certificate to access Investment Memorandums on this platform.';
+      btn.textContent='Submit Certificate →';
+    }
+  } catch(e){}
+}
+
+function wcBasisChange(){
+  const basis = document.querySelector('input[name="wc-cert-basis"]:checked')?.value;
+  document.getElementById('wc-assets-field').classList.toggle('hidden', basis !== 'net_assets');
+  document.getElementById('wc-income-field').classList.toggle('hidden', basis !== 'gross_income');
+  wcValidateForm();
+}
+
+function wcFileSelected(input){
+  const file = input.files[0];
+  const errEl = document.getElementById('wc-file-error');
+  const zone = document.getElementById('wc-upload-zone');
+  const label = document.getElementById('wc-upload-label');
+  if(!file){ wcSelectedFile=null; return; }
+  const allowedExt = ['.pdf','.jpg','.jpeg','.png'];
+  const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+  if(!allowedExt.includes(ext)){ errEl.textContent='Only PDF, JPG, or PNG files accepted.'; errEl.style.display='block'; wcSelectedFile=null; wcValidateForm(); return; }
+  if(file.size > 10*1024*1024){ errEl.textContent='File must be under 10 MB.'; errEl.style.display='block'; wcSelectedFile=null; wcValidateForm(); return; }
+  errEl.style.display='none';
+  wcSelectedFile = file;
+  zone.classList.add('has-file');
+  label.innerHTML=`✅ <strong>${file.name}</strong> (${(file.size/1024).toFixed(0)} KB) — click to change`;
+  wcValidateForm();
+}
+
+function wcValidateForm(){
+  const name = document.getElementById('wc-investor-name')?.value.trim();
+  const acctName = document.getElementById('wc-acct-name')?.value.trim();
+  const acctFirm = document.getElementById('wc-acct-firm')?.value.trim();
+  const membership = document.getElementById('wc-acct-membership')?.value;
+  const memberNum = document.getElementById('wc-acct-number')?.value.trim();
+  const basis = document.querySelector('input[name="wc-cert-basis"]:checked')?.value;
+  const declared = document.getElementById('wc-investor-declared')?.checked;
+  const hasFile = !!wcSelectedFile;
+  const valid = name && acctName && acctFirm && membership && memberNum && basis && declared && hasFile;
+  const btn = document.getElementById('wc-submit-btn');
+  btn.disabled = !valid;
+  btn.style.background = valid ? 'var(--navy)' : '#9ca3af';
+  btn.style.cursor = valid ? 'pointer' : 'not-allowed';
+  btn.textContent = valid ? 'Submit Wholesale Certificate →' : 'Complete All Sections to Submit';
+}
+
+async function submitWholesaleCert(){
+  const btn = document.getElementById('wc-submit-btn');
+  const errEl = document.getElementById('wc-submit-error');
+  btn.disabled=true; btn.textContent='Submitting…';
+  try{
+    const formData = new FormData();
+    formData.append('certFile', wcSelectedFile);
+    formData.append('investorName',  document.getElementById('wc-investor-name').value.trim());
+    formData.append('investorDOB',   document.getElementById('wc-investor-dob').value);
+    formData.append('investorAddress',document.getElementById('wc-investor-address').value.trim());
+    formData.append('acctName',      document.getElementById('wc-acct-name').value.trim());
+    formData.append('acctFirm',      document.getElementById('wc-acct-firm').value.trim());
+    formData.append('acctAddress',   document.getElementById('wc-acct-address').value.trim());
+    formData.append('acctPhone',     document.getElementById('wc-acct-phone').value.trim());
+    formData.append('acctEmail',     document.getElementById('wc-acct-email').value.trim());
+    formData.append('acctMembership',document.getElementById('wc-acct-membership').value);
+    formData.append('acctMembershipNumber', document.getElementById('wc-acct-number').value.trim());
+    formData.append('certBasis',     document.querySelector('input[name="wc-cert-basis"]:checked').value);
+    formData.append('approxNetAssets', document.getElementById('wc-approx-assets')?.value||'');
+    formData.append('confirmedBothYears', document.getElementById('wc-both-years')?.checked||false);
+    formData.append('investorDeclared', 'true');
+
+    const res = await fetch('/api/wholesale-cert', { method:'POST', body: formData });
+    const data = await res.json();
+    if(data.error){ errEl.textContent=data.error; errEl.style.display='block'; btn.disabled=false; btn.textContent='Submit Wholesale Certificate →'; return; }
+    errEl.style.display='none';
+    toast('✅ Certificate submitted! We\'ll review it within 1 business day.');
+    closeWholesaleCertModal();
+    loadWholesaleStatus();
+  } catch(e){ errEl.textContent='Submission failed — please try again.'; errEl.style.display='block'; btn.disabled=false; btn.textContent='Submit Wholesale Certificate →'; }
+}
+
+async function loadAdminWholesaleCerts(){
+  const el = document.getElementById('admin-wholesale-list');
+  if(!el) return;
+  try{
+    const {certs} = await API.adminWholesaleCerts();
+    if(!certs||!certs.length){ el.innerHTML='<p style="color:var(--muted);font-size:.9rem">No wholesale certificates submitted yet.</p>'; return; }
+    el.innerHTML = certs.map(c => {
+      const statusColor = c.status==='verified'?'#16a34a':c.status==='pending'?'#d97706':c.status==='rejected'?'#dc2626':'#6b7280';
+      const statusLabel = c.status==='verified'?'✅ Verified':c.status==='pending'?'⏳ Pending':c.status==='rejected'?'❌ Rejected':'—';
+      return `<div style="border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+          <div>
+            <div style="font-weight:700;color:var(--navy);font-size:.95rem">${c.userName} <span style="font-size:.78rem;color:var(--muted);font-weight:400">${c.userEmail}</span></div>
+            <div style="font-size:.78rem;color:var(--muted);margin-top:2px">Submitted ${new Date(c.submittedAt).toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})}</div>
+          </div>
+          <span style="background:${statusColor}20;color:${statusColor};padding:4px 12px;border-radius:20px;font-size:.75rem;font-weight:700">${statusLabel}</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:.78rem;margin-bottom:12px">
+          <div><span style="color:var(--muted)">Accountant:</span> <strong>${c.acctName}</strong> · ${c.acctMembership} #${c.acctMembershipNumber}</div>
+          <div><span style="color:var(--muted)">Firm:</span> ${c.acctFirm}</div>
+          <div><span style="color:var(--muted)">Basis:</span> <strong>${c.certBasis==='net_assets'?'Net Assets ≥ $2.5M':'Gross Income ≥ $250k p.a.'}</strong></div>
+          <div><span style="color:var(--muted)">File:</span> ${c.fileName||'—'}</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a href="/api/admin/wholesale-certs/${c.id}/download" target="_blank" style="padding:7px 14px;background:var(--navy);color:#fff;border-radius:6px;font-size:.75rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:4px">📥 Download Certificate</a>
+          ${c.status==='pending'?`
+          <button onclick="adminApproveWC('${c.id}')" style="padding:7px 14px;background:#16a34a;color:#fff;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit">✅ Approve</button>
+          <button onclick="adminRejectWC('${c.id}')" style="padding:7px 14px;background:#dc2626;color:#fff;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit">❌ Reject</button>`:''}
+          ${c.status==='verified'?`<span style="font-size:.75rem;color:#6b7280;padding:7px 0">Valid until ${new Date(c.expiresAt).toLocaleDateString('en-AU')}</span>`:''}
+        </div>
+        ${c.adminNotes?`<div style="margin-top:8px;font-size:.75rem;color:var(--muted)">Admin notes: ${c.adminNotes}</div>`:''}
+      </div>`;
+    }).join('');
+  } catch(e){ el.innerHTML='<p style="color:var(--red);font-size:.9rem">Error loading certificates.</p>'; }
+}
+
+async function adminApproveWC(id){
+  const notes = prompt('Approval notes (optional):') || '';
+  try{ await API.approveWholesaleCert(id, notes); toast('✅ Wholesale certificate approved — investor now has verified status.'); loadAdminWholesaleCerts(); }
+  catch(e){ toast('Error approving certificate.'); }
+}
+
+async function adminRejectWC(id){
+  const notes = prompt('Reason for rejection (required):');
+  if(!notes) return;
+  try{ await API.rejectWholesaleCert(id, notes); toast('Certificate rejected.'); loadAdminWholesaleCerts(); }
+  catch(e){ toast('Error rejecting certificate.'); }
 }
 </script>
 </body>
