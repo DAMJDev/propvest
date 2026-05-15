@@ -261,6 +261,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
   .field-group,.field-row{grid-template-columns:1fr}
   .form-page{padding:24px 16px 48px}.section{padding:40px 16px}.detail-body{padding:0 16px 48px}
   .tabs .tab-btn{font-size:.75rem;padding:8px 4px}
+  .img-feature-section{grid-template-columns:1fr!important}
 }
 /* ── FEASO Module ─────────────────────────────────── */
 .feaso-page{max-width:1060px;margin:0 auto;padding:32px 24px 80px}
@@ -590,6 +591,45 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
       <div class="how-card"><div class="how-icon">🚀</div><h3>Get Connected</h3><p>Our team follows up within 24 hours to guide you through the next steps and secure your position.</p></div>
     </div>
   </div>
+  <!-- IMAGE FEATURE SECTION -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;min-height:480px;overflow:hidden" class="img-feature-section">
+    <!-- Left: image -->
+    <div style="position:relative;min-height:380px;background:url('https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=1200&q=85') center center/cover no-repeat">
+      <div style="position:absolute;inset:0;background:linear-gradient(135deg,rgba(0,0,0,.45) 0%,rgba(10,8,0,.3) 100%)"></div>
+      <div style="position:absolute;bottom:28px;left:28px;display:flex;gap:8px;flex-wrap:wrap">
+        <span style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.4);color:var(--gold);padding:5px 12px;border-radius:20px;font-size:.72rem;font-weight:700;backdrop-filter:blur(4px)">FEASO Builder</span>
+        <span style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.4);color:var(--gold);padding:5px 12px;border-radius:20px;font-size:.72rem;font-weight:700;backdrop-filter:blur(4px)">IM Generator</span>
+        <span style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.4);color:var(--gold);padding:5px 12px;border-radius:20px;font-size:.72rem;font-weight:700;backdrop-filter:blur(4px)">Compliance Review</span>
+      </div>
+    </div>
+    <!-- Right: text -->
+    <div style="background:#0a0a0a;padding:60px 48px;display:flex;flex-direction:column;justify-content:center;border-left:1px solid #2a2200">
+      <div style="font-size:.72rem;font-weight:800;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">Built for the Deal Table</div>
+      <h2 style="font-size:2rem;font-weight:800;color:#ffffff;line-height:1.25;margin-bottom:20px">From blueprint to<br><span style="color:var(--gold)">investor-ready</span> in minutes</h2>
+      <p style="color:#888;line-height:1.8;font-size:.95rem;margin-bottom:28px">Prop Dev DNA gives developers and buyers agents a professional toolkit to take a deal from feasibility numbers through to a compliance-reviewed Information Memorandum — all before a single investor conversation.</p>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px">
+        <div style="display:flex;align-items:center;gap:12px;font-size:.88rem;color:#ccc">
+          <span style="width:28px;height:28px;border-radius:50%;background:rgba(201,168,76,.15);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0">✓</span>
+          Live FEASO feasibility calculator with automatic profit &amp; IRR modelling
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:.88rem;color:#ccc">
+          <span style="width:28px;height:28px;border-radius:50%;background:rgba(201,168,76,.15);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0">✓</span>
+          Auto-generated 16-page Information Memorandum with ASIC-aligned disclaimers
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:.88rem;color:#ccc">
+          <span style="width:28px;height:28px;border-radius:50%;background:rgba(201,168,76,.15);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0">✓</span>
+          Compliance review workflow before any investor sees your deal
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:.88rem;color:#ccc">
+          <span style="width:28px;height:28px;border-radius:50%;background:rgba(201,168,76,.15);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0">✓</span>
+          Direct access to verified wholesale investors Australia-wide
+        </div>
+      </div>
+      <button onclick="openAuth()" style="align-self:flex-start;background:var(--gold);color:#000;border:none;padding:14px 28px;border-radius:10px;font-weight:800;font-size:.9rem;cursor:pointer;font-family:inherit;letter-spacing:.02em">Start Your First Deal →</button>
+    </div>
+  </div>
+  <!-- /IMAGE FEATURE SECTION -->
+
   <div style="background:var(--navy);padding:60px 24px;text-align:center;color:var(--white)">
     <div style="max-width:600px;margin:0 auto">
       <div style="font-size:.8rem;letter-spacing:1.5px;color:var(--gold);font-weight:700;text-transform:uppercase;margin-bottom:16px">For Developers & Buyers Agents</div>
