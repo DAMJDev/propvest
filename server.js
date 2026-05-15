@@ -141,7 +141,9 @@ function seedDB() {
     ],
     imReviews: [],
     imViewLogs: [],
-    wholesaleCerts: []
+    wholesaleCerts: [],
+    partners: [],
+    riskDeclarations: []
   };
   if (!fs.existsSync(path.dirname(DB_FILE))) {
     fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
@@ -187,7 +189,7 @@ function getActiveSubPlans(db, userId) {
 
 // ── Auth ──────────────────────────────────────────
 app.post('/api/auth/register', (req, res) => {
-  const { fname, lname, email, password, role } = req.body;
+  const { fname, lname, email, password, role, referralCode } = req.body;
   if (!fname || !email || !password || !role) return res.status(400).json({ error: 'All fields required.' });
   if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters.' });
   if (!['investor','developer'].includes(role)) return res.status(400).json({ error: 'Invalid role.' });
@@ -196,6 +198,11 @@ app.post('/api/auth/register', (req, res) => {
   if (db.users.find(u => u.email === email.toLowerCase())) {
     return res.status(400).json({ error: 'An account with this email already exists.' });
   }
+  // Validate referral code if provided
+  let referringPartner = null;
+  if (referralCode) {
+    referringPartner = (db.partners || []).find(p => p.referralCode === referralCode.toUpperCase() && p.active);
+  }
   const user = {
     id: 'u-' + Date.now(),
     email: email.toLowerCase().trim(),
@@ -203,7 +210,10 @@ app.post('/api/auth/register', (req, res) => {
     fname: fname.trim(),
     lname: (lname || '').trim(),
     role,
-    joined: new Date().toISOString()
+    joined: new Date().toISOString(),
+    referredBy: referringPartner ? referringPartner.referralCode : null,
+    referredByName: referringPartner ? referringPartner.name : null,
+    referredByFirm: referringPartner ? referringPartner.firm : null
   };
   db.users.push(user);
   writeDB(db);
@@ -673,6 +683,104 @@ app.post('/api/admin/wholesale-certs/:id/reject', requireAuth, requireAdmin, (re
   if (userIdx !== -1) db.users[userIdx].wholesaleStatus = 'rejected';
   writeDB(db);
   res.json({ ok: true, cert });
+});
+
+// ── Partner Registry ──────────────────────────────
+app.get('/api/partners/lookup', (req, res) => {
+  // Public lookup by referral code — used on registration page
+  const { code } = req.query;
+  if (!code) return res.status(400).json({ error: 'Code required.' });
+  const db = readDB();
+  const partner = (db.partners || []).find(p => p.referralCode === code.toUpperCase() && p.active);
+  if (!partner) return res.status(404).json({ error: 'Referral code not found.' });
+  res.json({ partner: { id: partner.id, name: partner.name, firm: partner.firm, role: partner.role } });
+});
+
+app.get('/api/admin/partners', requireAuth, requireAdmin, (req, res) => {
+  const db = readDB();
+  res.json({ partners: db.partners || [] });
+});
+
+app.post('/api/admin/partners', requireAuth, requireAdmin, (req, res) => {
+  const db = readDB();
+  if (!db.partners) db.partners = [];
+  const { name, firm, role, email, phone, licenceNumber } = req.body;
+  if (!name || !role) return res.status(400).json({ error: 'Name and role are required.' });
+  // Generate unique referral code from name
+  const base = (name.split(' ')[0] + (firm ? '-' + firm.split(' ')[0] : '')).toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0, 12);
+  const code = base + '-' + Math.random().toString(36).substring(2,5).toUpperCase();
+  const partner = {
+    id: 'prt-' + Date.now(),
+    name, firm: firm || '', role, email: email || '', phone: phone || '',
+    licenceNumber: licenceNumber || '',
+    referralCode: code,
+    active: true,
+    createdAt: new Date().toISOString(),
+    referralCount: 0
+  };
+  db.partners.push(partner);
+  writeDB(db);
+  res.json({ ok: true, partner });
+});
+
+app.post('/api/admin/partners/:id/toggle', requireAuth, requireAdmin, (req, res) => {
+  const db = readDB();
+  const p = (db.partners || []).find(p => p.id === req.params.id);
+  if (!p) return res.status(404).json({ error: 'Partner not found.' });
+  p.active = !p.active;
+  writeDB(db);
+  res.json({ ok: true, partner: p });
+});
+
+// ── Risk Declarations ─────────────────────────────
+app.post('/api/risk-declaration', requireAuth, (req, res) => {
+  const db = readDB();
+  if (!db.riskDeclarations) db.riskDeclarations = [];
+  const user = db.users.find(u => u.id === req.session.userId);
+  if (!user) return res.status(404).json({ error: 'User not found.' });
+
+  const { listingId, listingName, referringPartnerCode, allChecksConfirmed } = req.body;
+  if (!allChecksConfirmed) return res.status(400).json({ error: 'All risk confirmations required.' });
+
+  // Find referring partner if code provided
+  let referringPartner = null;
+  if (referringPartnerCode) {
+    referringPartner = (db.partners || []).find(p => p.referralCode === referringPartnerCode && p.active);
+    if (referringPartner) referringPartner.referralCount = (referringPartner.referralCount || 0) + 1;
+  }
+  // Also check if user has a stored referral code
+  if (!referringPartner && user.referredBy) {
+    referringPartner = (db.partners || []).find(p => p.referralCode === user.referredBy);
+  }
+
+  const listing = db.listings.find(l => l.id === listingId);
+  const decl = {
+    id: 'rd-' + Date.now(),
+    userId: req.session.userId,
+    userEmail: user.email,
+    userName: (user.fname + ' ' + (user.lname || '')).trim(),
+    listingId: listingId || null,
+    listingName: listing?.name || listingName || '—',
+    referringPartnerId: referringPartner?.id || null,
+    referringPartnerName: referringPartner?.name || null,
+    referringPartnerFirm: referringPartner?.firm || null,
+    referringPartnerRole: referringPartner?.role || null,
+    allChecksConfirmed: true,
+    ipAddress: req.ip,
+    declaredAt: new Date().toISOString()
+  };
+  db.riskDeclarations.push(decl);
+  // Mark user as having completed risk declaration
+  const userIdx = db.users.findIndex(u => u.id === req.session.userId);
+  if (userIdx !== -1) db.users[userIdx].riskDeclaredAt = decl.declaredAt;
+  writeDB(db);
+  res.json({ ok: true, declaration: decl });
+});
+
+app.get('/api/admin/risk-declarations', requireAuth, requireAdmin, (req, res) => {
+  const db = readDB();
+  const decls = (db.riskDeclarations || []).slice().reverse();
+  res.json({ declarations: decls });
 });
 
 // ── Health check ──────────────────────────────────

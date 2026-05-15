@@ -516,6 +516,11 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
       </div>
       <div class="auth-field"><label>Email</label><input type="email" id="reg-email" placeholder="you@example.com"></div>
       <div class="auth-field"><label>Password</label><input type="password" id="reg-pass" placeholder="Min 6 characters"></div>
+      <div class="auth-field">
+        <label>Referral Code <span style="font-weight:400;color:var(--muted)">(optional — provided by your accountant, adviser or broker)</span></label>
+        <input type="text" id="reg-referral" placeholder="e.g. SMITH-CPA-X4K" oninput="lookupReferralCode()" style="text-transform:uppercase">
+        <div id="reg-referral-status" style="font-size:.75rem;margin-top:4px;min-height:16px"></div>
+      </div>
       <button class="auth-submit" id="reg-btn" onclick="doRegister()">Create Account →</button>
     </div>
   </div>
@@ -1169,7 +1174,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
         <h2 style="font-size:1.6rem;font-weight:800;color:var(--navy)">🔐 Admin Panel</h2>
         <p style="color:var(--muted);margin-top:4px">Manage subscriptions and platform activity</p>
       </div>
-      <button class="btn-secondary" onclick="loadAdminSubs();loadAdminIMReviews();loadAdminViewLogs();loadAdminWholesaleCerts()" style="padding:10px 20px;font-size:.9rem">🔄 Refresh</button>
+      <button class="btn-secondary" onclick="loadAdminSubs();loadAdminIMReviews();loadAdminViewLogs();loadAdminWholesaleCerts();loadAdminPartners()" style="padding:10px 20px;font-size:.9rem">🔄 Refresh</button>
     </div>
     <!-- Stats -->
     <div class="card" style="margin-bottom:24px">
@@ -1186,6 +1191,33 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
       <div class="card-title"><span>📋</span> Information Memorandum Review Queue</div>
       <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px">Review submitted IMs, request amendments, and issue sign-off certificates.</p>
       <div id="admin-im-reviews-list" style="margin-top:8px"><p style="color:var(--muted);font-size:.9rem">Loading…</p></div>
+    </div>
+    <!-- Partner Registry -->
+    <div class="card" style="margin-bottom:20px">
+      <div class="card-title"><span>🤝</span> Referring Partner Registry</div>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px">Register accountants, financial advisers, mortgage brokers, buyers agents, and builders. Each partner gets a unique referral code. Investors who register via that code are logged, and a liability disclaimer fires automatically when they access any IM.</p>
+      <div style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px">
+        <div style="font-size:.82rem;font-weight:700;color:var(--navy);margin-bottom:12px">➕ Add New Partner</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div class="field"><label style="font-size:.78rem">Full Name *</label><input type="text" id="np-name" placeholder="e.g. Sarah Johnson"></div>
+          <div class="field"><label style="font-size:.78rem">Firm / Practice</label><input type="text" id="np-firm" placeholder="e.g. Johnson CPA Group"></div>
+          <div class="field"><label style="font-size:.78rem">Role *</label>
+            <select id="np-role">
+              <option value="Accountant">Accountant / CPA</option>
+              <option value="Financial Adviser">Financial Adviser</option>
+              <option value="Mortgage Broker">Mortgage Broker</option>
+              <option value="Buyers Agent">Buyers Agent</option>
+              <option value="Builder">Builder / Developer</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="field"><label style="font-size:.78rem">Licence / Registration No.</label><input type="text" id="np-licence" placeholder="e.g. AFSL 123456 / CPA 987654"></div>
+          <div class="field"><label style="font-size:.78rem">Email</label><input type="email" id="np-email" placeholder="partner@firm.com.au"></div>
+          <div class="field"><label style="font-size:.78rem">Phone</label><input type="tel" id="np-phone" placeholder="07 3000 0000"></div>
+        </div>
+        <button onclick="addPartner()" style="background:var(--navy);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:.82rem;cursor:pointer;font-family:inherit">➕ Add Partner &amp; Generate Code</button>
+      </div>
+      <div id="admin-partners-list"><p style="color:var(--muted);font-size:.9rem">Loading…</p></div>
     </div>
     <!-- Wholesale Cert Review -->
     <div class="card" style="margin-bottom:20px">
@@ -1342,35 +1374,67 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
 
 <!-- INVESTOR IM ACKNOWLEDGMENT MODAL -->
 <div class="modal-overlay hidden" id="imViewModal">
-  <div class="modal-box" style="max-width:520px">
+  <div class="modal-box" style="max-width:580px;max-height:92vh;overflow-y:auto">
     <button class="modal-close" onclick="closeIMViewModal()">×</button>
-    <div style="text-align:center;margin-bottom:20px">
-      <div style="font-size:2.5rem;margin-bottom:8px">📋</div>
-      <h3 style="font-size:1.2rem;font-weight:800;color:var(--navy)">Information Memorandum</h3>
-      <p style="font-size:.85rem;color:var(--muted);margin-top:4px">Before accessing this document, please confirm the following</p>
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:2rem;margin-bottom:6px">📋</div>
+      <h3 style="font-size:1.15rem;font-weight:800;color:var(--navy)">Investor Risk Acknowledgment</h3>
+      <p style="font-size:.8rem;color:var(--muted);margin-top:4px">You must read and confirm all sections before accessing this Information Memorandum</p>
     </div>
-    <div style="background:#fff8e7;border:1.5px solid var(--gold);border-radius:12px;padding:18px;margin-bottom:20px">
-      <p style="font-size:.78rem;font-weight:700;color:#8b6914;margin-bottom:10px">⚠️ MANDATORY DISCLOSURE NOTICES</p>
-      <div style="font-size:.8rem;color:#5c4a1c;line-height:1.9;display:flex;flex-direction:column;gap:4px">
+
+    <!-- MANDATORY DISCLOSURES -->
+    <div style="background:#fff8e7;border:1.5px solid var(--gold);border-radius:10px;padding:16px;margin-bottom:14px">
+      <p style="font-size:.75rem;font-weight:800;color:#8b6914;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">⚠️ Mandatory Statutory Disclosures</p>
+      <div style="font-size:.78rem;color:#5c4a1c;line-height:1.8;display:flex;flex-direction:column;gap:2px">
         <div>📌 This document has <strong>not</strong> been lodged with or approved by ASIC.</div>
-        <div>📌 This is <strong>not financial product advice</strong> and does not consider your objectives, financial situation or needs.</div>
-        <div>📌 This offer is only available to <strong>wholesale investors</strong> under s.761G of the Corporations Act 2001 (Cth).</div>
-        <div>📌 Projections are based on assumptions — <strong>actual results may differ materially</strong>.</div>
+        <div>📌 This is <strong>not financial product advice</strong> — it does not consider your personal objectives, financial situation or needs.</div>
+        <div>📌 This offer is restricted to <strong>wholesale investors</strong> under s.761G, Corporations Act 2001 (Cth).</div>
         <div>📌 This is <strong>not a prospectus</strong> or product disclosure statement.</div>
+        <div>📌 Projections are based on assumptions and <strong>are not guaranteed</strong>.</div>
       </div>
     </div>
-    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
+
+    <!-- SPECIFIC RISK FACTORS -->
+    <div style="background:#fef2f2;border:1.5px solid #fca5a5;border-radius:10px;padding:16px;margin-bottom:14px">
+      <p style="font-size:.75rem;font-weight:800;color:#991b1b;margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">🔴 Specific Investment Risk Factors</p>
+      <div style="font-size:.78rem;color:#7f1d1d;line-height:1.8;display:grid;gap:3px">
+        <div>⚠️ <strong>Capital Loss Risk:</strong> You may lose your entire investment. Property development carries substantial risk of total capital loss.</div>
+        <div>⚠️ <strong>Illiquidity Risk:</strong> This investment is illiquid. You may be unable to exit before the project completes.</div>
+        <div>⚠️ <strong>Construction Risk:</strong> Projects may be delayed, exceed budget, or fail to obtain required approvals.</div>
+        <div>⚠️ <strong>Developer Default Risk:</strong> The developer may become insolvent or be unable to complete the project.</div>
+        <div>⚠️ <strong>Market Risk:</strong> Property values and sales prices may decline materially from projections.</div>
+        <div>⚠️ <strong>Regulatory Risk:</strong> Changes in planning laws, interest rates, or government policy may adversely affect returns.</div>
+        <div>⚠️ <strong>No Guarantee of Return:</strong> IRR projections, profit margins, and completion dates are estimates only.</div>
+      </div>
+    </div>
+
+    <!-- REFERRING PARTNER NOTICE (shown if user was referred) -->
+    <div id="ack-partner-notice" class="hidden" style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:14px;margin-bottom:14px;font-size:.78rem;color:#0369a1;line-height:1.6">
+      <strong>⚠️ Referral Disclaimer:</strong> You were referred to this platform by <strong id="ack-partner-name"></strong> (<span id="ack-partner-role"></span>). This referral is <strong>not financial advice</strong>. Your referring party bears no responsibility for investment outcomes. All investment decisions are yours alone.
+    </div>
+
+    <!-- INVESTOR CONFIRMATIONS -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px">
       <label class="ack-checkbox-row">
         <input type="checkbox" id="ack-wholesale" onchange="updateIMViewBtn()" style="margin-top:3px;accent-color:var(--gold);width:16px;height:16px;flex-shrink:0">
-        <span style="font-size:.85rem;color:var(--text);line-height:1.5"><strong>I confirm I am a wholesale investor</strong> as defined under s.761G of the Corporations Act 2001 — I have net assets exceeding $2.5 million or gross income exceeding $250,000 per annum in each of the last two financial years.</span>
+        <span style="font-size:.82rem;color:var(--text);line-height:1.5"><strong>I am a wholesale investor</strong> under s.761G Corporations Act 2001 — net assets ≥ $2.5M or gross income ≥ $250,000 p.a. for the last 2 financial years.</span>
       </label>
       <label class="ack-checkbox-row">
         <input type="checkbox" id="ack-risk" onchange="updateIMViewBtn()" style="margin-top:3px;accent-color:var(--gold);width:16px;height:16px;flex-shrink:0">
-        <span style="font-size:.85rem;color:var(--text);line-height:1.5"><strong>I have read and understood</strong> the risk warnings and disclaimers above, and confirm that projections in this document are not guarantees of future performance.</span>
+        <span style="font-size:.82rem;color:var(--text);line-height:1.5"><strong>I have read and understood all risk factors above.</strong> I accept that this investment may fail and I may lose my entire capital.</span>
+      </label>
+      <label class="ack-checkbox-row">
+        <input type="checkbox" id="ack-independent" onchange="updateIMViewBtn()" style="margin-top:3px;accent-color:var(--gold);width:16px;height:16px;flex-shrink:0">
+        <span style="font-size:.82rem;color:var(--text);line-height:1.5"><strong>I am making this investment decision independently.</strong> I have not relied on Prop Dev DNA, the developer, or any referring party as my financial adviser.</span>
+      </label>
+      <label class="ack-checkbox-row">
+        <input type="checkbox" id="ack-responsibility" onchange="updateIMViewBtn()" style="margin-top:3px;accent-color:var(--gold);width:16px;height:16px;flex-shrink:0">
+        <span style="font-size:.82rem;color:var(--text);line-height:1.5"><strong>I accept full personal responsibility</strong> for any investment I make through this platform. I understand all parties involved — including the developer, platform, and any referring party — bear no liability for investment outcomes provided risks were disclosed.</span>
       </label>
     </div>
-    <button onclick="confirmIMView()" id="imViewConfirmBtn" style="width:100%;padding:14px;background:linear-gradient(135deg,var(--navy),var(--navy3));color:var(--white);border:none;border-radius:10px;font-weight:700;font-size:.95rem;cursor:pointer;font-family:inherit;opacity:.4;pointer-events:none">Access Information Memorandum →</button>
-    <p style="font-size:.75rem;color:var(--muted);text-align:center;margin-top:10px">Your confirmation is logged with a timestamp for compliance purposes.</p>
+
+    <button onclick="confirmIMView()" id="imViewConfirmBtn" disabled style="width:100%;padding:14px;background:#9ca3af;color:#fff;border:none;border-radius:10px;font-weight:700;font-size:.92rem;cursor:not-allowed;font-family:inherit">Confirm All 4 Acknowledgments to Continue</button>
+    <p style="font-size:.72rem;color:var(--muted);text-align:center;margin-top:10px">Your declaration is logged with timestamp and IP address. This forms part of the compliance audit trail under ASIC regulatory requirements.</p>
   </div>
 </div>
 
@@ -1557,6 +1621,12 @@ const API={
   adminWholesaleCerts:()=>API.get('/api/admin/wholesale-certs'),
   approveWholesaleCert:(id,notes)=>API.post('/api/admin/wholesale-certs/'+id+'/approve',{notes}),
   rejectWholesaleCert:(id,notes)=>API.post('/api/admin/wholesale-certs/'+id+'/reject',{notes}),
+  lookupPartner:(code)=>API.get('/api/partners/lookup?code='+encodeURIComponent(code)),
+  submitRiskDeclaration:(listingId,listingName,allChecksConfirmed)=>API.post('/api/risk-declaration',{listingId,listingName,allChecksConfirmed}),
+  adminPartners:()=>API.get('/api/admin/partners'),
+  addPartner:(d)=>API.post('/api/admin/partners',d),
+  togglePartner:(id)=>API.post('/api/admin/partners/'+id+'/toggle',{}),
+  adminRiskDeclarations:()=>API.get('/api/admin/risk-declarations'),
 };
 let currentUser=null,currentListingId=null,needsBroker=false,selectedRole='investor',allListings=[],activeFilter='all',userActiveSubs=[],currentIMViewListingId=null;
 
@@ -1582,7 +1652,8 @@ async function doRegister(){
   const fname=document.getElementById('reg-fname').value.trim(),lname=document.getElementById('reg-lname').value.trim(),email=document.getElementById('reg-email').value.trim(),password=document.getElementById('reg-pass').value;
   const errEl=document.getElementById('reg-error'),btn=document.getElementById('reg-btn');
   errEl.style.display='none';btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Creating account…';
-  try{const res=await API.register({fname,lname,email,password,role:selectedRole});if(res.error){errEl.textContent=res.error;errEl.style.display='block';return;}currentUser=res.user;document.getElementById('authModal').classList.add('hidden');onLoggedIn();toast('Welcome to Prop Dev DNA, '+res.user.fname+'!');}
+  const referralCode=(document.getElementById('reg-referral')?.value.trim().toUpperCase())||'';
+  try{const res=await API.register({fname,lname,email,password,role:selectedRole,referralCode});if(res.error){errEl.textContent=res.error;errEl.style.display='block';return;}currentUser=res.user;document.getElementById('authModal').classList.add('hidden');onLoggedIn();toast('Welcome to Prop Dev DNA, '+res.user.fname+'!');}
   catch{errEl.textContent='Connection error.';errEl.style.display='block';}
   finally{btn.disabled=false;btn.textContent='Create Account →';}
 }
@@ -1609,7 +1680,7 @@ function onLoggedIn(){
 }
 async function doLogout(){await API.logout();currentUser=null;userActiveSubs=[];document.getElementById('navSignIn').classList.remove('hidden');document.getElementById('navUser').classList.add('hidden');document.querySelectorAll('.dev-only').forEach(el=>el.classList.add('hidden'));document.querySelectorAll('.admin-only').forEach(el=>el.classList.add('hidden'));showScreen('landing');openAuth();toast('Signed out.');}
 
-function showScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+name).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});if(name==='portal'&&(currentUser?.role==='developer'||currentUser?.role==='admin'))refreshPortal();if(name==='profile'){refreshMyInterests();refreshSubStatus();loadWholesaleStatus();}if(name==='admin'){loadAdminSubs();loadAdminIMReviews();loadAdminViewLogs();loadAdminWholesaleCerts();}if(name==='im-review')loadIMReviewDetail();}
+function showScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+name).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});if(name==='portal'&&(currentUser?.role==='developer'||currentUser?.role==='admin'))refreshPortal();if(name==='profile'){refreshMyInterests();refreshSubStatus();loadWholesaleStatus();}if(name==='admin'){loadAdminSubs();loadAdminIMReviews();loadAdminViewLogs();loadAdminWholesaleCerts();loadAdminPartners();}if(name==='im-review')loadIMReviewDetail();}
 function goHome(){showScreen('landing');setBN('home');}
 function toggleMobile(){document.getElementById('mobileMenu').classList.toggle('open');}
 function setBN(tab){document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));const el=document.getElementById('bn-'+tab);if(el)el.classList.add('active');}
@@ -1974,8 +2045,18 @@ let currentAmendReviewId=null;
 function openIMViewModal(listingId){
   if(!currentUser){toast('Please sign in to access this document.');openAuth();return;}
   currentIMViewListingId=listingId;
-  document.getElementById('ack-wholesale').checked=false;
-  document.getElementById('ack-risk').checked=false;
+  ['ack-wholesale','ack-risk','ack-independent','ack-responsibility'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.checked=false;
+  });
+  // Show referring partner disclaimer if user was referred
+  const partnerNotice=document.getElementById('ack-partner-notice');
+  if(partnerNotice && currentUser.referredByName){
+    document.getElementById('ack-partner-name').textContent=currentUser.referredByName+(currentUser.referredByFirm?' ('+currentUser.referredByFirm+')':'');
+    document.getElementById('ack-partner-role').textContent=currentUser.referredByRole||'Referring Party';
+    partnerNotice.classList.remove('hidden');
+  } else if(partnerNotice){
+    partnerNotice.classList.add('hidden');
+  }
   updateIMViewBtn();
   document.getElementById('imViewModal').classList.remove('hidden');
 }
@@ -1984,43 +2065,51 @@ function closeIMViewModal(){
   currentIMViewListingId=null;
 }
 function updateIMViewBtn(){
-  const ok=document.getElementById('ack-wholesale').checked&&document.getElementById('ack-risk').checked;
+  const all=['ack-wholesale','ack-risk','ack-independent','ack-responsibility'].every(id=>document.getElementById(id)?.checked);
   const btn=document.getElementById('imViewConfirmBtn');
-  btn.style.opacity=ok?'1':'0.4';
-  btn.style.pointerEvents=ok?'auto':'none';
+  btn.disabled=!all;
+  btn.style.background=all?'linear-gradient(135deg,var(--navy),var(--navy3))':'#9ca3af';
+  btn.style.cursor=all?'pointer':'not-allowed';
+  btn.textContent=all?'Access Information Memorandum →':'Confirm All 4 Acknowledgments to Continue';
 }
 async function confirmIMView(){
   const listingId=currentIMViewListingId;
   if(!listingId)return;
+  const btn=document.getElementById('imViewConfirmBtn');
+  btn.disabled=true; btn.textContent='Recording…';
   try{
-    await API.logIMView(listingId,true,true);
-    closeIMViewModal();
     const listing=allListings.find(l=>l.id===listingId);
-    toast('✅ Confirmed — access logged. Document request recorded for '+( listing?.name||'this listing')+'.');
-    // Show a confirmation card with audit reference
+    // Log IM view + risk declaration together
+    await Promise.all([
+      API.logIMView(listingId,true,true),
+      API.submitRiskDeclaration(listingId, listing?.name||'', true)
+    ]);
+    closeIMViewModal();
+    // Show confirmed receipt
     const modal=document.getElementById('imViewModal');
     modal.classList.remove('hidden');
+    const ts=new Date().toLocaleString('en-AU',{day:'numeric',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
     modal.querySelector('.modal-box').innerHTML=`
       <div style="text-align:center;padding:16px 0">
-        <div style="font-size:3rem;margin-bottom:16px">✅</div>
-        <h3 style="font-size:1.15rem;font-weight:800;color:var(--navy);margin-bottom:8px">Access Confirmed & Logged</h3>
-        <p style="font-size:.85rem;color:var(--muted);margin-bottom:20px">Your wholesale investor confirmation and risk acknowledgment have been recorded with a timestamp.</p>
-        <div style="background:var(--off-white);border-radius:10px;padding:16px;text-align:left;margin-bottom:20px">
-          <div style="font-size:.8rem;display:flex;flex-direction:column;gap:8px">
-            <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Investor</span><span style="font-weight:600">${currentUser.fname} ${currentUser.lname||''}</span></div>
-            <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Listing</span><span style="font-weight:600">${listing?.name||listingId}</span></div>
-            <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Wholesale Confirmed</span><span style="color:var(--green);font-weight:700">✓ Yes</span></div>
-            <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Risk Acknowledged</span><span style="color:var(--green);font-weight:700">✓ Yes</span></div>
-            <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Timestamp</span><span style="font-weight:600">${new Date().toLocaleString('en-AU')}</span></div>
-          </div>
+        <div style="font-size:3rem;margin-bottom:12px">✅</div>
+        <h3 style="font-size:1.1rem;font-weight:800;color:var(--navy);margin-bottom:6px">Risk Declaration Recorded</h3>
+        <p style="font-size:.82rem;color:var(--muted);margin-bottom:18px">All 4 acknowledgments confirmed and logged with timestamp.</p>
+        <div style="background:var(--off-white);border-radius:10px;padding:16px;text-align:left;margin-bottom:16px;font-size:.8rem;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Investor</span><strong>${currentUser.fname} ${currentUser.lname||''}</strong></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Listing</span><strong>${listing?.name||listingId}</strong></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Wholesale ✓</span><span style="color:#16a34a;font-weight:700">Confirmed</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Risk Acknowledged ✓</span><span style="color:#16a34a;font-weight:700">Confirmed</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Independent Decision ✓</span><span style="color:#16a34a;font-weight:700">Confirmed</span></div>
+          <div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Personal Responsibility ✓</span><span style="color:#16a34a;font-weight:700">Confirmed</span></div>
+          ${currentUser.referredByName?`<div style="display:flex;justify-content:space-between"><span style="color:var(--muted)">Referral Disclaimer ✓</span><span style="color:#16a34a;font-weight:700">Shown &amp; Acknowledged</span></div>`:''}
+          <div style="display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:8px"><span style="color:var(--muted)">Timestamp</span><strong>${ts}</strong></div>
         </div>
-        <p style="font-size:.78rem;color:var(--muted);margin-bottom:20px">The full IM will be made available by the developer's team. Express interest below to receive direct access.</p>
         <div style="display:flex;gap:10px">
-          <button onclick="document.getElementById('imViewModal').classList.add('hidden')" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:8px;background:none;font-family:inherit;font-weight:600;cursor:pointer">Close</button>
-          <button onclick="document.getElementById('imViewModal').classList.add('hidden');showScreen('interest')" style="flex:2;padding:12px;background:var(--gold);color:var(--navy);border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit">Express Interest →</button>
+          <button onclick="document.getElementById('imViewModal').classList.add('hidden')" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:8px;background:none;font-family:inherit;font-weight:600;cursor:pointer;font-size:.88rem">Close</button>
+          <button onclick="document.getElementById('imViewModal').classList.add('hidden');showFeasoForm('${listingId}')" style="flex:2;padding:12px;background:var(--gold);color:var(--navy);border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:.88rem">View IM &amp; FEASO →</button>
         </div>
       </div>`;
-  }catch(e){toast('Error logging view. Please try again.');}
+  }catch(e){toast('Error recording declaration. Please try again.'); btn.disabled=false; updateIMViewBtn();}
 }
 
 // ═══════════════════════════════════════════════════
@@ -3036,6 +3125,80 @@ ${comps.length?`
   showScreen('im');
   // Load any existing review status for this listing
   if(currentFeasoListingId)loadIMReview(currentFeasoListingId);
+}
+
+// ═══════════════════════════════════════════════════
+//  REFERRAL CODE LOOKUP (registration form)
+// ═══════════════════════════════════════════════════
+let _referralTimer=null;
+function lookupReferralCode(){
+  const code=document.getElementById('reg-referral')?.value.trim().toUpperCase();
+  const statusEl=document.getElementById('reg-referral-status');
+  if(!statusEl)return;
+  if(!code||code.length<4){statusEl.textContent='';return;}
+  clearTimeout(_referralTimer);
+  statusEl.style.color='var(--muted)'; statusEl.textContent='Checking…';
+  _referralTimer=setTimeout(async()=>{
+    try{
+      const{partner}=await API.lookupPartner(code);
+      statusEl.style.color='#16a34a';
+      statusEl.textContent=`✅ Valid — referred by ${partner.name}${partner.firm?' ('+partner.firm+')':''}`;
+    }catch{
+      statusEl.style.color='var(--red)';
+      statusEl.textContent='❌ Code not recognised — leave blank if unsure';
+    }
+  },600);
+}
+
+// ═══════════════════════════════════════════════════
+//  PARTNER REGISTRY (admin)
+// ═══════════════════════════════════════════════════
+async function loadAdminPartners(){
+  const el=document.getElementById('admin-partners-list');
+  if(!el)return;
+  try{
+    const{partners}=await API.adminPartners();
+    if(!partners||!partners.length){el.innerHTML='<p style="color:var(--muted);font-size:.9rem">No partners registered yet. Add your first referring partner above.</p>';return;}
+    el.innerHTML=partners.map(p=>`
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:12px;flex:1;min-width:200px">
+          <div style="width:40px;height:40px;border-radius:50%;background:var(--navy);display:flex;align-items:center;justify-content:center;color:var(--gold);font-weight:800;font-size:.9rem;flex-shrink:0">${p.name[0].toUpperCase()}</div>
+          <div>
+            <div style="font-weight:700;color:var(--navy);font-size:.9rem">${p.name} ${p.firm?'<span style="font-weight:400;color:var(--muted)">· '+p.firm+'</span>':''}</div>
+            <div style="font-size:.75rem;color:var(--muted)">${p.role}${p.licenceNumber?' · '+p.licenceNumber:''}${p.email?' · '+p.email:''}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <div style="background:var(--navy);color:var(--gold);font-family:monospace;font-size:.8rem;font-weight:700;padding:6px 12px;border-radius:6px;letter-spacing:.05em">${p.referralCode}</div>
+          <span style="font-size:.75rem;color:var(--muted)">${p.referralCount||0} referral${p.referralCount!==1?'s':''}</span>
+          <span style="padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:700;background:${p.active?'#d1fae5':'#fee2e2'};color:${p.active?'#065f46':'#991b1b'}">${p.active?'Active':'Inactive'}</span>
+          <button onclick="togglePartner('${p.id}')" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:none;font-size:.72rem;cursor:pointer;font-family:inherit">${p.active?'Deactivate':'Activate'}</button>
+        </div>
+      </div>`).join('');
+  }catch(e){el.innerHTML='<p style="color:var(--red);font-size:.9rem">Error loading partners.</p>';}
+}
+
+async function addPartner(){
+  const name=document.getElementById('np-name')?.value.trim();
+  const role=document.getElementById('np-role')?.value;
+  if(!name){toast('Partner name is required.');return;}
+  try{
+    const r=await API.addPartner({
+      name, role,
+      firm:document.getElementById('np-firm')?.value.trim()||'',
+      email:document.getElementById('np-email')?.value.trim()||'',
+      phone:document.getElementById('np-phone')?.value.trim()||'',
+      licenceNumber:document.getElementById('np-licence')?.value.trim()||''
+    });
+    toast('✅ Partner added — referral code: '+r.partner.referralCode);
+    ['np-name','np-firm','np-email','np-phone','np-licence'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    loadAdminPartners();
+  }catch(e){toast('Error adding partner.');}
+}
+
+async function togglePartner(id){
+  try{await API.togglePartner(id);loadAdminPartners();}
+  catch(e){toast('Error updating partner.');}
 }
 
 // ═══════════════════════════════════════════════════
