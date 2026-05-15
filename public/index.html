@@ -630,6 +630,49 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
   </div>
   <!-- /IMAGE FEATURE SECTION -->
 
+  <!-- IMAGE FEATURE SECTION 2 — INVESTOR SIDE -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;min-height:480px;overflow:hidden;border-top:1px solid #1a1400" class="img-feature-section">
+    <!-- Left: text -->
+    <div style="background:#0a0a0a;padding:60px 48px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid #2a2200">
+      <div style="font-size:.72rem;font-weight:800;color:var(--gold);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px">For Wholesale Investors</div>
+      <h2 style="font-size:2rem;font-weight:800;color:#ffffff;line-height:1.25;margin-bottom:20px">Exclusive deals.<br><span style="color:var(--gold)">Verified numbers.</span><br>Direct access.</h2>
+      <p style="color:#888;line-height:1.8;font-size:.95rem;margin-bottom:28px">Every opportunity on Prop Dev DNA comes with a full feasibility report and compliance-reviewed Information Memorandum — so you're making decisions based on real numbers, not a sales pitch.</p>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px">
+        <div style="display:flex;align-items:center;gap:12px;font-size:.88rem;color:#ccc">
+          <span style="width:28px;height:28px;border-radius:50%;background:rgba(201,168,76,.15);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0">✓</span>
+          Wholesale-only access — all investors are verified under s.761G Corporations Act
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:.88rem;color:#ccc">
+          <span style="width:28px;height:28px;border-radius:50%;background:rgba(201,168,76,.15);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0">✓</span>
+          Every deal includes a full FEASO with IRR, profit margin, and construction cost breakdown
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:.88rem;color:#ccc">
+          <span style="width:28px;height:28px;border-radius:50%;background:rgba(201,168,76,.15);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0">✓</span>
+          Direct contact with the developer — no middlemen, no delays
+        </div>
+        <div style="display:flex;align-items:center;gap:12px;font-size:.88rem;color:#ccc">
+          <span style="width:28px;height:28px;border-radius:50%;background:rgba(201,168,76,.15);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0">✓</span>
+          Equity, preferred equity, mezzanine and first mortgage structures available
+        </div>
+      </div>
+      <button onclick="showScreen('listings')" style="align-self:flex-start;background:transparent;color:var(--gold);border:2px solid var(--gold);padding:13px 28px;border-radius:10px;font-weight:800;font-size:.9rem;cursor:pointer;font-family:inherit;letter-spacing:.02em;transition:all .2s" onmouseover="this.style.background='var(--gold)';this.style.color='#000'" onmouseout="this.style.background='transparent';this.style.color='var(--gold)'">Browse Live Opportunities →</button>
+    </div>
+    <!-- Right: image -->
+    <div style="position:relative;min-height:380px;background:url('/home2.jpg') center center/cover no-repeat">
+      <div id="home2-fallback" style="position:absolute;inset:0;background:url('https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=1200&q=85') center center/cover no-repeat;display:none"></div>
+      <div style="position:absolute;inset:0;background:linear-gradient(225deg,rgba(0,0,0,.5) 0%,rgba(0,0,0,.2) 100%)"></div>
+      <div style="position:absolute;top:28px;right:28px;background:rgba(0,0,0,.7);border:1px solid rgba(201,168,76,.4);border-radius:12px;padding:14px 18px;text-align:right;backdrop-filter:blur(8px)">
+        <div style="font-size:1.4rem;font-weight:800;color:var(--gold)">18.4%</div>
+        <div style="font-size:.72rem;color:#ccc;margin-top:2px">Avg. Annual IRR</div>
+      </div>
+      <div style="position:absolute;bottom:28px;right:28px;background:rgba(0,0,0,.7);border:1px solid rgba(201,168,76,.4);border-radius:12px;padding:14px 18px;text-align:right;backdrop-filter:blur(8px)">
+        <div style="font-size:1.4rem;font-weight:800;color:var(--gold)">$240M+</div>
+        <div style="font-size:.72rem;color:#ccc;margin-top:2px">Capital Deployed</div>
+      </div>
+    </div>
+  </div>
+  <!-- /IMAGE FEATURE SECTION 2 -->
+
   <div style="background:var(--navy);padding:60px 24px;text-align:center;color:var(--white)">
     <div style="max-width:600px;margin:0 auto">
       <div style="font-size:.8rem;letter-spacing:1.5px;color:var(--gold);font-weight:700;text-transform:uppercase;margin-bottom:16px">For Developers & Buyers Agents</div>
@@ -3166,6 +3209,21 @@ ${comps.length?`
   // Load any existing review status for this listing
   if(currentFeasoListingId)loadIMReview(currentFeasoListingId);
 }
+
+// ── Home image fallback ───────────────────────────
+(function(){
+  const img=new Image();
+  img.onload=function(){};
+  img.onerror=function(){
+    // home2.jpg not found — show Unsplash fallback div
+    const fb=document.getElementById('home2-fallback');
+    if(fb){
+      fb.style.display='block';
+      fb.parentElement.style.backgroundImage='none';
+    }
+  };
+  img.src='/home2.jpg';
+})();
 
 // ═══════════════════════════════════════════════════
 //  REFERRAL CODE LOOKUP (registration form)
