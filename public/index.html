@@ -730,9 +730,11 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
       <div>
         <div class="card" style="margin-bottom:24px">
           <div class="card-title"><span>📤</span> Upload Investment Package</div>
-          <div class="upload-zone" onclick="toast('File upload will be available once deployed to the cloud.')">
+          <div class="upload-zone" style="cursor:default;opacity:.75;position:relative">
+            <div style="position:absolute;top:10px;right:12px;background:var(--navy);color:var(--gold);font-size:.68rem;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:.05em">COMING SOON</div>
             <div class="up-icon">⬆️</div><h4>Drop Files Here or Click to Upload</h4>
-            <p>Floorplans, feasibility reports, renders, DA approvals, valuations & term sheets</p>
+            <p>Floorplans, feasibility reports, renders, DA approvals, valuations &amp; term sheets</p>
+            <p style="font-size:.78rem;color:var(--gold);font-weight:600;margin-top:8px">📌 Cloud file storage is being connected — your FEASO &amp; IM builder are fully live now.</p>
             <div class="upload-types"><span class="upload-tag">📐 Floorplans (PDF)</span><span class="upload-tag">📊 Feasibility (XLSX/PDF)</span><span class="upload-tag">🖼 Renders (JPG/PNG)</span><span class="upload-tag">📋 DA Approval</span><span class="upload-tag">🤝 Term Sheet</span><span class="upload-tag">🏦 Valuation</span></div>
           </div>
           <div id="listingForm">
@@ -763,7 +765,32 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
             <button class="publish-btn" id="publish-btn" onclick="publishListing()">🚀 Publish Listing</button>
           </div>
         </div>
-        <div class="card"><div class="card-title"><span>📋</span> My Published Listings</div><div id="my-listings-list"><p style="color:var(--muted);font-size:.9rem">No listings yet.</p></div></div>
+        <div class="card" style="margin-bottom:24px;background:linear-gradient(135deg,#0d1b2a,#1a2d42);border:none">
+          <div class="card-title" style="color:var(--gold)"><span>🗺️</span> Your Deal Workflow</div>
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:4px">
+            <div style="background:rgba(255,255,255,.07);border-radius:10px;padding:14px;text-align:center">
+              <div style="font-size:1.5rem;margin-bottom:6px">1️⃣</div>
+              <div style="font-size:.78rem;font-weight:700;color:#fff;margin-bottom:4px">Publish Listing</div>
+              <div style="font-size:.72rem;color:#a8bcd4">Fill the form above &amp; click Publish</div>
+            </div>
+            <div style="background:rgba(255,255,255,.07);border-radius:10px;padding:14px;text-align:center">
+              <div style="font-size:1.5rem;margin-bottom:6px">2️⃣</div>
+              <div style="font-size:.78rem;font-weight:700;color:#fff;margin-bottom:4px">Build FEASO</div>
+              <div style="font-size:.72rem;color:#a8bcd4">Click 📊 FEASO on your listing below</div>
+            </div>
+            <div style="background:rgba(255,255,255,.07);border-radius:10px;padding:14px;text-align:center">
+              <div style="font-size:1.5rem;margin-bottom:6px">3️⃣</div>
+              <div style="font-size:.78rem;font-weight:700;color:#fff;margin-bottom:4px">Generate IM</div>
+              <div style="font-size:.72rem;color:#a8bcd4">Scroll to Section 8 in FEASO &amp; click 📄 Generate IM</div>
+            </div>
+            <div style="background:rgba(201,168,76,.15);border:1px solid rgba(201,168,76,.3);border-radius:10px;padding:14px;text-align:center">
+              <div style="font-size:1.5rem;margin-bottom:6px">4️⃣</div>
+              <div style="font-size:.78rem;font-weight:700;color:var(--gold);margin-bottom:4px">Submit for Review</div>
+              <div style="font-size:.72rem;color:#a8bcd4">Click Submit in IM viewer — compliance approval unlocks investor access</div>
+            </div>
+          </div>
+        </div>
+        <div class="card"><div class="card-title"><span>📋</span> My Published Listings</div><div id="my-listings-list"><p style="color:var(--muted);font-size:.9rem">No listings yet. Fill in the form above and click Publish to get started.</p></div></div>
       </div>
       <div class="portal-sidebar-col">
         <div class="portal-stats">
@@ -807,8 +834,11 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
 <div class="screen" id="screen-feaso">
   <button class="back-btn" onclick="showScreen('portal')">← Back to Portal</button>
   <div class="feaso-page">
-    <h2 style="font-size:1.6rem;font-weight:800;color:var(--navy);margin-bottom:4px">📊 Feasibility Report Builder</h2>
-    <p style="color:var(--muted);margin-bottom:28px;font-size:.95rem">Enter your project details below. All figures calculate live. Hit <strong>Generate Report</strong> to produce a print-ready FEASO.</p>
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:4px">
+      <h2 style="font-size:1.6rem;font-weight:800;color:var(--navy);margin:0">📊 Feasibility Report Builder</h2>
+      <span id="feaso-save-indicator" style="font-size:.78rem;color:var(--muted);font-style:italic"></span>
+    </div>
+    <p style="color:var(--muted);margin-bottom:28px;font-size:.95rem">Enter your project details below. All figures calculate live. Changes auto-save every second. Hit <strong>Generate Report</strong> to produce a print-ready FEASO.</p>
     <div class="feaso-grid">
       <!-- LEFT COLUMN: FORM -->
       <div>
@@ -1476,7 +1506,7 @@ async function publishListing(){
   const listing={type:typeEl.value,badge:'NEW',badgeClass:'',name,loc:'📍 '+loc,irr:parseFloat(irrRaw),hold:holdRaw+' yr',profit,fundedPct:0,minInvest:'$'+Number(minRaw).toLocaleString(),raise:'$'+Number(raiseRaw).toLocaleString(),structure:document.getElementById('p-structure').value,spotsLeft:20,photo:'https://picsum.photos/seed/lst'+ts+'/800/400',heroPhoto:'https://picsum.photos/seed/lsth'+ts+'/1200/400',category:typeEl.options[typeEl.selectedIndex].text,overview:document.getElementById('p-desc').value.trim()||'Investment opportunity. Full details available upon expression of interest.',stats:[[completeFmt,'Est. Completion'],[document.getElementById('p-status').value,'Planning Status'],['$'+Number(minRaw).toLocaleString(),'Min. Investment'],['$'+Number(raiseRaw).toLocaleString(),'Total Raise']],floorplans:[['📐','Floorplans','Available upon request'],['📊','Feasibility','Available upon request'],['🏗','DA Documents','Available upon request'],['🤝','Term Sheet','Available upon request']],financials:cost&&grv?[['Total Dev. Cost','$'+Number(cost).toLocaleString()],['Gross Realisable Value','$'+Number(grv).toLocaleString()],['Estimated Profit','$'+Number(Number(grv)-Number(cost)).toLocaleString(),'profit'],['Margin on Cost',Math.round((Number(grv)-Number(cost))/Number(cost)*1000)/10+'%','profit']]:[['Financial details','Contact developer for details']],roi:{intro:'Contact developer for detailed return modelling.',bars:[['Exit','100%','+'+Math.round(parseFloat(irrRaw)*parseFloat(holdRaw))+'%','TBC']],summary:'IRR: '+irrRaw+'% p.a. over '+holdRaw+' year hold'},developer:{name:(currentUser?.fname||'')+' '+(currentUser?.lname||''),est:'Registered '+new Date().getFullYear(),completed:0,gdv:'New listing',bio:'Contact the developer for full credentials and track record.',badges:['✓ Registered on Prop Dev DNA']}};
   const res=await API.createListing(listing);if(res.error){errEl.textContent=res.error;errEl.style.display='block';return;}
   allListings.unshift(res.listing);['p-name','p-loc','p-min','p-raise','p-irr','p-hold','p-cost','p-grv','p-desc','p-complete'].forEach(id=>document.getElementById(id).value='');
-  renderListings();await refreshPortal();await loadStats();toast('✅ Listing published! Investors can now view it.');}
+  renderListings();await refreshPortal();await loadStats();toast('✅ Listing published! Next: click 📊 FEASO on your listing to build your feasibility &amp; generate an IM.');}
   catch(e){errEl.textContent='Error: '+e.message;errEl.style.display='block';}
   finally{btn.disabled=false;btn.textContent='🚀 Publish Listing';}
 }
@@ -1488,7 +1518,14 @@ async function refreshPortal(){
   try{const[listings,interests]=await Promise.all([API.getListings(),API.getInterests()]);
   const myListings=listings.filter(l=>l.devId===currentUser.id),refs=interests.filter(i=>i.needsBroker),weekAgo=new Date(Date.now()-7*24*60*60*1000),thisWeek=interests.filter(i=>new Date(i.createdAt)>weekAgo);
   document.getElementById('ps-listings').textContent=myListings.length;document.getElementById('ps-leads').textContent=interests.length;document.getElementById('ps-week').textContent=thisWeek.length;document.getElementById('ps-refs').textContent=refs.length;
-  document.getElementById('my-listings-list').innerHTML=myListings.length===0?'<p style="color:var(--muted);font-size:.9rem">No listings yet.</p>':myListings.map(l=>`<div class="lead-item"><div style="width:50px;height:50px;border-radius:8px;background-image:url('${l.photo}');background-size:cover;flex-shrink:0;cursor:pointer" onclick="showDetail('${l.id}')"></div><div class="lead-info" style="flex:1;cursor:pointer" onclick="showDetail('${l.id}')"><strong>${l.name}</strong><span>${l.irr}% IRR · ${l.fundedPct}% funded</span></div><button onclick="event.stopPropagation();showFeasoForm('${l.id}')" style="background:var(--gold);color:var(--navy);border:none;padding:6px 12px;border-radius:6px;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:inherit">📊 FEASO</button><span class="lead-tag new-lead" style="flex-shrink:0">LIVE</span></div>`).join('');
+  // Fetch IM reviews for each listing (parallel) for badge colours
+  let imReviewMap={};try{const reviewResults=await Promise.all(myListings.map(l=>API.getIMReview(l.id).catch(()=>null)));reviewResults.forEach((r,i)=>{if(r?.review)imReviewMap[myListings[i].id]=r.review.status;});}catch{}
+  document.getElementById('my-listings-list').innerHTML=myListings.length===0?'<p style="color:var(--muted);font-size:.9rem">No listings yet. Fill in the form above and click Publish to get started.</p>':myListings.map(l=>{
+    const imStatus=imReviewMap[l.id]||'none';
+    const badgeHtml=imStatus==='approved'?'<span class="lead-tag" style="flex-shrink:0;background:#16a34a;color:#fff">✅ IM Approved</span>':imStatus==='pending'?'<span class="lead-tag" style="flex-shrink:0;background:#d97706;color:#fff">⏳ Under Review</span>':imStatus==='amend'?'<span class="lead-tag" style="flex-shrink:0;background:#dc2626;color:#fff">✏️ Amend IM</span>':'<span class="lead-tag new-lead" style="flex-shrink:0">LIVE</span>';
+    const nextHint=imStatus==='none'?'<div style="font-size:.7rem;color:var(--gold);margin-top:2px">👉 Next: build FEASO → generate IM → submit for review</div>':imStatus==='amend'?'<div style="font-size:.7rem;color:#dc2626;margin-top:2px">⚠️ Review feedback in FEASO Section 8 — update &amp; resubmit</div>':'';
+    return`<div class="lead-item" style="flex-wrap:wrap;gap:8px"><div style="width:50px;height:50px;border-radius:8px;background-image:url('${l.photo}');background-size:cover;flex-shrink:0;cursor:pointer" onclick="showDetail('${l.id}')"></div><div class="lead-info" style="flex:1;cursor:pointer;min-width:120px" onclick="showDetail('${l.id}')"><strong>${l.name}</strong><span>${l.irr}% IRR · ${l.fundedPct}% funded</span>${nextHint}</div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button onclick="event.stopPropagation();showFeasoForm('${l.id}')" style="background:var(--gold);color:var(--navy);border:none;padding:6px 12px;border-radius:6px;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit">📊 FEASO</button><button onclick="event.stopPropagation();showFeasoForm('${l.id}')" title="Build &amp; Generate IM" style="background:var(--navy);color:#fff;border:1px solid rgba(255,255,255,.2);padding:6px 12px;border-radius:6px;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit">📄 IM</button>${badgeHtml}</div></div>`;
+  }).join('');
   document.getElementById('leads-list').innerHTML=interests.length===0?'<p style="color:var(--muted);font-size:.85rem">Leads appear when investors express interest.</p>':interests.slice().reverse().slice(0,8).map(i=>`<div class="lead-item"><div class="lead-avatar">${i.fname[0]}${(i.lname||'?')[0]}</div><div class="lead-info"><strong>${i.fname} ${i.lname||''}</strong><span>${i.listingName} · ${i.amount}</span></div><span class="lead-tag ${i.needsBroker?'ref':'hot'}">${i.needsBroker?'Referral':'Direct'}</span></div>`).join('');}
   catch(e){console.error(e);}
 }
@@ -1568,9 +1605,10 @@ function updatePricingCTAs(){
 }
 
 function showSubscriptionGate(){
-  // Replace the listing form content temporarily
-  toast('⭐ Developer subscription required. Redirecting to plans…');
-  setTimeout(()=>showScreen('pricing'),1200);
+  // Show the in-portal upgrade gate (already in HTML, just unhide it)
+  const gateEl=document.getElementById('portal-sub-gate');
+  if(gateEl){gateEl.classList.remove('hidden');gateEl.scrollIntoView({behavior:'smooth',block:'center'});}
+  toast('⭐ Developer subscription required to publish listings.');
 }
 
 async function loadAdminSubs(){
@@ -2088,6 +2126,19 @@ function fUpdate(){
   set('fp-gpm',d.gpm!==0?d.gpm.toFixed(1)+'%':'—');
   set('fp-equity',d.equity>0?fmtC(d.equity):'—');
   set('fp-debt',d.debt>0?fmtC(d.debt):'—');
+  // Debounced auto-save
+  if(currentFeasoListingId){
+    clearTimeout(fUpdate._saveTimer);
+    const saveInd=document.getElementById('feaso-save-indicator');
+    if(saveInd)saveInd.textContent='✏️ Unsaved changes…';
+    fUpdate._saveTimer=setTimeout(async()=>{
+      try{
+        await API.saveFeasoData(currentFeasoListingId,{formData:getFeasoData()});
+        if(saveInd)saveInd.textContent='✅ Auto-saved';
+        setTimeout(()=>{if(saveInd)saveInd.textContent='';},2500);
+      }catch{if(saveInd)saveInd.textContent='⚠️ Save failed';}
+    },1200);
+  }
 }
 
 function addUnitRow(p){
