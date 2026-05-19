@@ -4,8 +4,16 @@ node_modules/
 # Portable Node.js binary (not needed on Railway - it has its own Node)
 node-portable/
 
-# Database file (auto-created on first run with demo data)
+# Database and runtime data (auto-created on first run)
 data/db.json
+data/uploads/
+data/backups/
+
+# Misc
+node-portable.zip
+.claude/
+start.ps1
+*.docx
 
 # Windows
 Thumbs.db

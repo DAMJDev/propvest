@@ -529,7 +529,7 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo" onclick="goHome()"><img src="/logo.png" alt="Prop Dev DNA" style="height:42px;width:auto;object-fit:contain" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none;align-items:center;gap:6px">🧬 Prop Dev <span style="color:var(--white);font-weight:400">DNA</span></span></div>
+  <div class="nav-logo" onclick="goHome()"><img src="/logo.png" alt="Prop Dev DNA" style="height:56px;width:auto;object-fit:contain" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none;align-items:center;gap:6px">🧬 Prop Dev <span style="color:var(--white);font-weight:400">DNA</span></span></div>
   <div class="nav-links">
     <button class="nav-btn" onclick="goHome()">Home</button>
     <button class="nav-btn" onclick="showScreen('listings')">Investments</button>
@@ -688,6 +688,18 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
 
 <!-- LISTINGS -->
 <div class="screen" id="screen-listings">
+
+  <!-- ── Investor Onboarding Progress Banner (hidden for devs/verified) ── -->
+  <div id="investor-verify-banner" class="hidden" style="background:linear-gradient(135deg,#141414,#1a1200);border-bottom:1px solid #2a2200;padding:16px 24px">
+    <div style="max-width:860px;margin:0 auto">
+      <div style="font-size:.78rem;font-weight:700;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px">Your Access Status — 3 Steps to Full Deal Access</div>
+      <div style="display:flex;gap:0;align-items:stretch;flex-wrap:wrap" id="verify-steps-row">
+        <!-- Steps rendered by JS -->
+      </div>
+      <div id="verify-banner-cta" style="margin-top:12px"></div>
+    </div>
+  </div>
+
   <div class="listing-header"><h2>Investment Opportunities</h2><p id="listing-count-label">Loading…</p></div>
   <div class="filters">
     <button class="filter-btn on" onclick="filterProps('all',this)">All</button>
@@ -925,13 +937,54 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
       <div id="profile-sub-status" style="margin-top:4px"><span class="sub-status-badge ssb-none">Not subscribed — <a href="#" onclick="showScreen('pricing');return false" style="color:var(--gold);font-weight:700">View Plans</a></span></div>
     </div>
     <div id="wholesale-cert-card" class="card hidden" style="margin-bottom:20px">
-      <div class="card-title"><span>🏛️</span> Wholesale Investor Status</div>
+      <div class="card-title"><span>🏛️</span> Wholesale Investor Verification</div>
       <div id="wholesale-cert-status-body">
+        <!-- Step progress tracker -->
+        <div style="display:flex;gap:0;margin-bottom:16px;border-radius:10px;overflow:hidden;border:1px solid var(--border)" id="wc-step-tracker">
+          <div id="wc-step-1" style="flex:1;padding:12px 10px;text-align:center;background:#1a1a1a;border-right:1px solid var(--border)">
+            <div style="font-size:1.1rem">✅</div>
+            <div style="font-size:.7rem;font-weight:700;color:#6ee7b7;margin-top:3px">Account Created</div>
+          </div>
+          <div id="wc-step-2" style="flex:1;padding:12px 10px;text-align:center;background:#111;border-right:1px solid var(--border)">
+            <div style="font-size:1.1rem" id="wc-step-2-icon">⬜</div>
+            <div style="font-size:.7rem;font-weight:700;color:var(--muted);margin-top:3px" id="wc-step-2-label">Submit Certificate</div>
+          </div>
+          <div id="wc-step-3" style="flex:1;padding:12px 10px;text-align:center;background:#111">
+            <div style="font-size:1.1rem" id="wc-step-3-icon">⬜</div>
+            <div style="font-size:.7rem;font-weight:700;color:var(--muted);margin-top:3px" id="wc-step-3-label">Verified — Full Access</div>
+          </div>
+        </div>
+        <!-- Status badge + action -->
         <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:12px">
           <span id="wholesale-badge" class="wc-status-badge wc-none">⬜ Not Verified</span>
           <button id="wholesale-cert-btn" onclick="openWholesaleCertModal()" style="background:var(--gold);color:var(--navy);border:none;padding:8px 18px;border-radius:8px;font-weight:700;font-size:.82rem;cursor:pointer;font-family:inherit">Submit Certificate →</button>
         </div>
-        <div id="wholesale-cert-detail" style="font-size:.8rem;color:var(--muted)"></div>
+        <div id="wholesale-cert-detail" style="font-size:.8rem;color:var(--muted);line-height:1.7"></div>
+        <!-- Expiry countdown (shown when verified) -->
+        <div id="wc-expiry-bar" class="hidden" style="margin-top:12px;background:#111;border-radius:8px;padding:10px 14px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <span style="font-size:.75rem;color:var(--muted)">Certificate validity</span>
+            <span style="font-size:.75rem;font-weight:700" id="wc-expiry-label">—</span>
+          </div>
+          <div style="height:6px;background:#2a2a2a;border-radius:4px;overflow:hidden">
+            <div id="wc-expiry-progress" style="height:100%;border-radius:4px;background:var(--gold);transition:width .5s"></div>
+          </div>
+          <div id="wc-renewal-notice" class="hidden" style="margin-top:8px;background:#2a1200;border:1px solid #c9a84c40;border-radius:6px;padding:8px 10px;font-size:.75rem;color:#fbbf24;line-height:1.5"></div>
+        </div>
+        <!-- What you need (not-submitted state) -->
+        <div id="wc-what-you-need" style="display:none;margin-top:12px;background:#111;border-radius:8px;padding:14px">
+          <div style="font-size:.78rem;font-weight:700;color:var(--gold);margin-bottom:8px">📋 What you'll need to complete verification:</div>
+          <div style="display:flex;flex-direction:column;gap:5px;font-size:.78rem;color:var(--muted);line-height:1.6">
+            <div>🪪 &nbsp;Your full legal name, residential address &amp; date of birth</div>
+            <div>🧾 &nbsp;A signed certificate from your accountant (CPA Australia, CA ANZ, or IPA member)</div>
+            <div>📋 &nbsp;Your accountant's name, firm, professional membership number and contact details</div>
+            <div>💰 &nbsp;Confirmation you meet either: <strong style="color:var(--text)">Net Assets ≥ $2.5M</strong> or <strong style="color:var(--text)">Gross Income ≥ $250k p.a. for 2 years</strong></div>
+            <div>📎 &nbsp;A scanned copy of the signed certificate (PDF, JPG, or PNG — max 10MB)</div>
+          </div>
+          <div style="margin-top:10px;padding-top:10px;border-top:1px solid #2a2a2a;font-size:.75rem;color:#555">
+            Your accountant can use the <a href="https://centuria.com.au/wp-content/uploads/2022/01/Qualified-Accountants-Certificate-WHOLESALE.pdf" target="_blank" style="color:var(--gold)">standard ASIC certificate template ↗</a> or their own firm letterhead. Verification typically takes 1 business day.
+          </div>
+        </div>
       </div>
     </div>
     <div class="card" style="margin-bottom:20px"><div class="card-title"><span>⭐</span> My Submitted Interests</div><div id="my-interests-list"><p style="color:var(--muted);font-size:.85rem">No interests submitted yet.</p></div></div>
@@ -1298,6 +1351,17 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
           <div class="field"><label style="font-size:.78rem">Email</label><input type="email" id="np-email" placeholder="partner@firm.com.au"></div>
           <div class="field"><label style="font-size:.78rem">Phone</label><input type="tel" id="np-phone" placeholder="07 3000 0000"></div>
         </div>
+        <div style="background:#111;border:1px solid #333;border-radius:8px;padding:12px;margin-bottom:12px">
+          <div style="font-size:.78rem;font-weight:700;color:var(--gold);margin-bottom:8px">📄 Partner Agreement</div>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;margin-bottom:8px">
+            <input type="checkbox" id="np-agreement" style="margin-top:2px;flex-shrink:0">
+            <span style="font-size:.78rem;color:var(--text);line-height:1.6">Partner has signed and returned the Prop Dev DNA Referring Partner Agreement, acknowledging their liability limitations, disclosure obligations, and platform terms.</span>
+          </label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="field"><label style="font-size:.78rem">Agreement Date</label><input type="date" id="np-agreement-date"></div>
+            <div class="field"><label style="font-size:.78rem">Agreement Reference / Notes</label><input type="text" id="np-agreement-notes" placeholder="e.g. Signed copy on file — email 12/05/26"></div>
+          </div>
+        </div>
         <button onclick="addPartner()" style="background:var(--navy);color:#fff;border:none;padding:10px 20px;border-radius:8px;font-weight:700;font-size:.82rem;cursor:pointer;font-family:inherit">➕ Add Partner &amp; Generate Code</button>
       </div>
       <div id="admin-partners-list"><p style="color:var(--muted);font-size:.9rem">Loading…</p></div>
@@ -1530,10 +1594,49 @@ nav{position:sticky;top:0;z-index:100;background:var(--navy);display:flex;align-
   <div class="modal-box" style="max-width:680px;max-height:90vh;overflow-y:auto">
     <button class="modal-close" onclick="closeWholesaleCertModal()">×</button>
 
-    <div style="text-align:center;margin-bottom:20px">
+    <div style="text-align:center;margin-bottom:16px">
       <div style="font-size:2rem;margin-bottom:8px">🏛️</div>
-      <h3 style="font-size:1.15rem;font-weight:800;color:var(--navy)">Wholesale Investor Certification</h3>
+      <h3 style="font-size:1.15rem;font-weight:800;color:var(--text)">Wholesale Investor Certification</h3>
       <p style="font-size:.82rem;color:var(--muted);margin-top:4px">Required under <strong>s761G(7)(c) Corporations Act 2001 (Cth)</strong></p>
+    </div>
+
+    <!-- Step indicator -->
+    <div style="display:flex;align-items:center;gap:0;margin-bottom:18px;border-radius:8px;overflow:hidden;border:1px solid var(--border)">
+      <div style="flex:1;padding:8px;text-align:center;background:rgba(201,168,76,.12);border-right:1px solid var(--border)">
+        <div style="font-size:.68rem;font-weight:800;color:var(--gold)">STEP 1</div>
+        <div style="font-size:.7rem;color:var(--text)">Gather Documents</div>
+      </div>
+      <div style="flex:1;padding:8px;text-align:center;background:rgba(201,168,76,.06);border-right:1px solid var(--border)">
+        <div style="font-size:.68rem;font-weight:800;color:var(--muted)">STEP 2</div>
+        <div style="font-size:.7rem;color:var(--muted)">Complete Form</div>
+      </div>
+      <div style="flex:1;padding:8px;text-align:center;background:rgba(201,168,76,.03)">
+        <div style="font-size:.68rem;font-weight:800;color:var(--muted)">STEP 3</div>
+        <div style="font-size:.7rem;color:var(--muted)">We Review (1 day)</div>
+      </div>
+    </div>
+
+    <!-- Before you start checklist -->
+    <div style="background:#111;border:1px solid #2a2a2a;border-radius:10px;padding:14px;margin-bottom:16px">
+      <div style="font-size:.78rem;font-weight:800;color:var(--gold);margin-bottom:10px">📋 Before You Start — Have These Ready</div>
+      <div style="display:grid;gap:7px">
+        <div style="display:flex;gap:10px;align-items:flex-start;font-size:.78rem;color:var(--text);line-height:1.5">
+          <span style="color:var(--gold);flex-shrink:0">1.</span>
+          <span><strong>Your details:</strong> Full legal name (as on your ID), residential address, date of birth</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;font-size:.78rem;color:var(--text);line-height:1.5">
+          <span style="color:var(--gold);flex-shrink:0">2.</span>
+          <span><strong>A signed accountant's certificate</strong> — your CPA, CA ANZ, or IPA-registered accountant must certify in writing that you meet the net assets or income test. They can use the <a href="https://centuria.com.au/wp-content/uploads/2022/01/Qualified-Accountants-Certificate-WHOLESALE.pdf" target="_blank" style="color:var(--gold);font-weight:700">standard ASIC template ↗</a> or their own letterhead.</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;font-size:.78rem;color:var(--text);line-height:1.5">
+          <span style="color:var(--gold);flex-shrink:0">3.</span>
+          <span><strong>Accountant's details:</strong> Full name, firm name, professional membership body and membership number, business address, phone, and email</span>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start;font-size:.78rem;color:var(--text);line-height:1.5">
+          <span style="color:var(--gold);flex-shrink:0">4.</span>
+          <span><strong>Scanned certificate file:</strong> PDF, JPG, or PNG — max 10 MB. Must be clear and legible.</span>
+        </div>
+      </div>
     </div>
 
     <!-- Status display (shown when already submitted) -->
@@ -1763,7 +1866,20 @@ function onLoggedIn(){
 }
 async function doLogout(){await API.logout();currentUser=null;userActiveSubs=[];document.getElementById('navSignIn').classList.remove('hidden');document.getElementById('navUser').classList.add('hidden');document.querySelectorAll('.dev-only').forEach(el=>el.classList.add('hidden'));document.querySelectorAll('.admin-only').forEach(el=>el.classList.add('hidden'));showScreen('landing');openAuth();toast('Signed out.');}
 
-function showScreen(name){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById('screen-'+name).classList.add('active');window.scrollTo({top:0,behavior:'smooth'});if(name==='portal'&&(currentUser?.role==='developer'||currentUser?.role==='admin'))refreshPortal();if(name==='profile'){refreshMyInterests();refreshSubStatus();loadWholesaleStatus();}if(name==='admin'){loadAdminSubs();loadAdminIMReviews();loadAdminViewLogs();loadAdminWholesaleCerts();loadAdminPartners();}if(name==='im-review')loadIMReviewDetail();}
+function showScreen(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const screenEl=document.getElementById('screen-'+name);
+  if(screenEl)screenEl.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  // Show footer on landing page only
+  const footer=document.getElementById('site-footer');
+  if(footer)footer.style.display=(name==='landing')?'block':'none';
+  if(name==='portal'&&(currentUser?.role==='developer'||currentUser?.role==='admin'))refreshPortal();
+  if(name==='profile'){refreshMyInterests();refreshSubStatus();loadWholesaleStatus();}
+  if(name==='listings'&&currentUser?.role==='investor')loadWholesaleStatus();
+  if(name==='admin'){loadAdminSubs();loadAdminIMReviews();loadAdminViewLogs();loadAdminWholesaleCerts();loadAdminPartners();}
+  if(name==='im-review')loadIMReviewDetail();
+}
 function goHome(){showScreen('landing');setBN('home');}
 function toggleMobile(){document.getElementById('mobileMenu').classList.toggle('open');}
 function setBN(tab){document.querySelectorAll('.bn-item').forEach(b=>b.classList.remove('active'));const el=document.getElementById('bn-'+tab);if(el)el.classList.add('active');}
@@ -1845,9 +1961,11 @@ async function refreshPortal(){
   let imReviewMap={};try{const reviewResults=await Promise.all(myListings.map(l=>API.getIMReview(l.id).catch(()=>null)));reviewResults.forEach((r,i)=>{if(r?.review)imReviewMap[myListings[i].id]=r.review.status;});}catch{}
   document.getElementById('my-listings-list').innerHTML=myListings.length===0?'<p style="color:var(--muted);font-size:.9rem">No listings yet. Fill in the form above and click Publish to get started.</p>':myListings.map(l=>{
     const imStatus=imReviewMap[l.id]||'none';
-    const badgeHtml=imStatus==='approved'?'<span class="lead-tag" style="flex-shrink:0;background:#16a34a;color:#fff">✅ IM Approved</span>':imStatus==='pending'?'<span class="lead-tag" style="flex-shrink:0;background:#d97706;color:#fff">⏳ Under Review</span>':imStatus==='amend'?'<span class="lead-tag" style="flex-shrink:0;background:#dc2626;color:#fff">✏️ Amend IM</span>':'<span class="lead-tag new-lead" style="flex-shrink:0">LIVE</span>';
-    const nextHint=imStatus==='none'?'<div style="font-size:.7rem;color:var(--gold);margin-top:2px">👉 Next: build FEASO → generate IM → submit for review</div>':imStatus==='amend'?'<div style="font-size:.7rem;color:#dc2626;margin-top:2px">⚠️ Review feedback in FEASO Section 8 — update &amp; resubmit</div>':'';
-    return`<div class="lead-item" style="flex-wrap:wrap;gap:8px"><div style="width:50px;height:50px;border-radius:8px;background-image:url('${l.photo}');background-size:cover;flex-shrink:0;cursor:pointer" onclick="showDetail('${l.id}')"></div><div class="lead-info" style="flex:1;cursor:pointer;min-width:120px" onclick="showDetail('${l.id}')"><strong>${l.name}</strong><span>${l.irr}% IRR · ${l.fundedPct}% funded</span>${nextHint}</div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button onclick="event.stopPropagation();showFeasoForm('${l.id}')" style="background:var(--gold);color:var(--navy);border:none;padding:6px 12px;border-radius:6px;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit">📊 FEASO</button><button onclick="event.stopPropagation();showFeasoForm('${l.id}')" title="Build &amp; Generate IM" style="background:var(--navy);color:#fff;border:1px solid rgba(255,255,255,.2);padding:6px 12px;border-radius:6px;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit">📄 IM</button>${badgeHtml}</div></div>`;
+    const listingStatus=l.status||'draft';
+    const listingStatusHtml=listingStatus==='active'?'<span style="background:#16a34a20;color:#6ee7b7;padding:2px 8px;border-radius:4px;font-size:.68rem;font-weight:700">🟢 LIVE</span>':listingStatus==='pending_review'?'<span style="background:#d9780620;color:#fbbf24;padding:2px 8px;border-radius:4px;font-size:.68rem;font-weight:700">⏳ PENDING REVIEW</span>':'<span style="background:#6b728020;color:#9ca3af;padding:2px 8px;border-radius:4px;font-size:.68rem;font-weight:700">⬜ DRAFT — not visible to investors</span>';
+    const badgeHtml=imStatus==='approved'?'<span class="lead-tag" style="flex-shrink:0;background:#16a34a;color:#fff">✅ IM Approved</span>':imStatus==='pending'?'<span class="lead-tag" style="flex-shrink:0;background:#d97706;color:#fff">⏳ Under Review</span>':imStatus==='amend'?'<span class="lead-tag" style="flex-shrink:0;background:#dc2626;color:#fff">✏️ Amend IM</span>':'';
+    const nextHint=listingStatus==='draft'?'<div style="font-size:.7rem;color:var(--gold);margin-top:2px">👉 Build FEASO → generate IM → submit for review to go live</div>':imStatus==='amend'?'<div style="font-size:.7rem;color:#dc2626;margin-top:2px">⚠️ Review feedback in FEASO Section 8 — update &amp; resubmit</div>':'';
+    return`<div class="lead-item" style="flex-wrap:wrap;gap:8px"><div style="width:50px;height:50px;border-radius:8px;background-image:url('${l.photo}');background-size:cover;flex-shrink:0;cursor:pointer" onclick="showDetail('${l.id}')"></div><div class="lead-info" style="flex:1;cursor:pointer;min-width:120px" onclick="showDetail('${l.id}')"><strong>${l.name}</strong><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:2px">${listingStatusHtml}</div><span style="margin-top:2px">${l.irr}% IRR · ${l.fundedPct}% funded</span>${nextHint}</div><div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><button onclick="event.stopPropagation();showFeasoForm('${l.id}')" style="background:var(--gold);color:var(--navy);border:none;padding:6px 12px;border-radius:6px;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit">📊 FEASO</button><button onclick="event.stopPropagation();showFeasoForm('${l.id}')" title="Build &amp; Generate IM" style="background:var(--navy);color:#fff;border:1px solid rgba(255,255,255,.2);padding:6px 12px;border-radius:6px;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit">📄 IM</button>${badgeHtml}</div></div>`;
   }).join('');
   document.getElementById('leads-list').innerHTML=interests.length===0?'<p style="color:var(--muted);font-size:.85rem">Leads appear when investors express interest.</p>':interests.slice().reverse().slice(0,8).map(i=>`<div class="lead-item"><div class="lead-avatar">${i.fname[0]}${(i.lname||'?')[0]}</div><div class="lead-info"><strong>${i.fname} ${i.lname||''}</strong><span>${i.listingName} · ${i.amount}</span></div><span class="lead-tag ${i.needsBroker?'ref':'hot'}">${i.needsBroker?'Referral':'Direct'}</span></div>`).join('');}
   catch(e){console.error(e);}
@@ -2162,11 +2280,39 @@ async function confirmIMView(){
   btn.disabled=true; btn.textContent='Recording…';
   try{
     const listing=allListings.find(l=>l.id===listingId);
-    // Log IM view + risk declaration together
-    await Promise.all([
-      API.logIMView(listingId,true,true),
-      API.submitRiskDeclaration(listingId, listing?.name||'', true)
-    ]);
+
+    // ── Wholesale hard-gate check ──
+    const viewResult = await API.logIMView(listingId,true,true);
+    if(viewResult.error==='wholesale_required'){
+      btn.disabled=false; updateIMViewBtn();
+      closeIMViewModal();
+      // Show wholesale gate modal
+      const modal=document.getElementById('imViewModal');
+      modal.classList.remove('hidden');
+      const reasonMessages={
+        not_submitted:'You need to complete Wholesale Investor Certification before accessing this document.',
+        pending:'Your Wholesale Certificate is currently under review. We\'ll email you once approved.',
+        rejected:'Your Wholesale Certificate was not approved. Please resubmit with a valid certificate.',
+        expired:'Your Wholesale Certificate has expired. Please submit a new certificate from a qualified accountant.'
+      };
+      modal.querySelector('.modal-box').innerHTML=`
+        <div style="text-align:center;padding:16px 0">
+          <div style="font-size:3rem;margin-bottom:12px">🏛️</div>
+          <h3 style="font-size:1.1rem;font-weight:800;color:var(--text);margin-bottom:8px">Wholesale Verification Required</h3>
+          <p style="font-size:.85rem;color:var(--muted);margin-bottom:16px;line-height:1.6">${reasonMessages[viewResult.reason]||viewResult.message||'Wholesale investor verification required.'}</p>
+          <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:10px;padding:14px;font-size:.78rem;color:var(--muted);text-align:left;margin-bottom:18px;line-height:1.7">
+            Under <strong style="color:var(--text)">s761G(7)(c) of the Corporations Act 2001</strong>, access to this Investment Memorandum is restricted to wholesale investors only. A signed certificate from a qualified accountant (CPA Australia, CA ANZ, or IPA) is required.
+          </div>
+          <div style="display:flex;gap:10px">
+            <button onclick="document.getElementById('imViewModal').classList.add('hidden')" style="flex:1;padding:12px;border:1.5px solid var(--border);border-radius:8px;background:none;font-family:inherit;font-weight:600;cursor:pointer;font-size:.88rem;color:var(--text)">Close</button>
+            <button onclick="document.getElementById('imViewModal').classList.add('hidden');openWholesaleCertModal()" style="flex:2;padding:12px;background:var(--gold);color:var(--navy);border:none;border-radius:8px;font-weight:700;cursor:pointer;font-family:inherit;font-size:.88rem">Submit Certificate →</button>
+          </div>
+        </div>`;
+      return;
+    }
+
+    // Log risk declaration
+    await API.submitRiskDeclaration(listingId, listing?.name||'', true);
     closeIMViewModal();
     // Show confirmed receipt
     const modal=document.getElementById('imViewModal');
@@ -3270,7 +3416,8 @@ async function loadAdminPartners(){
           <div style="background:var(--navy);color:var(--gold);font-family:monospace;font-size:.8rem;font-weight:700;padding:6px 12px;border-radius:6px;letter-spacing:.05em">${p.referralCode}</div>
           <span style="font-size:.75rem;color:var(--muted)">${p.referralCount||0} referral${p.referralCount!==1?'s':''}</span>
           <span style="padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:700;background:${p.active?'#d1fae5':'#fee2e2'};color:${p.active?'#065f46':'#991b1b'}">${p.active?'Active':'Inactive'}</span>
-          <button onclick="togglePartner('${p.id}')" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:none;font-size:.72rem;cursor:pointer;font-family:inherit">${p.active?'Deactivate':'Activate'}</button>
+          <span style="padding:4px 10px;border-radius:20px;font-size:.72rem;font-weight:700;background:${p.agreementSigned?'#d1fae520':'#fee2e220'};color:${p.agreementSigned?'#6ee7b7':'#fca5a5'}">${p.agreementSigned?'📄 Agreement Signed':'⚠️ No Agreement'}</span>
+          <button onclick="togglePartner('${p.id}')" style="padding:5px 10px;border:1px solid var(--border);border-radius:6px;background:none;font-size:.72rem;cursor:pointer;font-family:inherit;color:var(--text)">${p.active?'Deactivate':'Activate'}</button>
         </div>
       </div>`).join('');
   }catch(e){el.innerHTML='<p style="color:var(--red);font-size:.9rem">Error loading partners.</p>';}
@@ -3286,10 +3433,14 @@ async function addPartner(){
       firm:document.getElementById('np-firm')?.value.trim()||'',
       email:document.getElementById('np-email')?.value.trim()||'',
       phone:document.getElementById('np-phone')?.value.trim()||'',
-      licenceNumber:document.getElementById('np-licence')?.value.trim()||''
+      licenceNumber:document.getElementById('np-licence')?.value.trim()||'',
+      agreementSigned:document.getElementById('np-agreement')?.checked||false,
+      agreementDate:document.getElementById('np-agreement-date')?.value||'',
+      agreementNotes:document.getElementById('np-agreement-notes')?.value.trim()||''
     });
     toast('✅ Partner added — referral code: '+r.partner.referralCode);
-    ['np-name','np-firm','np-email','np-phone','np-licence'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    ['np-name','np-firm','np-email','np-phone','np-licence','np-agreement-date','np-agreement-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    const agEl=document.getElementById('np-agreement');if(agEl)agEl.checked=false;
     loadAdminPartners();
   }catch(e){toast('Error adding partner.');}
 }
@@ -3358,27 +3509,94 @@ async function loadWholesaleStatus(){
   card.classList.remove('hidden');
   try{
     const {cert, wholesaleStatus} = await API.wholesaleCertStatus();
-    const badge = document.getElementById('wholesale-badge');
+    const badge  = document.getElementById('wholesale-badge');
     const detail = document.getElementById('wholesale-cert-detail');
-    const btn = document.getElementById('wholesale-cert-btn');
+    const btn    = document.getElementById('wholesale-cert-btn');
+    const expiryBar = document.getElementById('wc-expiry-bar');
+    const whatYouNeed = document.getElementById('wc-what-you-need');
+    const renewalNotice = document.getElementById('wc-renewal-notice');
+
+    // Step tracker helpers
+    function setStep2(icon, label, color){ document.getElementById('wc-step-2-icon').textContent=icon; document.getElementById('wc-step-2-label').textContent=label; document.getElementById('wc-step-2-label').style.color=color; document.getElementById('wc-step-2').style.background=color==='#6ee7b7'?'rgba(110,231,183,.08)':'rgba(201,168,76,.06)'; }
+    function setStep3(icon, label, color){ document.getElementById('wc-step-3-icon').textContent=icon; document.getElementById('wc-step-3-label').textContent=label; document.getElementById('wc-step-3-label').style.color=color; document.getElementById('wc-step-3').style.background=color==='#6ee7b7'?'rgba(110,231,183,.08)':'#111'; }
+
     if(wholesaleStatus === 'verified' && cert){
       badge.className='wc-status-badge wc-verified'; badge.textContent='✅ Verified Wholesale Investor';
-      detail.innerHTML=`Certified by <strong>${cert.acctName}</strong> (${cert.acctMembership}) · Valid until <strong>${new Date(cert.expiresAt).toLocaleDateString('en-AU')}</strong>`;
-      btn.textContent='View Certificate'; btn.style.background='#d1fae5'; btn.style.color='#065f46';
+      const expiry = new Date(cert.expiresAt);
+      const now    = new Date();
+      const issued = new Date(cert.reviewedAt || cert.submittedAt);
+      const totalMs = (2 * 365 * 24 * 60 * 60 * 1000);
+      const usedMs  = now - issued;
+      const daysLeft = Math.max(0, Math.round((expiry - now) / (1000*60*60*24)));
+      const pct = Math.max(2, Math.round(100 - (usedMs/totalMs)*100));
+      detail.innerHTML=`Certified by <strong style="color:var(--text)">${cert.acctName}</strong> (${cert.acctMembership} #${cert.acctMembershipNumber})<br>
+        Certification basis: <strong style="color:var(--text)">${cert.certBasis==='net_assets'?'Net Assets ≥ $2.5M':'Gross Income ≥ $250k p.a.'}</strong><br>
+        Valid until: <strong style="color:var(--text)">${expiry.toLocaleDateString('en-AU',{day:'numeric',month:'long',year:'numeric'})}</strong>`;
+      btn.textContent='✅ Full Access Active'; btn.style.background='rgba(110,231,183,.15)'; btn.style.color='#6ee7b7'; btn.style.border='1px solid #6ee7b740'; btn.onclick=null;
+      // Expiry progress bar
+      expiryBar.classList.remove('hidden');
+      document.getElementById('wc-expiry-label').innerHTML=`<span style="color:${daysLeft<90?'#fbbf24':daysLeft<180?'#e8c76a':'#6ee7b7'}">${daysLeft} days remaining</span>`;
+      document.getElementById('wc-expiry-progress').style.width=pct+'%';
+      document.getElementById('wc-expiry-progress').style.background=daysLeft<90?'#f59e0b':daysLeft<180?'var(--gold)':'#6ee7b7';
+      // Renewal alert
+      if(daysLeft <= 90){
+        renewalNotice.classList.remove('hidden');
+        renewalNotice.innerHTML=`⚠️ <strong>Certificate expiring soon.</strong> Your wholesale investor certificate expires in ${daysLeft} days. Contact your accountant to obtain a fresh certificate and resubmit before expiry to maintain uninterrupted access to investment documents.`;
+      }
+      setStep2('✅','Certificate Submitted','#6ee7b7');
+      setStep3('✅','Verified — Full Access','#6ee7b7');
+      if(whatYouNeed) whatYouNeed.style.display='none';
+
     } else if(wholesaleStatus === 'pending'){
-      badge.className='wc-status-badge wc-pending'; badge.textContent='⏳ Pending Review';
-      detail.textContent='Your certificate is being reviewed. We\'ll notify you within 1 business day.';
-      btn.textContent='View Status'; btn.style.background='#fef3c7'; btn.style.color='#92400e';
+      badge.className='wc-status-badge wc-pending'; badge.textContent='⏳ Under Review';
+      const submitted = cert ? new Date(cert.submittedAt).toLocaleDateString('en-AU',{day:'numeric',month:'short'}) : '—';
+      detail.innerHTML=`Your certificate was submitted on <strong style="color:var(--text)">${submitted}</strong> and is currently under review.<br>
+        <span style="color:#fbbf24">Expected turnaround: <strong>1 business day.</strong></span> You'll receive an email once approved.`;
+      btn.textContent='Waiting for Review'; btn.style.background='rgba(251,191,36,.1)'; btn.style.color='#fbbf24'; btn.style.border='1px solid #fbbf2440'; btn.onclick=null;
+      setStep2('⏳','Under Review','#fbbf24');
+      setStep3('⬜','Verified — Full Access','var(--muted)');
+      if(whatYouNeed) whatYouNeed.style.display='none';
+      // What happens next
+      detail.innerHTML += `<div style="margin-top:10px;background:#1a1200;border-radius:8px;padding:10px 12px;font-size:.77rem;color:var(--muted);line-height:1.7">
+        <strong style="color:var(--gold)">What happens next:</strong><br>
+        1. Our team downloads and reviews your certificate<br>
+        2. We verify your accountant's membership on the CPA/CA ANZ/IPA register<br>
+        3. You receive an email confirming approval or requesting changes<br>
+        4. Once approved — full access to all Investment Memorandums and FEASO reports is granted immediately
+      </div>`;
+
     } else if(wholesaleStatus === 'rejected'){
-      badge.className='wc-status-badge wc-rejected'; badge.textContent='❌ Rejected — Resubmit';
-      detail.textContent=cert?.adminNotes||'Your certificate was rejected. Please resubmit.';
-      btn.textContent='Resubmit Certificate →';
+      badge.className='wc-status-badge wc-rejected'; badge.textContent='❌ Certificate Not Approved';
+      detail.innerHTML=`<div style="background:#1a0a0a;border:1px solid #3a1a1a;border-radius:8px;padding:10px 12px;font-size:.8rem;color:#fca5a5;margin-bottom:10px">
+        <strong>Reason:</strong> ${cert?.adminNotes||'Please resubmit with a valid signed certificate from a qualified accountant.'}
+      </div>
+      <strong style="color:var(--text)">To resolve this:</strong> Obtain a new certificate from your CPA, CA ANZ, or IPA-registered accountant and resubmit. Ensure the certificate is signed, dated, and clearly states the qualifying basis (net assets or income).`;
+      btn.textContent='↑ Resubmit Certificate'; btn.style.background='var(--gold)'; btn.style.color='var(--navy)'; btn.style.border='none'; btn.onclick=openWholesaleCertModal;
+      setStep2('❌','Resubmission Required','#f87171');
+      setStep3('⬜','Verified — Full Access','var(--muted)');
+      if(whatYouNeed) whatYouNeed.style.display='none';
+
+    } else if(wholesaleStatus === 'expired'){
+      badge.className='wc-status-badge wc-rejected'; badge.textContent='⚠️ Certificate Expired';
+      detail.innerHTML=`Your wholesale investor certificate has expired. Under <strong>s761G Corporations Act 2001</strong>, certificates are valid for 2 years only. Please obtain a fresh certificate from your accountant and resubmit to restore full access.`;
+      btn.textContent='Renew Certificate →'; btn.style.background='var(--gold)'; btn.style.color='var(--navy)'; btn.style.border='none'; btn.onclick=openWholesaleCertModal;
+      setStep2('⚠️','Certificate Expired','#fbbf24');
+      setStep3('⬜','Access Suspended','var(--muted)');
+      if(whatYouNeed) whatYouNeed.style.display='none';
+
     } else {
-      badge.className='wc-status-badge wc-none'; badge.textContent='⬜ Not Verified';
-      detail.innerHTML='Submit a Qualified Accountant\'s Certificate to access Investment Memorandums on this platform.';
-      btn.textContent='Submit Certificate →';
+      badge.className='wc-status-badge wc-none'; badge.textContent='⬜ Not Yet Verified';
+      detail.innerHTML='To access Investment Memorandums and FEASO reports, you must verify your wholesale investor status under s761G of the Corporations Act 2001.';
+      btn.textContent='Submit Certificate →'; btn.style.background='var(--gold)'; btn.style.color='var(--navy)'; btn.style.border='none'; btn.onclick=openWholesaleCertModal;
+      setStep2('⬜','Submit Certificate','var(--muted)');
+      setStep3('⬜','Verified — Full Access','var(--muted)');
+      if(whatYouNeed) whatYouNeed.style.display='block';
     }
-  } catch(e){}
+
+    // Also update the listings page banner
+    updateInvestorVerifyBanner(wholesaleStatus, cert);
+
+  } catch(e){ console.error('loadWholesaleStatus error',e); }
 }
 
 function wcBasisChange(){
@@ -3448,8 +3666,39 @@ async function submitWholesaleCert(){
     const data = await res.json();
     if(data.error){ errEl.textContent=data.error; errEl.style.display='block'; btn.disabled=false; btn.textContent='Submit Wholesale Certificate →'; return; }
     errEl.style.display='none';
-    toast('✅ Certificate submitted! We\'ll review it within 1 business day.');
-    closeWholesaleCertModal();
+    // Show "what happens next" panel instead of just a toast
+    const formWrap = document.getElementById('wc-form-wrapper');
+    const statusDiv = document.getElementById('wc-status-display');
+    formWrap.classList.add('hidden');
+    statusDiv.classList.remove('hidden');
+    statusDiv.innerHTML=`
+      <div style="text-align:center;padding:8px 0 20px">
+        <div style="font-size:3rem;margin-bottom:12px">📬</div>
+        <h3 style="font-size:1.1rem;font-weight:800;color:var(--text);margin-bottom:6px">Certificate Received!</h3>
+        <p style="font-size:.85rem;color:var(--muted);margin-bottom:20px">Your Wholesale Investor Certificate has been submitted for review.</p>
+        <div style="background:#111;border:1px solid #2a2a2a;border-radius:10px;padding:16px;text-align:left;margin-bottom:18px">
+          <div style="font-size:.78rem;font-weight:700;color:var(--gold);margin-bottom:10px">What happens next:</div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:24px;height:24px;border-radius:50%;background:rgba(201,168,76,.15);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:var(--gold);flex-shrink:0">1</div>
+              <div style="font-size:.8rem;color:var(--text);line-height:1.5"><strong>Certificate downloaded</strong> — our compliance team downloads and reviews your signed document</div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:24px;height:24px;border-radius:50%;background:rgba(201,168,76,.15);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:var(--gold);flex-shrink:0">2</div>
+              <div style="font-size:.8rem;color:var(--text);line-height:1.5"><strong>Accountant verified</strong> — we cross-check your accountant's membership on the CPA Australia / CA ANZ / IPA public register</div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:24px;height:24px;border-radius:50%;background:rgba(201,168,76,.15);border:1px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:var(--gold);flex-shrink:0">3</div>
+              <div style="font-size:.8rem;color:var(--text);line-height:1.5"><strong>Email notification</strong> — you'll receive an email within <strong>1 business day</strong> confirming approval or any required changes</div>
+            </div>
+            <div style="display:flex;gap:12px;align-items:flex-start">
+              <div style="width:24px;height:24px;border-radius:50%;background:rgba(110,231,183,.15);border:1px solid #6ee7b7;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;color:#6ee7b7;flex-shrink:0">✓</div>
+              <div style="font-size:.8rem;color:#6ee7b7;line-height:1.5"><strong>Full access granted</strong> — once approved, you can access all Investment Memorandums and FEASO reports immediately</div>
+            </div>
+          </div>
+        </div>
+        <button onclick="closeWholesaleCertModal()" style="width:100%;padding:12px;background:var(--gold);color:var(--navy);border:none;border-radius:8px;font-weight:700;font-size:.9rem;cursor:pointer;font-family:inherit">Got It — I'll Wait for Approval</button>
+      </div>`;
     loadWholesaleStatus();
   } catch(e){ errEl.textContent='Submission failed — please try again.'; errEl.style.display='block'; btn.disabled=false; btn.textContent='Submit Wholesale Certificate →'; }
 }
@@ -3477,14 +3726,27 @@ async function loadAdminWholesaleCerts(){
           <div><span style="color:var(--muted)">Basis:</span> <strong>${c.certBasis==='net_assets'?'Net Assets ≥ $2.5M':'Gross Income ≥ $250k p.a.'}</strong></div>
           <div><span style="color:var(--muted)">File:</span> ${c.fileName||'—'}</div>
         </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:${c.status==='pending'?'12':'0'}px">
           <a href="/api/admin/wholesale-certs/${c.id}/download" target="_blank" style="padding:7px 14px;background:var(--navy);color:#fff;border-radius:6px;font-size:.75rem;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;gap:4px">📥 Download Certificate</a>
-          ${c.status==='pending'?`
-          <button onclick="adminApproveWC('${c.id}')" style="padding:7px 14px;background:#16a34a;color:#fff;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit">✅ Approve</button>
-          <button onclick="adminRejectWC('${c.id}')" style="padding:7px 14px;background:#dc2626;color:#fff;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit">❌ Reject</button>`:''}
           ${c.status==='verified'?`<span style="font-size:.75rem;color:#6b7280;padding:7px 0">Valid until ${new Date(c.expiresAt).toLocaleDateString('en-AU')}</span>`:''}
         </div>
-        ${c.adminNotes?`<div style="margin-top:8px;font-size:.75rem;color:var(--muted)">Admin notes: ${c.adminNotes}</div>`:''}
+        ${c.status==='pending'?`
+        <div style="background:#111;border:1px solid #2a2a2a;border-radius:8px;padding:12px;margin-bottom:10px">
+          <div style="font-size:.75rem;font-weight:700;color:var(--gold);margin-bottom:8px">🔍 Verification Checklist — complete before approving</div>
+          <div style="display:flex;flex-direction:column;gap:6px;font-size:.75rem;color:var(--muted)">
+            <label style="display:flex;gap:8px;cursor:pointer"><input type="checkbox" style="accent-color:var(--gold)"> <span>Downloaded and reviewed the uploaded certificate — it is signed, dated, and legible</span></label>
+            <label style="display:flex;gap:8px;cursor:pointer"><input type="checkbox" style="accent-color:var(--gold)"> <span>Accountant's membership verified: <strong style="color:var(--text)">${c.acctMembership} #${c.acctMembershipNumber}</strong> — cross-checked on public register</span></label>
+            <label style="display:flex;gap:8px;cursor:pointer"><input type="checkbox" style="accent-color:var(--gold)"> <span>Investor name on certificate matches registered account: <strong style="color:var(--text)">${c.userName}</strong></span></label>
+            <label style="display:flex;gap:8px;cursor:pointer"><input type="checkbox" style="accent-color:var(--gold)"> <span>Certification basis is clearly stated — ${c.certBasis==='net_assets'?'<strong style="color:var(--text)">Net Assets ≥ $2.5M</strong>':'<strong style="color:var(--text)">Gross Income ≥ $250k p.a. for 2 years</strong>'}</span></label>
+            <label style="display:flex;gap:8px;cursor:pointer"><input type="checkbox" style="accent-color:var(--gold)"> <span>No visible alterations, corrections, or irregularities on the document</span></label>
+            <label style="display:flex;gap:8px;cursor:pointer"><input type="checkbox" style="accent-color:var(--gold)"> <span>Certificate is recent (within 2 years of today's date)</span></label>
+          </div>
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+            <button onclick="adminApproveWC('${c.id}')" style="padding:8px 16px;background:#16a34a;color:#fff;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit">✅ Approve &amp; Verify</button>
+            <button onclick="adminRejectWC('${c.id}')" style="padding:8px 16px;background:#dc2626;color:#fff;border:none;border-radius:6px;font-size:.75rem;font-weight:700;cursor:pointer;font-family:inherit">❌ Reject</button>
+          </div>
+        </div>`:''}
+        ${c.adminNotes?`<div style="margin-top:8px;font-size:.75rem;color:var(--muted)"><strong>Admin notes:</strong> ${c.adminNotes}</div>`:''}
       </div>`;
     }).join('');
   } catch(e){ el.innerHTML='<p style="color:var(--red);font-size:.9rem">Error loading certificates.</p>'; }
@@ -3502,6 +3764,209 @@ async function adminRejectWC(id){
   try{ await API.rejectWholesaleCert(id, notes); toast('Certificate rejected.'); loadAdminWholesaleCerts(); }
   catch(e){ toast('Error rejecting certificate.'); }
 }
+
+function updateInvestorVerifyBanner(wholesaleStatus, cert){
+  const banner = document.getElementById('investor-verify-banner');
+  if(!banner) return;
+  // Only show for investors who aren't verified
+  if(!currentUser || currentUser.role !== 'investor' || wholesaleStatus === 'verified'){
+    banner.classList.add('hidden'); return;
+  }
+  banner.classList.remove('hidden');
+
+  const stepsRow = document.getElementById('verify-steps-row');
+  const ctaDiv   = document.getElementById('verify-banner-cta');
+
+  const step = (num, icon, title, desc, active, done) => `
+    <div style="flex:1;min-width:140px;padding:10px 14px;background:${done?'rgba(110,231,183,.06)':active?'rgba(201,168,76,.08)':'transparent'};border-right:1px solid #2a2a2a;position:relative">
+      ${num<3?`<div style="position:absolute;top:50%;right:-1px;transform:translateY(-50%);color:#2a2a2a;font-size:.9rem;z-index:1">▶</div>`:''}
+      <div style="font-size:1.2rem;margin-bottom:4px">${icon}</div>
+      <div style="font-size:.7rem;font-weight:800;color:${done?'#6ee7b7':active?'var(--gold)':'var(--muted)'};margin-bottom:2px">STEP ${num}</div>
+      <div style="font-size:.75rem;font-weight:700;color:${done?'#a7f3d0':active?'var(--text)':'#555'}">${title}</div>
+      <div style="font-size:.68rem;color:${done?'#6ee7b7':active?'var(--muted)':'#444'};margin-top:2px;line-height:1.4">${desc}</div>
+    </div>`;
+
+  if(wholesaleStatus === 'pending'){
+    stepsRow.innerHTML =
+      step(1,'✅','Account Created','Done',false,true)+
+      step(2,'⏳','Certificate Submitted','Under review — 1 business day',true,false)+
+      step(3,'⬜','Verified','Full IM access granted',false,false);
+    ctaDiv.innerHTML=`<span style="font-size:.78rem;color:#fbbf24">⏳ Your certificate is being reviewed. We'll email you once approved.</span>`;
+  } else if(wholesaleStatus === 'rejected'){
+    stepsRow.innerHTML =
+      step(1,'✅','Account Created','Done',false,true)+
+      step(2,'❌','Certificate Rejected','Resubmission required',true,false)+
+      step(3,'⬜','Verified','Full IM access granted',false,false);
+    ctaDiv.innerHTML=`<button onclick="openWholesaleCertModal()" style="background:var(--gold);color:var(--navy);border:none;padding:8px 18px;border-radius:7px;font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit">↑ Resubmit Wholesale Certificate →</button>`;
+  } else if(wholesaleStatus === 'expired'){
+    stepsRow.innerHTML =
+      step(1,'✅','Account Created','Done',false,true)+
+      step(2,'⚠️','Certificate Expired','Renewal required',true,false)+
+      step(3,'⬜','Verified','Access suspended',false,false);
+    ctaDiv.innerHTML=`<button onclick="openWholesaleCertModal()" style="background:var(--gold);color:var(--navy);border:none;padding:8px 18px;border-radius:7px;font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit">🔄 Renew Wholesale Certificate →</button>`;
+  } else {
+    // Not submitted
+    stepsRow.innerHTML =
+      step(1,'✅','Account Created','Done',false,true)+
+      step(2,'⬜','Submit Certificate','Needed to access IMs',true,false)+
+      step(3,'⬜','Verified','Full IM access granted',false,false);
+    ctaDiv.innerHTML=`
+      <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+        <button onclick="openWholesaleCertModal()" style="background:var(--gold);color:var(--navy);border:none;padding:8px 20px;border-radius:7px;font-weight:700;font-size:.78rem;cursor:pointer;font-family:inherit">🏛️ Submit Wholesale Certificate →</button>
+        <span style="font-size:.75rem;color:var(--muted)">Required under s761G Corporations Act 2001 · Takes 1 business day</span>
+      </div>`;
+  }
+}
+
+function showLegal(page){
+  ['legal-terms','legal-privacy','legal-disclaimer'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.classList.add('hidden');
+  });
+  const el=document.getElementById('legal-'+page);
+  if(el){el.classList.remove('hidden');}
+  showScreen('legal');setBN('');
+}
 </script>
+
+<!-- ═══════════════════════════════════════════════
+     LEGAL SCREENS
+════════════════════════════════════════════════ -->
+<div id="screen-legal" class="screen">
+  <div style="max-width:800px;margin:0 auto;padding:32px 20px 60px">
+    <button onclick="history.back()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:8px 16px;border-radius:8px;cursor:pointer;font-family:inherit;font-size:.85rem;margin-bottom:24px">← Back</button>
+
+    <!-- Terms of Service -->
+    <div id="legal-terms">
+      <h1 style="color:var(--gold);font-size:1.6rem;margin-bottom:4px">Terms of Service</h1>
+      <p style="color:var(--muted);font-size:.8rem;margin-bottom:28px">Last updated: May 2026 · Prop Dev DNA Pty Ltd (ABN to be registered)</p>
+
+      <div style="display:flex;flex-direction:column;gap:20px;font-size:.88rem;line-height:1.8;color:var(--text)">
+        <div><h3 style="color:var(--gold);margin-bottom:6px">1. About This Platform</h3>
+        <p>Prop Dev DNA is an online platform that connects wholesale property developers and investors. We facilitate the sharing of Information Memorandums (IMs), feasibility reports, and investment opportunity listings. We do not provide financial product advice, act as a financial services licensee, or manage funds.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">2. Wholesale Investors Only</h3>
+        <p>This platform is restricted to <strong>wholesale investors</strong> as defined under <strong>s761G of the Corporations Act 2001 (Cth)</strong>. By accessing investment documents, you confirm you are a wholesale investor and have provided a valid Qualified Accountant's Certificate. Retail investors are not permitted to access investment documents on this platform.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">3. No Financial Advice</h3>
+        <p>Nothing on this platform constitutes financial product advice, a recommendation, or an offer to invest. All content is general information only and has been prepared without taking into account your individual objectives, financial situation, or needs. You must obtain independent legal, financial, and tax advice before making any investment decision.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">4. Developer Responsibility</h3>
+        <p>Developers who list opportunities on this platform are solely responsible for the accuracy, completeness, and currency of all information they submit. Prop Dev DNA does not independently verify developer representations, project details, financial projections, or DA approvals. All listings are provided as-is.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">5. Investor Risk Acknowledgment</h3>
+        <p>Property development investments carry significant risks including, but not limited to, loss of capital, project delays, cost overruns, market downturns, builder insolvency, and regulatory changes. You acknowledge these risks by accessing any investment document on this platform. Past performance is not indicative of future results.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">6. Referring Partners</h3>
+        <p>Referring partners (accountants, financial advisers, mortgage brokers, buyers agents, and others) who introduce investors to this platform act in their own capacity. They are not agents, employees, or representatives of Prop Dev DNA. Prop Dev DNA accepts no liability for advice given by referring partners. The referring partner relationship does not create a fiduciary duty on the part of Prop Dev DNA.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">7. Platform Fees</h3>
+        <p>Developer subscription fees are payable in advance. Fees are non-refundable once a subscription period has commenced. Prop Dev DNA reserves the right to vary pricing on reasonable notice.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">8. Intellectual Property</h3>
+        <p>All platform content, design, software, and branding are the property of Prop Dev DNA Pty Ltd. Information Memorandums generated on this platform incorporate developer-submitted content and are subject to copyright. Unauthorised reproduction or distribution of IMs is prohibited.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">9. Governing Law</h3>
+        <p>These terms are governed by the laws of Queensland, Australia. Any disputes are subject to the exclusive jurisdiction of the courts of Queensland.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">10. Contact</h3>
+        <p>For queries regarding these terms, contact: <strong style="color:var(--gold)">legal@propdevdna.com.au</strong></p></div>
+      </div>
+    </div>
+
+    <!-- Privacy Policy -->
+    <div id="legal-privacy" class="hidden">
+      <h1 style="color:var(--gold);font-size:1.6rem;margin-bottom:4px">Privacy Policy</h1>
+      <p style="color:var(--muted);font-size:.8rem;margin-bottom:28px">Last updated: May 2026 · Compliant with the Privacy Act 1988 (Cth) and Australian Privacy Principles</p>
+
+      <div style="display:flex;flex-direction:column;gap:20px;font-size:.88rem;line-height:1.8;color:var(--text)">
+        <div><h3 style="color:var(--gold);margin-bottom:6px">1. Information We Collect</h3>
+        <p>We collect: (a) account registration information (name, email, role); (b) wholesale investor certification data (including accountant details and financial status declarations); (c) investment interest submissions; (d) platform usage data (IP address, timestamps, IM view logs); (e) payment references for subscription purposes.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">2. How We Use Your Information</h3>
+        <p>We use your information to: operate and improve the platform; verify wholesale investor status under s761G; facilitate connections between investors and developers; maintain compliance audit trails; send transactional emails (account notifications, cert approvals, IM approvals); and comply with legal obligations under Australian law.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">3. Disclosure of Information</h3>
+        <p>We may share your information with: developers whose listings you express interest in (name, email, phone, investment amount); our platform administrators; and regulatory bodies where required by law (including ASIC and AUSTRAC). We do not sell personal information to third parties.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">4. Wholesale Certificate Data</h3>
+        <p>Accountant certificate files and investor financial status declarations are stored securely and accessed only by platform administrators for the purpose of verification. This data is retained for the life of your account plus 7 years to meet potential regulatory audit requirements.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">5. Data Security</h3>
+        <p>We implement industry-standard security including bcrypt password hashing, encrypted sessions, rate-limited login endpoints, and regular database backups. However, no internet transmission is completely secure. You use this platform at your own risk.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">6. Access and Correction</h3>
+        <p>You may request access to or correction of your personal information by contacting <strong style="color:var(--gold)">privacy@propdevdna.com.au</strong>. We will respond within 30 days.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">7. Cookies</h3>
+        <p>This platform uses session cookies for authentication. No third-party tracking cookies or advertising cookies are used.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">8. Contact</h3>
+        <p>Privacy Officer: <strong style="color:var(--gold)">privacy@propdevdna.com.au</strong><br>
+        Complaints may also be directed to the <a href="https://www.oaic.gov.au" target="_blank" style="color:var(--gold)">Office of the Australian Information Commissioner (OAIC)</a>.</p></div>
+      </div>
+    </div>
+
+    <!-- Platform Disclaimer -->
+    <div id="legal-disclaimer" class="hidden">
+      <h1 style="color:var(--gold);font-size:1.6rem;margin-bottom:4px">Platform Disclaimer</h1>
+      <p style="color:var(--muted);font-size:.8rem;margin-bottom:28px">Last updated: May 2026</p>
+
+      <div style="background:#1a0a0a;border:1px solid #3a1a1a;border-radius:12px;padding:20px;margin-bottom:24px">
+        <div style="color:#f87171;font-weight:700;margin-bottom:8px;font-size:.9rem">⚠️ Important — Please Read Carefully</div>
+        <p style="color:#fca5a5;font-size:.85rem;line-height:1.8">This platform does not hold an Australian Financial Services Licence (AFSL) and does not provide financial product advice. All content on this platform is for information purposes only and is directed exclusively at wholesale investors as defined under the Corporations Act 2001 (Cth).</p>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:20px;font-size:.88rem;line-height:1.8;color:var(--text)">
+        <div><h3 style="color:var(--gold);margin-bottom:6px">General Advice Warning</h3>
+        <p>Any information provided on this platform has been prepared without taking into account your individual objectives, financial situation, or needs. Before acting on any information, you should consider its appropriateness to your circumstances and seek independent professional advice from a qualified financial adviser, solicitor, and accountant.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">Not a Prospectus or PDS</h3>
+        <p>Information Memorandums, feasibility reports, and other documents generated or hosted on this platform are not prospectuses, product disclosure statements, or regulated disclosure documents under the Corporations Act 2001. They have not been lodged with or approved by ASIC.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">Forward-Looking Statements</h3>
+        <p>Projections, forecasts, IRR estimates, profit margins, and other forward-looking statements contained in any listing or document on this platform involve known and unknown risks and uncertainties. Actual outcomes may differ materially from projections. Property development involves significant execution risk, and capital loss is possible.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">Developer Representations</h3>
+        <p>Prop Dev DNA does not independently verify the accuracy of information provided by developers. Developers are solely responsible for the accuracy, completeness, and currency of their listings, IMs, and FEASO reports. Prop Dev DNA makes no warranty as to the accuracy of any developer-submitted content.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">Regulatory Status</h3>
+        <p>Prop Dev DNA is a technology platform that facilitates connections between property developers and wholesale investors. We are engaged with the <strong style="color:var(--text)">ASIC Innovation Hub</strong> to ensure our operations remain within the bounds of applicable financial services law. We do not act as a managed investment scheme operator, fund manager, or financial adviser.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">Limitation of Liability</h3>
+        <p>To the maximum extent permitted by law, Prop Dev DNA Pty Ltd, its directors, officers, employees, and agents accept no liability for any loss or damage arising from use of this platform, reliance on any listing or document, or any investment decision made by any user.</p></div>
+
+        <div><h3 style="color:var(--gold);margin-bottom:6px">ASIC Resources</h3>
+        <p>For information about wholesale investor requirements and investor protections: <a href="https://www.asic.gov.au" target="_blank" style="color:var(--gold)">www.asic.gov.au</a> · MoneySmart: <a href="https://moneysmart.gov.au" target="_blank" style="color:var(--gold)">moneysmart.gov.au</a></p></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SITE FOOTER
+════════════════════════════════════════════════ -->
+<footer style="background:var(--navy);border-top:1px solid var(--border);padding:28px 24px;margin-top:0;display:none" id="site-footer">
+  <div style="max-width:960px;margin:0 auto;display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between;align-items:center">
+    <div style="display:flex;align-items:center;gap:10px">
+      <img src="/logo.png" alt="Prop Dev DNA" style="height:36px;width:auto;object-fit:contain" onerror="this.style.display='none'">
+      <div>
+        <div style="font-size:.78rem;color:var(--muted);margin-top:2px">Property Development Investment Platform</div>
+        <div style="font-size:.72rem;color:#444;margin-top:2px">© 2026 Prop Dev DNA Pty Ltd · Australia · ABN (pending)</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:20px;flex-wrap:wrap">
+      <button onclick="showLegal('terms')" style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;font-family:inherit;padding:0">Terms of Service</button>
+      <button onclick="showLegal('privacy')" style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;font-family:inherit;padding:0">Privacy Policy</button>
+      <button onclick="showLegal('disclaimer')" style="background:none;border:none;color:var(--muted);font-size:.78rem;cursor:pointer;font-family:inherit;padding:0">Disclaimer</button>
+      <a href="mailto:legal@propdevdna.com.au" style="color:var(--muted);font-size:.78rem;text-decoration:none">Contact</a>
+    </div>
+    <div style="font-size:.7rem;color:#444;text-align:right;line-height:1.6;max-width:360px">
+      Wholesale investors only · s761G Corporations Act 2001 (Cth)<br>
+      Not financial advice · Not a prospectus · Not ASIC-registered<br>
+      Independent advice should be obtained before investing
+    </div>
+  </div>
+</footer>
+
 </body>
 </html>
