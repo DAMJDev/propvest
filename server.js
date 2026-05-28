@@ -1136,6 +1136,13 @@ app.get('/api/admin/risk-declarations', requireAuth, requireAdmin, (req, res) =>
   res.json({ declarations: decls });
 });
 
+// ── Admin: Users list ─────────────────────────────
+app.get('/api/admin/users', requireAuth, requireAdmin, (req, res) => {
+  const db = readDB();
+  const users = db.users.map(({ password: _, ...u }) => u);
+  res.json({ users });
+});
+
 // ── Health check ──────────────────────────────────
 app.get('/api/health', (req, res) => res.json({ ok: true, version: '2.0.0', ts: new Date().toISOString() }));
 

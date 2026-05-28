@@ -510,6 +510,195 @@ function Detail({ l, onBack, onInvest }) {
   );
 }
 
+// ─── ADMIN PORTAL ────────────────────────────────────────────────
+function AdminPortal({ toast }) {
+  const [tab, setTab] = useState('certs');
+  const [certs, setCerts] = useState([]);
+  const [subs, setSubs] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [leads, setLeads] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [rejectNote, setRejectNote] = useState({ id: null, text: '' });
+
+  useEffect(() => { load(); }, [tab]);
+
+  const load = async () => {
+    setLoading(true);
+    try {
+      if (tab === 'certs') { const r = await API.get('/api/admin/wholesale-certs'); setCerts(r.certs || []); }
+      else if (tab === 'subs') { const r = await API.get('/api/admin/subscriptions'); setSubs(r.subscriptions || []); }
+      else if (tab === 'reviews') { const r = await API.get('/api/admin/im-reviews'); setReviews(r.reviews || []); }
+      else if (tab === 'leads') { const r = await API.get('/api/interests'); setLeads(Array.isArray(r) ? r : []); }
+      else if (tab === 'users') { const r = await API.get('/api/admin/users'); setUsers(r.users || []); }
+    } catch(e) {}
+    setLoading(false);
+  };
+
+  const approveCert = async id => { await API.post(`/api/admin/wholesale-certs/${id}/approve`, {}); toast('✅ Certificate approved'); load(); };
+  const rejectCert  = async (id, notes) => { await API.post(`/api/admin/wholesale-certs/${id}/reject`, { notes }); toast('Certificate rejected'); setRejectNote({ id: null, text: '' }); load(); };
+  const approveSub  = async id => { await API.post(`/api/admin/subscriptions/${id}/approve`, {}); toast('✅ Subscription activated'); load(); };
+  const rejectSub   = async id => { await API.post(`/api/admin/subscriptions/${id}/reject`, {}); toast('Subscription rejected'); load(); };
+  const approveIM   = async id => { await API.post(`/api/admin/im-reviews/${id}/approve`, { notes: 'Approved' }); toast('✅ IM approved — listing now live'); load(); };
+
+  const SBadge = ({ s }) => {
+    const m = { pending: ['rgba(201,168,76,0.12)', '#c9a84c'], verified: ['rgba(39,174,96,0.12)', '#27ae60'], approved: ['rgba(39,174,96,0.12)', '#27ae60'], active: ['rgba(39,174,96,0.12)', '#27ae60'], rejected: ['rgba(231,76,60,0.12)', '#e74c3c'], submitted: ['rgba(52,152,219,0.12)', '#3498db'], amendments_requested: ['rgba(231,76,60,0.12)', '#e74c3c'], cancelled: ['rgba(128,128,128,0.12)', '#888'] };
+    const [bg, color] = m[s] || ['rgba(128,128,128,0.12)', '#888'];
+    return <span style={{ background: bg, color, fontSize: 10, padding: '3px 9px', fontWeight: 500 }}>{s?.replace(/_/g, ' ')}</span>;
+  };
+
+  const TABS = [['certs', '📄 Wholesale Certs'], ['subs', '💳 Subscriptions'], ['reviews', '📋 IM Reviews'], ['leads', '📊 Leads'], ['users', '👥 Users']];
+
+  return (
+    <sec style={{ paddingTop: 80 }}>
+      <div className="slbl">Admin</div>
+      <div className="stitle" style={{ marginBottom: 8 }}>Operations Portal</div>
+      <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 28 }}>Manage wholesale certifications, developer subscriptions, and IM submissions.</p>
+
+      <div style={{ display: 'flex', gap: 0, marginBottom: 24, borderBottom: '1px solid rgba(0,0,0,0.08)', overflowX: 'auto' }}>
+        {TABS.map(([key, label]) => (
+          <button key={key} onClick={() => setTab(key)} style={{ background: 'none', border: 'none', padding: '10px 20px', cursor: 'pointer', fontSize: 12, fontFamily: "'DM Sans',sans-serif", color: tab === key ? 'var(--ink)' : 'var(--muted)', borderBottom: tab === key ? '2px solid var(--gold)' : '2px solid transparent', fontWeight: tab === key ? 500 : 400, whiteSpace: 'nowrap', marginBottom: -1 }}>{label}</button>
+        ))}
+        <button onClick={load} style={{ background: 'none', border: 'none', marginLeft: 'auto', fontSize: 11, color: 'var(--muted)', cursor: 'pointer', padding: '10px 12px' }}>↻ Refresh</button>
+      </div>
+
+      {loading && <div style={{ textAlign: 'center', padding: 48, color: 'var(--muted)', fontSize: 13 }}>Loading…</div>}
+
+      {/* ── WHOLESALE CERTS ── */}
+      {!loading && tab === 'certs' && (
+        <div>
+          <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>{certs.filter(c => c.status === 'pending').length} pending review · {certs.length} total</div>
+          {certs.length === 0 && <div style={{ padding: 40, textAlign: 'center', background: '#fff', border: '1px solid rgba(0,0,0,0.07)', color: 'var(--muted)', fontSize: 13 }}>No certificates submitted yet.</div>}
+          {certs.map(c => (
+            <div key={c.id} style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 20, marginBottom: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 19, fontWeight: 600, marginBottom: 4 }}>{c.userName}</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 6 }}>{c.userEmail} · Submitted {new Date(c.submittedAt).toLocaleDateString('en-AU')}</div>
+                  <div style={{ fontSize: 11, color: '#444', marginBottom: 3 }}><strong>Accountant:</strong> {c.acctName} — {c.acctFirm} ({c.acctMembership} {c.acctMembershipNumber})</div>
+                  <div style={{ fontSize: 11, color: '#444' }}><strong>Basis:</strong> {c.certBasis === 'net_assets' ? 'Net Assets ≥ $2.5M' : 'Gross Income ≥ $250k p.a.'}{c.approxNetAssets ? ` · Est. ${c.approxNetAssets}` : ''}</div>
+                  {c.adminNotes && <div style={{ fontSize: 11, color: '#e74c3c', marginTop: 6 }}>Notes: {c.adminNotes}</div>}
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, alignItems: 'flex-end' }}>
+                  <SBadge s={c.status} />
+                  <div style={{ display: 'flex', gap: 6 }}>
+                    {c.filePath && <a href={`/api/admin/wholesale-certs/${c.id}/download`} target="_blank" rel="noreferrer" style={{ fontSize: 10, color: 'var(--gold)', border: '1px solid rgba(201,168,76,0.3)', padding: '5px 10px', textDecoration: 'none' }}>📄 Download</a>}
+                    {c.status === 'pending' && <><button className="btn btn-g btn-sm" onClick={() => approveCert(c.id)}>✅ Approve</button><button className="btn btn-d btn-sm" onClick={() => setRejectNote({ id: c.id, text: '' })}>Reject</button></>}
+                  </div>
+                </div>
+              </div>
+              {rejectNote.id === c.id && (
+                <div style={{ marginTop: 14, borderTop: '1px solid rgba(0,0,0,0.06)', paddingTop: 14 }}>
+                  <label style={{ fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--muted)', display: 'block', marginBottom: 6 }}>Rejection reason (emailed to investor)</label>
+                  <textarea value={rejectNote.text} onChange={e => setRejectNote(p => ({ ...p, text: e.target.value }))} style={{ width: '100%', minHeight: 72, fontSize: 12, padding: 10, border: '1px solid rgba(0,0,0,0.1)', fontFamily: "'DM Sans',sans-serif", resize: 'vertical' }} placeholder="e.g. Certificate not signed by a CPA/CA/IPA member accountant..." />
+                  <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+                    <button className="btn btn-d btn-sm" onClick={() => rejectCert(c.id, rejectNote.text)}>Confirm Rejection</button>
+                    <button className="btn btn-o btn-sm" style={{ color: 'var(--muted)', borderColor: 'rgba(0,0,0,0.15)' }} onClick={() => setRejectNote({ id: null, text: '' })}>Cancel</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── SUBSCRIPTIONS ── */}
+      {!loading && tab === 'subs' && (
+        <div>
+          <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>{subs.filter(s => s.status === 'pending').length} pending · {subs.filter(s => s.status === 'active').length} active</div>
+          {subs.length === 0 && <div style={{ padding: 40, textAlign: 'center', background: '#fff', border: '1px solid rgba(0,0,0,0.07)', color: 'var(--muted)', fontSize: 13 }}>No subscription requests yet.</div>}
+          {subs.map(s => (
+            <div key={s.id} style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 20, marginBottom: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 19, fontWeight: 600, marginBottom: 4 }}>{s.userName}</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted)' }}>{s.userEmail} · {s.plan} · Requested {new Date(s.requestedAt).toLocaleDateString('en-AU')}</div>
+                  {s.paymentRef && <div style={{ fontSize: 11, color: '#444', marginTop: 4 }}>Payment ref: <strong>{s.paymentRef}</strong></div>}
+                  {s.activatedAt && <div style={{ fontSize: 11, color: '#27ae60', marginTop: 2 }}>Activated {new Date(s.activatedAt).toLocaleDateString('en-AU')}</div>}
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <SBadge s={s.status} />
+                  {s.status === 'pending' && <><button className="btn btn-g btn-sm" onClick={() => approveSub(s.id)}>✅ Activate</button><button className="btn btn-d btn-sm" onClick={() => rejectSub(s.id)}>Reject</button></>}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── IM REVIEWS ── */}
+      {!loading && tab === 'reviews' && (
+        <div>
+          <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>{reviews.filter(r => r.status === 'submitted').length} awaiting review</div>
+          {reviews.length === 0 && <div style={{ padding: 40, textAlign: 'center', background: '#fff', border: '1px solid rgba(0,0,0,0.07)', color: 'var(--muted)', fontSize: 13 }}>No IM submissions yet.</div>}
+          {reviews.map(r => (
+            <div key={r.id} style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 20, marginBottom: 10 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 19, fontWeight: 600, marginBottom: 4 }}>{r.listingName}</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted)' }}>{r.devName} · {r.devEmail} · Round {r.round} · Submitted {new Date(r.submittedAt).toLocaleDateString('en-AU')}</div>
+                  {r.devResponse && <div style={{ fontSize: 11, color: '#444', marginTop: 6, fontStyle: 'italic' }}>Dev notes: "{r.devResponse}"</div>}
+                  {r.amendments?.length > 0 && <div style={{ marginTop: 8 }}>{r.amendments.map((a, i) => <div key={i} style={{ fontSize: 11, color: '#e74c3c' }}>• {a}</div>)}</div>}
+                </div>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <SBadge s={r.status} />
+                  {r.status === 'submitted' && <button className="btn btn-g btn-sm" onClick={() => approveIM(r.id)}>✅ Approve & Go Live</button>}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── LEADS ── */}
+      {!loading && tab === 'leads' && (
+        <div>
+          <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>{leads.length} total leads</div>
+          {leads.length === 0 && <div style={{ padding: 40, textAlign: 'center', background: '#fff', border: '1px solid rgba(0,0,0,0.07)', color: 'var(--muted)', fontSize: 13 }}>No leads yet.</div>}
+          {leads.map(l => (
+            <div key={l.id} style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 18, marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 10 }}>
+              <div>
+                <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 17, fontWeight: 600 }}>{l.fname} {l.lname}</div>
+                <div style={{ fontSize: 11, color: 'var(--muted)' }}>{l.email}{l.phone ? ` · ${l.phone}` : ''}</div>
+                <div style={{ fontSize: 11, color: '#444', marginTop: 4 }}>Interest in: <strong>{l.listingName}</strong> · Amount: {l.amount || 'Not specified'}</div>
+                {l.comments && <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 4, fontStyle: 'italic' }}>"{l.comments}"</div>}
+                {l.needsBroker && <div style={{ fontSize: 10, color: 'var(--gold)', marginTop: 4 }}>⚡ Requested broker introduction</div>}
+              </div>
+              <div style={{ fontSize: 10, color: 'var(--muted)', textAlign: 'right' }}>
+                <div>{l.refCode}</div>
+                <div style={{ marginTop: 4 }}>{new Date(l.createdAt).toLocaleDateString('en-AU')}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* ── USERS ── */}
+      {!loading && tab === 'users' && (
+        <div>
+          <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>{users.length} registered users</div>
+          {users.length === 0 && <div style={{ padding: 40, textAlign: 'center', background: '#fff', border: '1px solid rgba(0,0,0,0.07)', color: 'var(--muted)', fontSize: 13 }}>No users yet.</div>}
+          {users.map(u => (
+            <div key={u.id} style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 18, marginBottom: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
+              <div>
+                <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 17, fontWeight: 600 }}>{u.fname} {u.lname}</div>
+                <div style={{ fontSize: 11, color: 'var(--muted)' }}>{u.email} · Joined {new Date(u.joined || Date.now()).toLocaleDateString('en-AU')}</div>
+                {u.wholesaleStatus && u.wholesaleStatus !== 'none' && <div style={{ fontSize: 11, color: '#444', marginTop: 3 }}>Wholesale: {u.wholesaleStatus}{u.wholesaleExpiresAt ? ` · Expires ${new Date(u.wholesaleExpiresAt).toLocaleDateString('en-AU')}` : ''}</div>}
+                {u.referredBy && <div style={{ fontSize: 10, color: 'var(--gold)', marginTop: 3 }}>Referred by: {u.referredByName} ({u.referredBy})</div>}
+              </div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 10, padding: '3px 9px', background: u.role === 'admin' ? 'rgba(201,168,76,0.15)' : u.role === 'developer' ? 'rgba(52,152,219,0.12)' : 'rgba(39,174,96,0.08)', color: u.role === 'admin' ? '#c9a84c' : u.role === 'developer' ? '#3498db' : '#27ae60', fontWeight: 500 }}>{u.role}</span>
+                {u.wholesaleStatus === 'verified' && <span style={{ fontSize: 10, padding: '3px 9px', background: 'rgba(39,174,96,0.1)', color: '#27ae60' }}>✓ Wholesale</span>}
+                {u.wholesaleStatus === 'pending' && <span style={{ fontSize: 10, padding: '3px 9px', background: 'rgba(201,168,76,0.1)', color: '#c9a84c' }}>⏳ Cert pending</span>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </sec>
+  );
+}
+
 // ─── MAIN APP ────────────────────────────────────────────────────
 export default function App() {
   const [page, setPage] = useState('home');
@@ -585,6 +774,7 @@ export default function App() {
           <button className="nl" onClick={() => go('pricing')}>Pricing</button>
           {user
             ? <>
+              {user.role === 'admin' && <button className="nl" style={{ color: '#e74c3c' }} onClick={() => go('admin')}>⚙ Admin</button>}
               <button className="nl" style={{ color: 'var(--gold)' }} onClick={() => go('dashboard')}>My Account</button>
               <button className="nl" onClick={logout}>Sign Out</button>
             </>
@@ -758,6 +948,18 @@ export default function App() {
               💡 To unlock full IM access, submit your <strong>s.761G wholesale investor certificate</strong> via the profile page in the full platform.
             </div>
           </div>
+        </sec>
+      )}
+
+      {/* ── ADMIN PORTAL ── */}
+      {page === 'admin' && user?.role === 'admin' && (
+        <AdminPortal toast={showT} />
+      )}
+      {page === 'admin' && user?.role !== 'admin' && (
+        <sec style={{ paddingTop: 80, textAlign: 'center' }}>
+          <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
+          <div className="stitle">Access Denied</div>
+          <p className="ssub" style={{ margin: '0 auto' }}>Admin access required.</p>
         </sec>
       )}
 
