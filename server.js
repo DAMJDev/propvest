@@ -1139,6 +1139,16 @@ app.get('/api/admin/risk-declarations', requireAuth, requireAdmin, (req, res) =>
 // ── Health check ──────────────────────────────────
 app.get('/api/health', (req, res) => res.json({ ok: true, version: '2.0.0', ts: new Date().toISOString() }));
 
+// ── SPA fallback — serve React index.html for all non-API routes ──
+app.get('*', (req, res) => {
+  const indexPath = path.join(__dirname, 'public', 'index.html');
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).send('Not found');
+  }
+});
+
 // ── Start ─────────────────────────────────────────
 readDB();   // Ensure DB exists on startup
 backupDB(); // Take initial backup
