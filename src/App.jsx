@@ -39,7 +39,7 @@ const css = `
   .logo{cursor:pointer;background:none;border:none;display:flex;align-items:center;gap:10px;padding:0}
   .logo-text{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
   .logo-name{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--gold);line-height:1}
-  .logo-slogan{font-size:9px;color:rgba(201,168,76,0.55);letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Sans',sans-serif;font-weight:300}
+  .logo-slogan{font-size:13px;color:rgba(201,168,76,0.75);letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Sans',sans-serif;font-weight:300}
   .nav-links{display:flex;align-items:center;gap:20px}
   .nl{color:rgba(245,242,236,0.55);font-size:12px;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;transition:color 0.2s;padding:0}
   .nl:hover{color:var(--gold)}
