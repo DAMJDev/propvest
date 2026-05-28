@@ -35,7 +35,7 @@ const css = `
   body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);overflow-x:hidden;-webkit-font-smoothing:antialiased}
   .notice{background:rgba(201,168,76,0.08);border-bottom:1px solid rgba(201,168,76,0.2);padding:8px 20px;text-align:center;font-size:11px;color:rgba(13,13,13,0.6)}
   .notice strong{color:var(--gold)}
-  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:72px;background:rgba(13,13,13,0.97);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.1)}
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:240px;background:rgba(13,13,13,0.97);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.1)}
   .logo{cursor:pointer;background:none;border:none;display:flex;align-items:center;gap:10px;padding:0}
   .logo-text{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
   .logo-name{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--gold);line-height:1}
@@ -760,7 +760,7 @@ export default function App() {
 
       <nav>
         <button className="logo" onClick={() => go('home')}>
-          <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 56, width: 'auto', objectFit: 'contain' }} onError={e => e.target.style.display = 'none'} />
+          <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 224, width: 'auto', objectFit: 'contain' }} onError={e => e.target.style.display = 'none'} />
           <div className="logo-text">
             <span className="logo-name">Prop Dev DNA</span>
             <span className="logo-slogan">Empower Your Property to Empower Your Life</span>
@@ -787,7 +787,6 @@ export default function App() {
       {page === 'home' && <>
         <div className="hero">
           <div className="hgrid" /><div className="hglow" />
-          <img src="/logo.png" alt="Prop Dev DNA" style={{ width: 160, height: 160, objectFit: 'contain', marginBottom: 24, filter: 'drop-shadow(0 0 48px rgba(201,168,76,0.35))' }} onError={e => e.target.style.display = 'none'} />
           <div className="badge-hero"><span className="bdot" />{listings.length || '6'} Live Opportunities</div>
           <h1 className="h1">Where Capital<br />Meets <em>Development</em></h1>
           <p className="hsub">Australia's professional platform connecting wholesale investors with curated property development opportunities. FEASO-grade due diligence. Real projects. Real returns.</p>
