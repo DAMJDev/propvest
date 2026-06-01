@@ -153,9 +153,9 @@ const css = `
   nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:80px;background:rgba(13,13,13,0.98);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.12)}
   .logo{cursor:pointer;background:none;border:none;display:flex;align-items:center;gap:12px;padding:0}
   .nav-links{display:flex;align-items:center;gap:28px}
-  .nl{color:rgba(245,242,236,0.85);font-size:15px;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;transition:color 0.2s;padding:0;letter-spacing:0.3px}
+  .nl{color:rgba(245,242,236,0.85);font-size:16px;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:0.5px;transition:color 0.2s;padding:0}
   .nl:hover{color:var(--gold)}
-  .nl.cta{background:var(--gold);color:var(--ink);font-size:11px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;padding:8px 20px}
+  .nl.cta{background:var(--gold);color:var(--ink);font-size:12px;font-weight:500;letter-spacing:2px;text-transform:uppercase;padding:9px 24px}
   .nl.cta:hover{opacity:0.85}
   .hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;padding:8px;z-index:110}
   .hamburger span{display:block;width:22px;height:2px;background:rgba(245,242,236,0.7);transition:all 0.25s}
@@ -887,45 +887,33 @@ export default function App() {
   return (
     <>
       <style>{css}</style>
-      <nav>
-        <button className="logo" onClick={() => go('home')}>
-          <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 52, width: 'auto', objectFit: 'contain', mixBlendMode: 'lighten', background: 'transparent', border: 'none', outline: 'none', filter: 'drop-shadow(0 0 8px rgba(201,168,76,0.3))' }} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} />
-          <span style={{ display:'none', fontFamily:"'Cormorant Garamond',serif", fontSize:28, color:'#C9A84C', fontWeight:700, letterSpacing:'1px' }}>PROP DEV DNA</span>
+      {/* LOGO HEADER */}
+      <div style={{ background:'#0D0D0D', padding:'20px 48px', display:'flex', alignItems:'center', justifyContent:'center', borderBottom:'1px solid rgba(201,168,76,0.15)' }}>
+        <button onClick={() => go('home')} style={{ background:'none', border:'none', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:8 }}>
+          <img src="/logo.png" alt="Prop Dev DNA" style={{ height:120, width:'auto', objectFit:'contain' }} onError={e => e.target.style.display='none'} />
+          <span style={{ fontSize:12, letterSpacing:'3px', textTransform:'uppercase', color:'rgba(201,168,76,0.7)', fontFamily:"'DM Sans', sans-serif", fontWeight:300 }}>
+            Empower Your Property to Empower Your Life
+          </span>
         </button>
-        <div className="nav-links">
-          <button className="nl" onClick={() => go('listings')}>Opportunities</button>
-          <button className="nl" onClick={() => go('portal')}>Developers</button>
-          <button className="nl" onClick={() => go('tiers')}>Investor Tiers</button>
-          <button className="nl" onClick={() => go('about')}>About</button>
-          <button className="nl" onClick={() => go('pricing')}>Pricing</button>
-          {user
-            ? <>
-              {user.role === 'admin' && <button className="nl" style={{ color: '#e74c3c' }} onClick={() => go('admin')}>⚙ Admin</button>}
-              <button className="nl" style={{ color: 'var(--gold)' }} onClick={() => go('dashboard')}>My Account</button>
-              <button className="nl" onClick={logout}>Sign Out</button>
-            </>
-            : <button className="nl cta" onClick={() => setShowAuth(true)}>Sign In</button>
-          }
-        </div>
-        <button className={`hamburger${mobileMenuOpen ? ' open' : ''}`} onClick={() => setMobileMenuOpen(o => !o)} aria-label="Menu">
-          <span /><span /><span />
-        </button>
-        {mobileMenuOpen && (
-          <div className="mobile-menu open">
-            {[['listings','Opportunities'],['portal','Developers'],['tiers','Investor Tiers'],['about','About'],['pricing','Pricing']].map(([pg, label]) => (
-              <button key={pg} className="nl" onClick={() => { go(pg); setMobileMenuOpen(false); }}>{label}</button>
-            ))}
-            {user ? <>
-              {user.role === 'admin' && <button className="nl" style={{ color: '#e74c3c' }} onClick={() => { go('admin'); setMobileMenuOpen(false); }}>⚙ Admin</button>}
-              <button className="nl" style={{ color: 'var(--gold)' }} onClick={() => { go('dashboard'); setMobileMenuOpen(false); }}>My Account</button>
-              <button className="nl" onClick={() => { logout(); setMobileMenuOpen(false); }}>Sign Out</button>
-            </> : <button className="nl cta" onClick={() => { setShowAuth(true); setMobileMenuOpen(false); }}>Sign In</button>}
-          </div>
-        )}
-      </nav>
-      <div style={{ background:'rgba(201,168,76,0.06)', borderBottom:'1px solid rgba(201,168,76,0.15)', padding:'6px 48px', fontSize:10, letterSpacing:'3px', textTransform:'uppercase', color:'rgba(201,168,76,0.65)', fontFamily:"'DM Sans', sans-serif", fontWeight:300, textAlign:'center' }}>
-        Empower Your Property to Empower Your Life
       </div>
+
+      {/* NAV — links only, no logo */}
+      <nav style={{ position:'sticky', top:0, zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'0 48px', height:56, background:'rgba(13,13,13,0.98)', backdropFilter:'blur(16px)', borderBottom:'1px solid rgba(201,168,76,0.12)', gap:48, flexWrap:'wrap' }}>
+        <button className="nl" onClick={() => go('listings')}>Opportunities</button>
+        <button className="nl" onClick={() => go('portal')}>Developers</button>
+        <button className="nl" onClick={() => go('tiers')}>Investor Tiers</button>
+        <button className="nl" onClick={() => go('about')}>About</button>
+        <button className="nl" onClick={() => go('pricing')}>Pricing</button>
+        {user
+          ? <>
+            {user.role === 'admin' && <button className="nl" style={{ color:'#e74c3c' }} onClick={() => go('admin')}>⚙ Admin</button>}
+            <button className="nl" style={{ color:'var(--gold)' }} onClick={() => go('dashboard')}>My Account</button>
+            <button className="nl" onClick={logout}>Sign Out</button>
+          </>
+          : <button className="nl cta" onClick={() => setShowAuth(true)}>Sign In</button>
+        }
+      </nav>
+
       <div className="notice">
         <strong>For Wholesale &amp; Sophisticated Investors</strong> · s.761G Corporations Act 2001 (Cth) · General information only · Not financial product advice
       </div>
@@ -933,7 +921,7 @@ export default function App() {
       {/* ── HOME ── */}
       {page === 'home' && <>
         <div className="hero">
-          <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=1600&q=80&fit=crop)', backgroundSize: 'cover', backgroundPosition: 'center 30%', opacity: 0.12 }} />
+          <div style={{ position:'absolute', inset:0, backgroundImage:'url(/logo.png)', backgroundSize:'60%', backgroundPosition:'center', backgroundRepeat:'no-repeat', opacity:0.06 }} />
           <div className="hgrid" /><div className="hglow" />
           <div className="badge-hero"><span className="bdot" />{listings.length || '6'} Live Opportunities</div>
           <h1 className="h1">Where Capital<br />Meets <em>Development</em></h1>
