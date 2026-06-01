@@ -150,10 +150,10 @@ const css = `
   body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);overflow-x:hidden;-webkit-font-smoothing:antialiased}
   .notice{background:rgba(13,13,13,0.95);border-bottom:1px solid rgba(255,255,255,0.05);padding:6px 48px;text-align:center;font-size:10px;color:rgba(245,242,236,0.4)}
   .notice strong{color:rgba(245,242,236,0.6)}
-  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:64px;background:rgba(13,13,13,0.98);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.12)}
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:80px;background:rgba(13,13,13,0.98);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.12)}
   .logo{cursor:pointer;background:none;border:none;display:flex;align-items:center;gap:12px;padding:0}
   .nav-links{display:flex;align-items:center;gap:28px}
-  .nl{color:rgba(245,242,236,0.65);font-size:13px;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;transition:color 0.2s;padding:0;letter-spacing:0.3px}
+  .nl{color:rgba(245,242,236,0.85);font-size:15px;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;transition:color 0.2s;padding:0;letter-spacing:0.3px}
   .nl:hover{color:var(--gold)}
   .nl.cta{background:var(--gold);color:var(--ink);font-size:11px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;padding:8px 20px}
   .nl.cta:hover{opacity:0.85}
@@ -175,12 +175,12 @@ const css = `
   .hero{min-height:100vh;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;position:relative;overflow:hidden}
   .hgrid{position:absolute;inset:0;opacity:0.03;background-image:linear-gradient(var(--gold) 1px,transparent 1px),linear-gradient(90deg,var(--gold) 1px,transparent 1px);background-size:60px 60px}
   .hglow{position:absolute;top:25%;left:50%;transform:translateX(-50%);width:500px;height:250px;background:radial-gradient(ellipse,rgba(201,168,76,0.06) 0%,transparent 70%);pointer-events:none}
-  .badge-hero{display:inline-flex;align-items:center;gap:7px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.22);color:var(--gold);font-size:9px;letter-spacing:3px;text-transform:uppercase;padding:6px 16px;margin-bottom:32px}
+  .badge-hero{display:inline-flex;align-items:center;gap:7px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.22);color:var(--gold);font-size:11px;letter-spacing:3px;text-transform:uppercase;padding:8px 20px;margin-bottom:32px}
   .bdot{width:5px;height:5px;background:var(--gold);border-radius:50%;animation:pulse 2s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
-  .h1{font-family:'Cormorant Garamond',serif;font-size:clamp(40px,7vw,80px);font-weight:600;color:#fff;line-height:0.93;margin-bottom:20px;letter-spacing:-1px}
+  .h1{font-family:'Cormorant Garamond',serif;font-size:clamp(40px,7vw,80px);font-weight:600;color:#ffffff;line-height:0.93;margin-bottom:20px;letter-spacing:-1px;text-shadow:0 2px 20px rgba(0,0,0,0.8)}
   .h1 em{color:var(--gold);font-style:italic}
-  .hsub{font-size:14px;color:rgba(245,242,236,0.45);max-width:460px;line-height:1.75;margin-bottom:40px;font-weight:300}
+  .hsub{font-size:17px;color:rgba(245,242,236,0.90);max-width:640px;line-height:1.75;margin-bottom:40px;font-weight:300;text-shadow:0 1px 12px rgba(0,0,0,0.9)}
   .hbtns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
   .btn{font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;padding:12px 28px;border:none;cursor:pointer;transition:all 0.2s}
   .btn-g{background:var(--gold);color:var(--ink)}.btn-g:hover{opacity:0.85;transform:translateY(-1px)}
@@ -889,7 +889,7 @@ export default function App() {
       <style>{css}</style>
       <nav>
         <button className="logo" onClick={() => go('home')}>
-          <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 40, width: 'auto', objectFit: 'contain', mixBlendMode: 'lighten', background: 'transparent', border: 'none', outline: 'none' }} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} />
+          <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 52, width: 'auto', objectFit: 'contain', mixBlendMode: 'lighten', background: 'transparent', border: 'none', outline: 'none', filter: 'drop-shadow(0 0 8px rgba(201,168,76,0.3))' }} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} />
           <span style={{ display:'none', fontFamily:"'Cormorant Garamond',serif", fontSize:28, color:'#C9A84C', fontWeight:700, letterSpacing:'1px' }}>PROP DEV DNA</span>
         </button>
         <div className="nav-links">
@@ -933,7 +933,7 @@ export default function App() {
       {/* ── HOME ── */}
       {page === 'home' && <>
         <div className="hero">
-          <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=1600&q=80&fit=crop)', backgroundSize: 'cover', backgroundPosition: 'center 30%', opacity: 0.18 }} />
+          <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=1600&q=80&fit=crop)', backgroundSize: 'cover', backgroundPosition: 'center 30%', opacity: 0.12 }} />
           <div className="hgrid" /><div className="hglow" />
           <div className="badge-hero"><span className="bdot" />{listings.length || '6'} Live Opportunities</div>
           <h1 className="h1">Where Capital<br />Meets <em>Development</em></h1>
