@@ -27,25 +27,154 @@ const PROOF_TYPES = [
 
 const FILTERS = ["All","NSW","VIC","QLD","DA Approved","Construction","Pre-DA","High Yield (>20%)"];
 
+
+// ─── LISTING IMAGES ──────────────────────────────────────────────
+// High-quality Unsplash architectural photography — free to use
+const LISTING_IMAGES = {
+  residential: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80&fit=crop',
+  boutique:    'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80&fit=crop',
+  mixed:       'https://images.unsplash.com/photo-1449844908441-8829872d2607?w=800&q=80&fit=crop',
+  beach:       'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=800&q=80&fit=crop',
+  townhouse:   'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&q=80&fit=crop',
+  land:        'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80&fit=crop',
+  heritage:    'https://images.unsplash.com/photo-1464938050520-ef2270bb8ce8?w=800&q=80&fit=crop',
+  commercial:  'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80&fit=crop',
+  luxury:      'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&q=80&fit=crop',
+  highrise:    'https://images.unsplash.com/photo-1555636222-cae831e670b3?w=800&q=80&fit=crop',
+  penthouse:   'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80&fit=crop',
+  default:     'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800&q=80&fit=crop',
+};
+
+function getListingImage(l) {
+  const type = (l.type || '').toLowerCase();
+  const name = (l.name || l.title || '').toLowerCase();
+  const loc  = (l.loc || l.suburb || '').toLowerCase();
+
+  if (name.includes('beach') || name.includes('coast') || name.includes('dune') || name.includes('pacifico') || loc.includes('gold coast') || loc.includes('mermaid'))
+    return LISTING_IMAGES.beach;
+  if (name.includes('penthouse') || name.includes('pacifico'))
+    return LISTING_IMAGES.penthouse;
+  if (name.includes('harbour') || name.includes('view') || name.includes('sky'))
+    return LISTING_IMAGES.highrise;
+  if (name.includes('heritage') || name.includes('collingwood') || name.includes('exchange') || name.includes('reuse'))
+    return LISTING_IMAGES.heritage;
+  if (name.includes('park') || name.includes('garden') || name.includes('quarter') || name.includes('riverside'))
+    return LISTING_IMAGES.boutique;
+  if (type.includes('mixed') || type.includes('retail'))
+    return LISTING_IMAGES.mixed;
+  if (type.includes('town') || type.includes('terrace'))
+    return LISTING_IMAGES.townhouse;
+  if (type.includes('land') || type.includes('subdiv'))
+    return LISTING_IMAGES.land;
+  if (type.includes('commercial') || type.includes('office'))
+    return LISTING_IMAGES.commercial;
+  if (type.includes('luxury') || (l.minInvest && l.minInvest >= 1000000))
+    return LISTING_IMAGES.luxury;
+  return LISTING_IMAGES.residential;
+}
+
+// ─── LISTING FIELD NORMALISER ────────────────────────────────────
+function parseMoney(v) {
+  if (!v && v !== 0) return null;
+  if (typeof v === 'number') return v;
+  const n = parseFloat(String(v).replace(/[$,]/g, ''));
+  return isNaN(n) ? null : n;
+}
+
+function parseIRR(v) {
+  if (!v && v !== 0) return '—';
+  if (typeof v === 'number') return `${v}%`;
+  return String(v).includes('%') ? String(v) : `${v}%`;
+}
+
+function parseTerm(v) {
+  if (!v) return '—';
+  return String(v);
+}
+
+function parseState(l) {
+  if (l.state) return l.state;
+  const loc = l.loc || l.location || l.address || '';
+  if (loc.includes('NSW')) return 'NSW';
+  if (loc.includes('VIC')) return 'VIC';
+  if (loc.includes('QLD')) return 'QLD';
+  if (loc.includes('WA'))  return 'WA';
+  if (loc.includes('SA'))  return 'SA';
+  return 'NSW';
+}
+
+function parseSuburb(l) {
+  if (l.suburb) return l.suburb;
+  const loc = l.loc || l.location || '';
+  return loc.replace(/^📍\s*/, '').replace(/\s*(NSW|VIC|QLD|WA|SA|ACT)$/, '').trim() || loc;
+}
+
+function normaliseListing(l) {
+  const raise     = parseMoney(l.raise || l.capitalRaise || l.capital_raise || l.raiseTarget);
+  const minInvest = parseMoney(l.minInvest || l.minimumInvestment || l.minimum_investment || l.minInvestment) || 50000;
+  const funded    = typeof l.fundedPct === 'number' ? l.fundedPct : null;
+  const raised    = parseMoney(l.raised || l.capitalRaised || l.capital_raised)
+                    || (raise && funded !== null ? Math.round(raise * funded / 100) : 0);
+
+  return {
+    ...l,
+    name:      l.name || l.title || l.projectName || 'Untitled Project',
+    type:      l.type || l.propertyType || l.developmentType || 'Development',
+    state:     parseState(l),
+    suburb:    parseSuburb(l),
+    stage:     l.stage || l.status || l.badge || 'Active',
+    irr:       parseIRR(l.irr || l.targetIRR || l.target_irr),
+    term:      parseTerm(l.term || l.hold || l.investmentTerm),
+    minInvest,
+    raise,
+    raised,
+    equity:    l.equity || l.equityRequired || '—',
+    ltv:       l.ltv || l.lvr || l.LVR || '—',
+    structure: l.structure || l.investmentStructure || '—',
+    desc:      l.desc || l.description || l.overview || l.projectDescription || '',
+    highlights:l.highlights || l.keyHighlights || l.key_highlights || [],
+    developer: l.developer || l.developerName || l.developer?.name || l.developerInfo?.name || '',
+    units:     l.units || l.totalUnits || l.numUnits || l.lots || l.stats?.[0]?.[0] || 0,
+    emoji:     l.emoji || '🏗️',
+    imageUrl:  (() => { const picsumOrEmpty = !l.photo || l.photo.includes('picsum') || l.photo.includes('placeholder'); return picsumOrEmpty ? getListingImage({...l, minInvest: parseMoney(l.minInvest || l.minimumInvestment) || 50000}) : (l.imageUrl || l.photo || l.heroPhoto); })(),
+  };
+}
+
+
+
 // ─── CSS ─────────────────────────────────────────────────────────
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap');
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   :root{--gold:#C9A84C;--ink:#0D0D0D;--paper:#F5F2EC;--sage:#2A3A2E;--muted:#6B6B5A}
   body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);overflow-x:hidden;-webkit-font-smoothing:antialiased}
-  .notice{background:rgba(201,168,76,0.08);border-bottom:1px solid rgba(201,168,76,0.2);padding:8px 20px;text-align:center;font-size:11px;color:rgba(13,13,13,0.6)}
+  .notice{background:rgba(201,168,76,0.08);border-bottom:1px solid rgba(201,168,76,0.2);padding:12px 40px;text-align:center;font-size:13px;color:rgba(13,13,13,0.6)}
   .notice strong{color:var(--gold)}
-  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:240px;background:rgba(13,13,13,0.97);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.1)}
-  .logo{cursor:pointer;background:none;border:none;display:flex;align-items:center;gap:10px;padding:0}
-  .logo-text{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
-  .logo-name{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--gold);line-height:1}
-  .logo-slogan{font-size:13px;color:rgba(201,168,76,0.75);letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Sans',sans-serif;font-weight:300}
-  .nav-links{display:flex;align-items:center;gap:20px}
-  .nl{color:rgba(245,242,236,0.55);font-size:12px;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;transition:color 0.2s;padding:0}
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:220px;background:rgba(13,13,13,0.98);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.1)}
+  .logo{cursor:pointer;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:6px;padding:0}
+  .logo-text{display:none}
+  .logo-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--gold);line-height:1;letter-spacing:0.5px}
+  .logo-slogan{font-size:14px;color:rgba(201,168,76,0.8);letter-spacing:3px;margin-top:6px;text-transform:uppercase;font-family:'DM Sans',sans-serif;font-weight:300;text-align:center;white-space:nowrap}
+  .nav-links{display:flex;align-items:center;gap:36px}
+  .nl{color:rgba(245,242,236,0.75);font-size:32px;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;transition:color 0.2s;padding:0;letter-spacing:0.5px}
   .nl:hover{color:var(--gold)}
-  .nl.cta{background:var(--gold);color:var(--ink);font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;padding:8px 18px}
+  .nl.cta{background:var(--gold);color:var(--ink);font-size:26px;font-weight:500;letter-spacing:2px;text-transform:uppercase;padding:12px 28px}
   .nl.cta:hover{opacity:0.85}
-  .hero{min-height:90vh;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px;position:relative;overflow:hidden}
+  .hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;padding:8px;z-index:110}
+  .hamburger span{display:block;width:22px;height:2px;background:rgba(245,242,236,0.7);transition:all 0.25s}
+  .hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+  .hamburger.open span:nth-child(2){opacity:0}
+  .hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+  .mobile-menu{display:none;position:absolute;top:100%;left:0;right:0;background:rgba(13,13,13,0.98);border-bottom:1px solid rgba(201,168,76,0.15);padding:16px 0;flex-direction:column;z-index:99}
+  .mobile-menu.open{display:flex}
+  .mobile-menu .nl{padding:12px 32px;font-size:14px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.04)}
+  .mobile-menu .nl.cta{margin:12px 32px 4px;padding:10px 18px;text-align:center}
+  @media(max-width:768px){
+    nav{padding:0 20px;height:80px;position:relative}
+    .nav-links{display:none}
+    .hamburger{display:flex}
+  }
+  .hero{min-height:100vh;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;position:relative;overflow:hidden}
   .hgrid{position:absolute;inset:0;opacity:0.03;background-image:linear-gradient(var(--gold) 1px,transparent 1px),linear-gradient(90deg,var(--gold) 1px,transparent 1px);background-size:60px 60px}
   .hglow{position:absolute;top:25%;left:50%;transform:translateX(-50%);width:500px;height:250px;background:radial-gradient(ellipse,rgba(201,168,76,0.06) 0%,transparent 70%);pointer-events:none}
   .badge-hero{display:inline-flex;align-items:center;gap:7px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.22);color:var(--gold);font-size:9px;letter-spacing:3px;text-transform:uppercase;padding:6px 16px;margin-bottom:32px}
@@ -76,8 +205,8 @@ const css = `
   .step p{font-size:12px;color:rgba(245,242,236,0.37);line-height:1.7;font-weight:300}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-top:32px}
   .card{background:#fff;border:1px solid rgba(0,0,0,0.07);overflow:hidden;cursor:pointer;transition:all 0.22s}
-  .card:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(0,0,0,0.09);border-color:var(--gold)}
-  .cimg{height:160px;display:flex;align-items:center;justify-content:center;font-size:48px;position:relative}
+  .card:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(0,0,0,0.12);border-color:var(--gold)}.card:hover .cimg img{transform:scale(1.05)}.card .cimg img{transition:transform 0.5s ease}
+  .cimg{height:220px;position:relative;overflow:hidden}
   .cstage{position:absolute;top:10px;left:10px;background:var(--ink);color:var(--gold);font-size:8px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px}
   .cbody{padding:16px}
   .ctype{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:5px}
@@ -230,8 +359,14 @@ const css = `
 
 // ─── HELPERS ─────────────────────────────────────────────────────
 function PBar({ raised, target }) {
-  const pct = Math.min(100, Math.round((raised / target) * 100));
-  const fmt = v => v >= 1e6 ? `$${(v / 1e6).toFixed(2)}M` : `$${(v / 1e3).toFixed(0)}K`;
+  if (!target || isNaN(target) || isNaN(raised)) return null;
+  const pct = Math.min(100, Math.round(((raised || 0) / target) * 100));
+  const fmt = v => {
+    if (!v && v !== 0) return '—';
+    if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
+    if (v >= 1e3) return `$${(v / 1e3).toFixed(0)}K`;
+    return `$${v}`;
+  };
   return (
     <div className="pw">
       <div className="pls"><span>{fmt(raised)} raised</span><span>{pct}% of {fmt(target)}</span></div>
@@ -250,14 +385,20 @@ function TierBadge({ tier, size = "sm" }) {
 }
 
 function Card({ l, onClick }) {
-  const bgs = { NSW: "linear-gradient(135deg,#2A3A2E,#1a2a1e)", VIC: "linear-gradient(135deg,#1e2a3a,#0d1a2e)", QLD: "linear-gradient(135deg,#3a2a1a,#2a1a0d)" };
-  const closing = l.raised / l.raise > 0.85;
-  const emoji = l.emoji || "🏗️";
+  const closing = l.raise && l.raised && (l.raised / l.raise > 0.85);
+  const imgUrl = l.imageUrl || l.image_url || l.coverImage || getListingImage(l);
   return (
     <div className="card" onClick={onClick}>
-      <div className="cimg" style={{ background: bgs[l.state] || bgs.NSW }}>
-        <span style={{ fontSize: 48, zIndex: 1 }}>{emoji}</span>
+      <div className="cimg" style={{ position: 'relative', overflow: 'hidden', height: 220 }}>
+        <img
+          src={imgUrl}
+          alt={l.name || l.title}
+          style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }}
+          onError={e => { e.target.style.display = 'none'; e.target.parentNode.style.background = 'linear-gradient(135deg,#2A3A2E,#1a2a1e)'; }}
+        />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.55) 100%)' }} />
         <div className="cstage">{l.stage || l.status}</div>
+        {l.state && <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(201,168,76,0.9)', color: '#0D0D0D', fontSize: 9, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', padding: '3px 8px' }}>{l.state}</div>}
       </div>
       <div className="cbody">
         <div className="ctype">{l.type} · {l.state}</div>
@@ -266,7 +407,7 @@ function Card({ l, onClick }) {
         <div className="cmets">
           <div className="cm"><div className="cmv">{l.irr || '—'}</div><div className="cml">IRR</div></div>
           <div className="cm"><div className="cmv">{l.term || '—'}</div><div className="cml">Term</div></div>
-          <div className="cm"><div className="cmv">${((l.minInvest || 50000) / 1000).toFixed(0)}K</div><div className="cml">Min.</div></div>
+          <div className="cm"><div className="cmv">{l.minInvest >= 1000000 ? `$${(l.minInvest/1e6).toFixed(1)}M` : `$${((l.minInvest||50000)/1000).toFixed(0)}K`}</div><div className="cml">Min.</div></div>
         </div>
         {l.raise && <PBar raised={l.raised || 0} target={l.raise} />}
         {closing && <div className="closing">⚡ Closing soon — {Math.round(100 - (l.raised / l.raise * 100))}% remaining</div>}
@@ -425,7 +566,7 @@ function AuthModal({ onClose, onLogin }) {
     <div className="overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 72, width: 'auto', objectFit: 'contain' }} />
+          <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 100, width: 'auto', objectFit: 'contain' }} />
         </div>
         <div className="atabs">
           {[['login', 'Sign In'], ['register', 'Create Account']].map(([m, l]) => (
@@ -564,7 +705,6 @@ function AdminPortal({ toast }) {
 
       {loading && <div style={{ textAlign: 'center', padding: 48, color: 'var(--muted)', fontSize: 13 }}>Loading…</div>}
 
-      {/* ── WHOLESALE CERTS ── */}
       {!loading && tab === 'certs' && (
         <div>
           <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>{certs.filter(c => c.status === 'pending').length} pending review · {certs.length} total</div>
@@ -602,7 +742,6 @@ function AdminPortal({ toast }) {
         </div>
       )}
 
-      {/* ── SUBSCRIPTIONS ── */}
       {!loading && tab === 'subs' && (
         <div>
           <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>{subs.filter(s => s.status === 'pending').length} pending · {subs.filter(s => s.status === 'active').length} active</div>
@@ -626,7 +765,6 @@ function AdminPortal({ toast }) {
         </div>
       )}
 
-      {/* ── IM REVIEWS ── */}
       {!loading && tab === 'reviews' && (
         <div>
           <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>{reviews.filter(r => r.status === 'submitted').length} awaiting review</div>
@@ -650,7 +788,6 @@ function AdminPortal({ toast }) {
         </div>
       )}
 
-      {/* ── LEADS ── */}
       {!loading && tab === 'leads' && (
         <div>
           <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>{leads.length} total leads</div>
@@ -673,7 +810,6 @@ function AdminPortal({ toast }) {
         </div>
       )}
 
-      {/* ── USERS ── */}
       {!loading && tab === 'users' && (
         <div>
           <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>{users.length} registered users</div>
@@ -713,25 +849,24 @@ export default function App() {
   const [toast, setToast] = useState(null);
   const [pDone, setPDone] = useState(false);
   const [pf, setPf] = useState({ company: '', name: '', email: '', phone: '', type: '', raise: '' });
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const showT = msg => { setToast(msg); setTimeout(() => setToast(null), 3500); };
   const go = pg => { setPage(pg); window.scrollTo && window.scrollTo(0, 0); };
   const invest = () => { if (!user) { setShowAuth(true); return; } setShowComp(true); };
   const setP = (k, v) => setPf(p => ({ ...p, [k]: v }));
 
-  // Load current user session
   useEffect(() => {
     API.get('/api/auth/me').then(res => {
       if (res && !res.error) setUser(res);
     }).catch(() => {});
   }, []);
 
-  // Load listings when on listings/home page
   useEffect(() => {
     if (page === 'listings' || page === 'home') {
       setLoadingListings(true);
       API.get('/api/listings').then(res => {
-        if (Array.isArray(res)) setListings(res);
+        if (Array.isArray(res)) setListings(res.map(normaliseListing));
         setLoadingListings(false);
       }).catch(() => setLoadingListings(false));
     }
@@ -760,11 +895,8 @@ export default function App() {
 
       <nav>
         <button className="logo" onClick={() => go('home')}>
-          <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 224, width: 'auto', objectFit: 'contain' }} onError={e => e.target.style.display = 'none'} />
-          <div className="logo-text">
-            <span className="logo-name">Prop Dev DNA</span>
-            <span className="logo-slogan">Empower Your Property to Empower Your Life</span>
-          </div>
+          <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 180, width: 'auto', objectFit: 'contain', mixBlendMode: 'lighten', background: 'transparent', border: 'none', outline: 'none' }} onError={e => e.target.style.display = 'none'} />
+          <span className="logo-slogan">Empower Your Property to Empower Your Life</span>
         </button>
         <div className="nav-links">
           <button className="nl" onClick={() => go('listings')}>Opportunities</button>
@@ -781,11 +913,27 @@ export default function App() {
             : <button className="nl cta" onClick={() => setShowAuth(true)}>Sign In</button>
           }
         </div>
+        <button className={`hamburger${mobileMenuOpen ? ' open' : ''}`} onClick={() => setMobileMenuOpen(o => !o)} aria-label="Menu">
+          <span /><span /><span />
+        </button>
+        {mobileMenuOpen && (
+          <div className="mobile-menu open">
+            {[['listings','Opportunities'],['portal','Developers'],['tiers','Investor Tiers'],['about','About'],['pricing','Pricing']].map(([pg, label]) => (
+              <button key={pg} className="nl" onClick={() => { go(pg); setMobileMenuOpen(false); }}>{label}</button>
+            ))}
+            {user ? <>
+              {user.role === 'admin' && <button className="nl" style={{ color: '#e74c3c' }} onClick={() => { go('admin'); setMobileMenuOpen(false); }}>⚙ Admin</button>}
+              <button className="nl" style={{ color: 'var(--gold)' }} onClick={() => { go('dashboard'); setMobileMenuOpen(false); }}>My Account</button>
+              <button className="nl" onClick={() => { logout(); setMobileMenuOpen(false); }}>Sign Out</button>
+            </> : <button className="nl cta" onClick={() => { setShowAuth(true); setMobileMenuOpen(false); }}>Sign In</button>}
+          </div>
+        )}
       </nav>
 
       {/* ── HOME ── */}
       {page === 'home' && <>
         <div className="hero">
+          <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1600&q=80&fit=crop)', backgroundSize: 'cover', backgroundPosition: 'center 30%', opacity: 0.18 }} />
           <div className="hgrid" /><div className="hglow" />
           <div className="badge-hero"><span className="bdot" />{listings.length || '6'} Live Opportunities</div>
           <h1 className="h1">Where Capital<br />Meets <em>Development</em></h1>
@@ -810,11 +958,14 @@ export default function App() {
             <button className="btn btn-o btn-sm" onClick={() => go('tiers')}>Learn More →</button>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 1, background: 'rgba(201,168,76,0.07)' }}>
-            {Object.entries(TIERS).map(([key, t]) => (
-              <div key={key} style={{ background: '#0f0f0f', padding: '20px 16px' }}>
-                <div style={{ fontSize: 24, marginBottom: 8 }}>{t.badge}</div>
-                <div style={{ fontSize: 13, fontFamily: "'Cormorant Garamond',serif", color: '#fff', fontWeight: 600, marginBottom: 6 }}>{t.label}</div>
-                <div style={{ fontSize: 10, color: 'rgba(245,242,236,0.35)', lineHeight: 1.6 }}>{t.desc}</div>
+            {Object.entries(TIERS).map(([key, t], i) => (
+              <div key={key} style={{ background: '#0f0f0f', padding: '28px 20px', borderTop: `2px solid ${t.color}`, position: 'relative' }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: t.bg, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14, fontSize: 16 }}>
+                  {['🔵','🟡','🟢','⭐'][i]}
+                </div>
+                <div style={{ fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', color: t.color, marginBottom: 6 }}>Tier {i+1}</div>
+                <div style={{ fontSize: 15, fontFamily: "'Cormorant Garamond',serif", color: '#fff', fontWeight: 600, marginBottom: 8 }}>{t.label}</div>
+                <div style={{ fontSize: 10, color: 'rgba(245,242,236,0.38)', lineHeight: 1.7 }}>{t.desc}</div>
               </div>
             ))}
           </div>
@@ -825,12 +976,15 @@ export default function App() {
           <div className="stitle" style={{ color: '#fff' }}>Built for Serious Capital</div>
           <p className="ssub" style={{ color: 'rgba(245,242,236,0.38)' }}>From feasibility to funded — three steps.</p>
           <div className="steps">
-            {[{ n: '01', i: '🔍', t: 'Discover', d: 'Browse FEASO-reviewed opportunities by state, stage, and return profile.' },
-            { n: '02', i: '📊', t: 'Analyse', d: 'Access full IMs, feasibility reports, and developer profiles.' },
-            { n: '03', i: '✅', t: 'Invest', d: 'Register interest, complete verification, and confirm your allocation.' }
+            {[
+              { n: '01', svg: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>, t: 'Discover', d: 'Browse FEASO-reviewed development opportunities filtered by state, stage, and return profile.' },
+              { n: '02', svg: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round"><path d="M3 3v18h18"/><path d="m7 16 4-4 4 4 4-4"/></svg>, t: 'Analyse', d: 'Access full Information Memoranda, FEASO reports, and developer profiles in the secure data room.' },
+              { n: '03', svg: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>, t: 'Invest', d: 'Register interest, complete wholesale verification, and confirm your capital allocation.' },
             ].map(s => (
               <div className="step" key={s.n}>
-                <div className="stn">{s.n}</div><div className="sti">{s.i}</div><h3>{s.t}</h3><p>{s.d}</p>
+                <div className="stn">{s.n}</div>
+                <div style={{ marginBottom: 16 }}>{s.svg}</div>
+                <h3>{s.t}</h3><p>{s.d}</p>
               </div>
             ))}
           </div>
@@ -848,11 +1002,14 @@ export default function App() {
           }
         </sec>
 
-        <sec style={{ background: 'var(--sage)', textAlign: 'center' }}>
-          <div className="slbl" style={{ color: 'rgba(201,168,76,0.55)' }}>For Developers</div>
-          <div className="stitle" style={{ color: '#fff', maxWidth: 520, margin: '0 auto 14px' }}>Ready to Raise Capital for Your Next Project?</div>
-          <p className="ssub" style={{ color: 'rgba(255,255,255,0.38)', margin: '0 auto 32px' }}>FEASO builder + IM generator + verified wholesale investor network.</p>
-          <button className="btn btn-g" onClick={() => go('portal')}>Submit Your Project →</button>
+        <sec style={{ background: 'var(--sage)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&q=80&fit=crop)', backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.12 }} />
+          <div style={{ position: 'relative', zIndex: 1 }}>
+            <div className="slbl" style={{ color: 'rgba(201,168,76,0.55)' }}>For Developers</div>
+            <div className="stitle" style={{ color: '#fff', maxWidth: 520, margin: '0 auto 14px' }}>Ready to Raise Capital for Your Next Project?</div>
+            <p className="ssub" style={{ color: 'rgba(255,255,255,0.38)', margin: '0 auto 32px' }}>FEASO builder + IM generator + verified wholesale investor network.</p>
+            <button className="btn btn-g" onClick={() => go('portal')}>Submit Your Project →</button>
+          </div>
         </sec>
       </>}
 
@@ -951,9 +1108,7 @@ export default function App() {
       )}
 
       {/* ── ADMIN PORTAL ── */}
-      {page === 'admin' && user?.role === 'admin' && (
-        <AdminPortal toast={showT} />
-      )}
+      {page === 'admin' && user?.role === 'admin' && <AdminPortal toast={showT} />}
       {page === 'admin' && user?.role !== 'admin' && (
         <sec style={{ paddingTop: 80, textAlign: 'center' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
@@ -1041,7 +1196,18 @@ export default function App() {
               ))}
             </div>
             <div>
-              <div className="aphoto">👤</div>
+              <div className="aphoto" style={{ position: 'relative', overflow: 'hidden', borderRadius: 0 }}>
+                <img
+                  src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&q=80&fit=crop&crop=face"
+                  alt="Anthony Lawson"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
+                  onError={e => { e.target.style.display='none'; }}
+                />
+                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(to top, rgba(42,58,46,0.9) 0%, transparent 60%)', padding: '24px 20px 16px' }}>
+                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 20, color: '#fff', fontWeight: 600 }}>Anthony Lawson</div>
+                  <div style={{ fontSize: 11, color: 'rgba(201,168,76,0.8)', letterSpacing: '1.5px', textTransform: 'uppercase', marginTop: 4 }}>Director — Financial DNA Group</div>
+                </div>
+              </div>
               <div style={{ background: 'rgba(201,168,76,0.05)', border: '1px solid rgba(201,168,76,0.16)', padding: '18px', marginTop: 14 }}>
                 <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 6 }}>Contact</div>
                 <p style={{ fontSize: '12px', color: 'var(--ink)', lineHeight: 1.7 }}>anthony@financialdnagroup.com.au<br />0414 744 516<br />Sydney NSW</p>
@@ -1082,7 +1248,7 @@ export default function App() {
         <div className="ftop">
           <div>
             <div className="flogo" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 36, width: 'auto', objectFit: 'contain' }} onError={e => e.target.style.display = 'none'} />
+              <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 44, width: 'auto', objectFit: 'contain' }} onError={e => e.target.style.display = 'none'} />
               <span>Prop Dev DNA</span>
             </div>
             <p className="ftag">Australia's professional wholesale property investment platform.</p>
