@@ -921,7 +921,7 @@ export default function App() {
       {/* ── HOME ── */}
       {page === 'home' && <>
         <div className="hero">
-          <div style={{ position:'absolute', inset:0, backgroundImage:'url(/logo.png)', backgroundSize:'60%', backgroundPosition:'center', backgroundRepeat:'no-repeat', opacity:0.06 }} />
+          <div style={{ position:'absolute', inset:0, backgroundImage:'url(/logo.png)', backgroundSize:'60%', backgroundPosition:'center', backgroundRepeat:'no-repeat', opacity:0.20 }} />
           <div className="hgrid" /><div className="hglow" />
           <div className="badge-hero"><span className="bdot" />{listings.length || '6'} Live Opportunities</div>
           <h1 className="h1">Where Capital<br />Meets <em>Development</em></h1>
