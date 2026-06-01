@@ -895,7 +895,7 @@ export default function App() {
 
       <nav>
         <button className="logo" onClick={() => go('home')}>
-          <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 180, width: 'auto', objectFit: 'contain', mixBlendMode: 'lighten', background: 'transparent', border: 'none', outline: 'none' }} onError={e => e.target.style.display = 'none'} />
+          <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 210, width: 'auto', objectFit: 'contain', mixBlendMode: 'lighten', background: 'transparent', border: 'none', outline: 'none' }} onError={e => e.target.style.display = 'none'} />
           <span className="logo-slogan">Empower Your Property to Empower Your Life</span>
         </button>
         <div className="nav-links">
