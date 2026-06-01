@@ -171,6 +171,8 @@ const css = `
     .nav-links{display:none}
     .hamburger{display:flex}
     .nl{font-size:13px}
+    .hero{flex-direction:column !important}
+    .hero>div[style]{flex:unset !important;width:100% !important;border-right:none !important;padding:40px 24px !important}
   }
   .hero{min-height:100vh;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;position:relative;overflow:hidden}
   .hgrid{position:absolute;inset:0;opacity:0.03;background-image:linear-gradient(var(--gold) 1px,transparent 1px),linear-gradient(90deg,var(--gold) 1px,transparent 1px);background-size:60px 60px}
@@ -920,20 +922,31 @@ export default function App() {
 
       {/* ── HOME ── */}
       {page === 'home' && <>
-        <div className="hero">
-          <div style={{ position:'absolute', inset:0, backgroundImage:'url(/logo.png)', backgroundSize:'60%', backgroundPosition:'center', backgroundRepeat:'no-repeat', opacity:0.20 }} />
+        <div className="hero" style={{ flexDirection:'row', alignItems:'stretch', padding:0, textAlign:'left' }}>
           <div className="hgrid" /><div className="hglow" />
-          <div className="badge-hero"><span className="bdot" />{listings.length || '6'} Live Opportunities</div>
-          <h1 className="h1">Where Capital<br />Meets <em>Development</em></h1>
-          <p className="hsub">Australia's professional platform connecting wholesale investors with curated property development opportunities. FEASO-grade due diligence. Real projects. Real returns.</p>
-          <div className="hbtns">
-            <button className="btn btn-g" onClick={() => go('listings')}>Browse Opportunities →</button>
-            <button className="btn btn-o" onClick={() => go('portal')}>List Your Project</button>
+
+          {/* LEFT — logo 50% */}
+          <div style={{ flex:'0 0 50%', display:'flex', alignItems:'center', justifyContent:'center', padding:'60px 48px', borderRight:'1px solid rgba(201,168,76,0.1)' }}>
+            <img src="/logo.png" alt="Prop Dev DNA"
+              style={{ width:'100%', maxWidth:420, height:'auto', objectFit:'contain', mixBlendMode:'lighten' }}
+              onError={e => e.target.style.display='none'}
+            />
           </div>
-          <div className="hstats">
-            {[['$140M+', 'Deals in Network'], [String(listings.length || 6), 'Live Listings'], ['22%', 'Avg. Target IRR'], ['4 Tiers', 'Investor Verification']].map(([n, l]) => (
-              <div key={l} style={{ textAlign: 'center' }}><div className="sn">{n}</div><div className="sl">{l}</div></div>
-            ))}
+
+          {/* RIGHT — content 50% */}
+          <div style={{ flex:'0 0 50%', display:'flex', flexDirection:'column', justifyContent:'center', padding:'60px 56px 60px 48px' }}>
+            <div className="badge-hero" style={{ alignSelf:'flex-start', marginBottom:24 }}><span className="bdot" />{listings.length || '6'} Live Opportunities</div>
+            <h1 className="h1" style={{ textAlign:'left' }}>Where Capital<br />Meets <em>Development</em></h1>
+            <p className="hsub" style={{ textAlign:'left' }}>Australia's professional platform connecting wholesale investors with curated property development opportunities. FEASO-grade due diligence. Real projects. Real returns.</p>
+            <div className="hbtns" style={{ justifyContent:'flex-start' }}>
+              <button className="btn btn-g" onClick={() => go('listings')}>Browse Opportunities →</button>
+              <button className="btn btn-o" onClick={() => go('portal')}>List Your Project</button>
+            </div>
+            <div className="hstats" style={{ justifyContent:'flex-start', paddingTop:32, marginTop:40 }}>
+              {[['$140M+','Deals in Network'],[String(listings.length||6),'Live Listings'],['22%','Avg. Target IRR'],['4 Tiers','Investor Verification']].map(([n,l]) => (
+                <div key={l} style={{ textAlign:'left' }}><div className="sn">{n}</div><div className="sl">{l}</div></div>
+              ))}
+            </div>
           </div>
         </div>
 
