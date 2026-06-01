@@ -889,16 +889,6 @@ export default function App() {
   return (
     <>
       <style>{css}</style>
-      {/* LOGO HEADER */}
-      <div style={{ background:'#0D0D0D', padding:'20px 48px', display:'flex', alignItems:'center', justifyContent:'center', borderBottom:'1px solid rgba(201,168,76,0.15)' }}>
-        <button onClick={() => go('home')} style={{ background:'none', border:'none', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:8 }}>
-          <img src="/logo.png" alt="Prop Dev DNA" style={{ height:120, width:'auto', objectFit:'contain' }} onError={e => e.target.style.display='none'} />
-          <span style={{ fontSize:12, letterSpacing:'3px', textTransform:'uppercase', color:'rgba(201,168,76,0.7)', fontFamily:"'DM Sans', sans-serif", fontWeight:300 }}>
-            Empower Your Property to Empower Your Life
-          </span>
-        </button>
-      </div>
-
       {/* NAV — links only, no logo */}
       <nav style={{ position:'sticky', top:0, zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'0 48px', height:112, background:'rgba(13,13,13,0.30)', backdropFilter:'blur(16px)', borderBottom:'1px solid rgba(201,168,76,0.12)', gap:48, flexWrap:'wrap' }}>
         <button className="nl" onClick={() => go('listings')}>Opportunities</button>
