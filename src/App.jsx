@@ -928,7 +928,7 @@ export default function App() {
           {/* LEFT — logo 50% */}
           <div style={{ flex:'0 0 50%', display:'flex', alignItems:'center', justifyContent:'center', padding:'60px 48px', borderRight:'1px solid rgba(201,168,76,0.1)' }}>
             <img src="/logo.png" alt="Prop Dev DNA"
-              style={{ width:'100%', maxWidth:420, height:'auto', objectFit:'contain', mixBlendMode:'lighten' }}
+              style={{ width:'100%', maxWidth:420, height:'auto', objectFit:'contain', mixBlendMode:'lighten', opacity:0.30 }}
               onError={e => e.target.style.display='none'}
             />
           </div>
