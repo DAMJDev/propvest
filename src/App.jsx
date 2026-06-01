@@ -148,17 +148,14 @@ const css = `
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   :root{--gold:#C9A84C;--ink:#0D0D0D;--paper:#F5F2EC;--sage:#2A3A2E;--muted:#6B6B5A}
   body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);overflow-x:hidden;-webkit-font-smoothing:antialiased}
-  .notice{background:rgba(201,168,76,0.08);border-bottom:1px solid rgba(201,168,76,0.2);padding:12px 40px;text-align:center;font-size:13px;color:rgba(13,13,13,0.6)}
-  .notice strong{color:var(--gold)}
-  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:200px;background:rgba(13,13,13,0.98);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.1)}
-  .logo{cursor:pointer;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0}
-  .logo-text{display:none}
-  .logo-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--gold);line-height:1;letter-spacing:0.5px}
-  .logo-slogan{font-size:11px;color:rgba(201,168,76,0.8);letter-spacing:3px;text-transform:uppercase;font-family:'DM Sans',sans-serif;font-weight:300;text-align:center;white-space:nowrap}
-  .nav-links{display:flex;align-items:center;gap:36px}
-  .nl{color:rgba(245,242,236,0.75);font-size:32px;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;transition:color 0.2s;padding:0;letter-spacing:0.5px}
+  .notice{background:rgba(13,13,13,0.95);border-bottom:1px solid rgba(255,255,255,0.05);padding:6px 48px;text-align:center;font-size:10px;color:rgba(245,242,236,0.4)}
+  .notice strong{color:rgba(245,242,236,0.6)}
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:64px;background:rgba(13,13,13,0.98);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.12)}
+  .logo{cursor:pointer;background:none;border:none;display:flex;align-items:center;gap:12px;padding:0}
+  .nav-links{display:flex;align-items:center;gap:28px}
+  .nl{color:rgba(245,242,236,0.65);font-size:13px;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;transition:color 0.2s;padding:0;letter-spacing:0.3px}
   .nl:hover{color:var(--gold)}
-  .nl.cta{background:var(--gold);color:var(--ink);font-size:26px;font-weight:500;letter-spacing:2px;text-transform:uppercase;padding:12px 28px}
+  .nl.cta{background:var(--gold);color:var(--ink);font-size:11px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;padding:8px 20px}
   .nl.cta:hover{opacity:0.85}
   .hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;padding:8px;z-index:110}
   .hamburger span{display:block;width:22px;height:2px;background:rgba(245,242,236,0.7);transition:all 0.25s}
@@ -170,9 +167,10 @@ const css = `
   .mobile-menu .nl{padding:12px 32px;font-size:14px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.04)}
   .mobile-menu .nl.cta{margin:12px 32px 4px;padding:10px 18px;text-align:center}
   @media(max-width:768px){
-    nav{padding:0 20px;height:80px;position:relative}
+    nav{padding:0 20px;height:56px;position:relative}
     .nav-links{display:none}
     .hamburger{display:flex}
+    .nl{font-size:13px}
   }
   .hero{min-height:100vh;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;position:relative;overflow:hidden}
   .hgrid{position:absolute;inset:0;opacity:0.03;background-image:linear-gradient(var(--gold) 1px,transparent 1px),linear-gradient(90deg,var(--gold) 1px,transparent 1px);background-size:60px 60px}
@@ -889,14 +887,10 @@ export default function App() {
   return (
     <>
       <style>{css}</style>
-      <div className="notice">
-        <strong>For Wholesale &amp; Sophisticated Investors</strong> · s.761G Corporations Act 2001 (Cth) · General information only · Not financial product advice
-      </div>
-
       <nav>
         <button className="logo" onClick={() => go('home')}>
-          <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 160, width: 'auto', objectFit: 'contain', mixBlendMode: 'lighten', background: 'transparent', border: 'none', outline: 'none' }} onError={e => e.target.style.display = 'none'} />
-          <span className="logo-slogan">Empower Your Property to Empower Your Life</span>
+          <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 40, width: 'auto', objectFit: 'contain', mixBlendMode: 'lighten', background: 'transparent', border: 'none', outline: 'none' }} onError={e => { e.target.style.display='none'; e.target.nextSibling.style.display='block'; }} />
+          <span style={{ display:'none', fontFamily:"'Cormorant Garamond',serif", fontSize:28, color:'#C9A84C', fontWeight:700, letterSpacing:'1px' }}>PROP DEV DNA</span>
         </button>
         <div className="nav-links">
           <button className="nl" onClick={() => go('listings')}>Opportunities</button>
@@ -929,6 +923,12 @@ export default function App() {
           </div>
         )}
       </nav>
+      <div style={{ background:'rgba(201,168,76,0.06)', borderBottom:'1px solid rgba(201,168,76,0.15)', padding:'6px 48px', fontSize:10, letterSpacing:'3px', textTransform:'uppercase', color:'rgba(201,168,76,0.65)', fontFamily:"'DM Sans', sans-serif", fontWeight:300, textAlign:'center' }}>
+        Empower Your Property to Empower Your Life
+      </div>
+      <div className="notice">
+        <strong>For Wholesale &amp; Sophisticated Investors</strong> · s.761G Corporations Act 2001 (Cth) · General information only · Not financial product advice
+      </div>
 
       {/* ── HOME ── */}
       {page === 'home' && <>
