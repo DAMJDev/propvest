@@ -950,8 +950,9 @@ export default function App() {
           </div>
         </div>
 
-        <sec style={{ background: '#0a0a0a', padding: '48px 32px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, marginBottom: 32 }}>
+        <div style={{ borderTop: '1px solid rgba(201,168,76,0.2)' }} />
+        <sec style={{ background: '#0a0a0a', padding: '24px 32px 40px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
             <div>
               <div className="slbl">Investor Verification</div>
               <div className="stitle" style={{ color: '#fff', marginBottom: 0 }}>Four Tiers of Trust</div>
