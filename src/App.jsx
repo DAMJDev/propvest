@@ -150,11 +150,11 @@ const css = `
   body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);overflow-x:hidden;-webkit-font-smoothing:antialiased}
   .notice{background:rgba(201,168,76,0.08);border-bottom:1px solid rgba(201,168,76,0.2);padding:12px 40px;text-align:center;font-size:13px;color:rgba(13,13,13,0.6)}
   .notice strong{color:var(--gold)}
-  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:300px;background:rgba(13,13,13,0.98);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.1)}
-  .logo{cursor:pointer;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:6px;padding:0}
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:200px;background:rgba(13,13,13,0.98);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.1)}
+  .logo{cursor:pointer;background:none;border:none;display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px 0}
   .logo-text{display:none}
   .logo-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--gold);line-height:1;letter-spacing:0.5px}
-  .logo-slogan{font-size:14px;color:rgba(201,168,76,0.8);letter-spacing:3px;margin-top:6px;text-transform:uppercase;font-family:'DM Sans',sans-serif;font-weight:300;text-align:center;white-space:nowrap}
+  .logo-slogan{font-size:11px;color:rgba(201,168,76,0.8);letter-spacing:3px;text-transform:uppercase;font-family:'DM Sans',sans-serif;font-weight:300;text-align:center;white-space:nowrap}
   .nav-links{display:flex;align-items:center;gap:36px}
   .nl{color:rgba(245,242,236,0.75);font-size:32px;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;transition:color 0.2s;padding:0;letter-spacing:0.5px}
   .nl:hover{color:var(--gold)}
@@ -890,12 +890,12 @@ export default function App() {
     <>
       <style>{css}</style>
       <div className="notice">
-        <strong>Wholesale Investors Only</strong> · s.761G Corporations Act 2001 (Cth) · Not financial advice · Capital at risk
+        <strong>For Wholesale &amp; Sophisticated Investors</strong> · s.761G Corporations Act 2001 (Cth) · General information only · Not financial product advice
       </div>
 
       <nav>
         <button className="logo" onClick={() => go('home')}>
-          <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 280, width: 'auto', objectFit: 'contain', mixBlendMode: 'lighten', background: 'transparent', border: 'none', outline: 'none' }} onError={e => e.target.style.display = 'none'} />
+          <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 160, width: 'auto', objectFit: 'contain', mixBlendMode: 'lighten', background: 'transparent', border: 'none', outline: 'none' }} onError={e => e.target.style.display = 'none'} />
           <span className="logo-slogan">Empower Your Property to Empower Your Life</span>
         </button>
         <div className="nav-links">
@@ -933,7 +933,7 @@ export default function App() {
       {/* ── HOME ── */}
       {page === 'home' && <>
         <div className="hero">
-          <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(https://images.unsplash.com/photo-1486325212027-8081e485255e?w=1600&q=80&fit=crop)', backgroundSize: 'cover', backgroundPosition: 'center 30%', opacity: 0.18 }} />
+          <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(https://images.unsplash.com/photo-1506973035872-a4ec16b8e8d9?w=1600&q=80&fit=crop)', backgroundSize: 'cover', backgroundPosition: 'center 30%', opacity: 0.18 }} />
           <div className="hgrid" /><div className="hglow" />
           <div className="badge-hero"><span className="bdot" />{listings.length || '6'} Live Opportunities</div>
           <h1 className="h1">Where Capital<br />Meets <em>Development</em></h1>
