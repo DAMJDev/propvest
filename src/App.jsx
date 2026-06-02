@@ -153,7 +153,7 @@ const css = `
   nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:80px;background:rgba(13,13,13,0.98);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.12)}
   .logo{cursor:pointer;background:none;border:none;display:flex;align-items:center;gap:12px;padding:0}
   .nav-links{display:flex;align-items:center;gap:28px}
-  .nl{color:rgba(245,242,236,0.85);font-size:15px;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:0.5px;transition:color 0.2s;padding:0}
+  .nl{color:rgba(245,242,236,0.85);font-size:13px;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:0.5px;transition:color 0.2s;padding:0;white-space:nowrap}
   .nl:hover{color:var(--gold)}
   .nl.cta{background:var(--gold);color:var(--ink);font-size:12px;font-weight:500;letter-spacing:2px;text-transform:uppercase;padding:9px 24px}
   .nl.cta:hover{opacity:0.85}
@@ -890,7 +890,7 @@ export default function App() {
     <>
       <style>{css}</style>
       {/* NAV — links only, no logo */}
-      <nav style={{ position:'sticky', top:0, zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'0 48px', height:64, background:'rgba(13,13,13,0.97)', backdropFilter:'blur(16px)', borderBottom:'1px solid rgba(201,168,76,0.12)', gap:36, flexWrap:'nowrap' }}>
+      <nav style={{ position:'sticky', top:0, zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'0 32px', height:56, background:'rgba(13,13,13,0.97)', backdropFilter:'blur(16px)', borderBottom:'1px solid rgba(201,168,76,0.12)', gap:24, flexWrap:'nowrap' }}>
         <button className="nl" onClick={() => go('listings')}>Opportunities</button>
         <button className="nl" onClick={() => go('portal')}>Developers</button>
         <button className="nl" onClick={() => go('tiers')}>Investor Tiers</button>
