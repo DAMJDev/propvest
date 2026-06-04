@@ -889,57 +889,232 @@ export default function App() {
   return (
     <>
       <style>{css}</style>
-      {/* NAV — links only, no logo */}
-      <nav style={{ position:'sticky', top:0, zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'0 32px', height:56, background:'rgba(13,13,13,0.97)', backdropFilter:'blur(16px)', borderBottom:'1px solid rgba(201,168,76,0.12)', gap:24, flexWrap:'nowrap' }}>
-        <button className="nl" onClick={() => go('listings')}>Opportunities</button>
-        <button className="nl" onClick={() => go('portal')}>Developers</button>
-        <button className="nl" onClick={() => go('tiers')}>Investor Tiers</button>
-        <button className="nl" onClick={() => go('about')}>About</button>
-        <button className="nl" onClick={() => go('pricing')}>Pricing</button>
-        {user
-          ? <>
-            {user.role === 'admin' && <button className="nl" style={{ color:'#e74c3c' }} onClick={() => go('admin')}>⚙ Admin</button>}
-            <button className="nl" style={{ color:'var(--gold)' }} onClick={() => go('dashboard')}>My Account</button>
-            <button className="nl" onClick={logout}>Sign Out</button>
-          </>
-          : <button className="nl cta" onClick={() => setShowAuth(true)}>Sign In</button>
-        }
+      {/* NAV */}
+      <nav style={{ position:'sticky', top:0, zIndex:100, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 48px', height:56, background:'rgba(13,13,13,0.97)', backdropFilter:'blur(16px)', borderBottom:'1px solid rgba(201,168,76,0.12)' }}>
+        <button onClick={() => go('home')} style={{ background:'none', border:'none', cursor:'pointer', padding:0, display:'flex', alignItems:'center', flexShrink:0 }}>
+          <img src="/logo.png" alt="Prop Dev DNA" style={{ height:36, width:'auto', objectFit:'contain', mixBlendMode:'lighten' }} onError={e => e.target.style.display='none'} />
+        </button>
+        <div style={{ display:'flex', alignItems:'center', gap:24, flexWrap:'nowrap' }}>
+          <button className="nl" onClick={() => go('listings')}>Opportunities</button>
+          <button className="nl" onClick={() => go('portal')}>Developers</button>
+          <button className="nl" onClick={() => go('tiers')}>Investor Tiers</button>
+          <button className="nl" onClick={() => go('about')}>About</button>
+          <button className="nl" onClick={() => go('pricing')}>Pricing</button>
+          {user
+            ? <>
+              {user.role === 'admin' && <button className="nl" style={{ color:'#e74c3c' }} onClick={() => go('admin')}>⚙ Admin</button>}
+              <button className="nl" style={{ color:'var(--gold)' }} onClick={() => go('dashboard')}>My Account</button>
+              <button className="nl" onClick={logout}>Sign Out</button>
+            </>
+            : <button className="nl cta" onClick={() => setShowAuth(true)}>Sign In</button>
+          }
+        </div>
       </nav>
-
       <div className="notice">
         <strong>For Wholesale &amp; Sophisticated Investors</strong> · s.761G Corporations Act 2001 (Cth) · General information only · Not financial product advice
       </div>
 
       {/* ── HOME ── */}
       {page === 'home' && <>
-        <div className="hero" style={{ flexDirection:'row', alignItems:'stretch', padding:0, textAlign:'left' }}>
-          <div className="hgrid" /><div className="hglow" />
 
-          {/* LEFT — logo 50% */}
-          <div style={{ flex:'0 0 50%', display:'flex', alignItems:'center', justifyContent:'center', padding:'60px 48px', borderRight:'1px solid rgba(201,168,76,0.1)', overflow:'hidden' }}>
-            <img src="/logo.png" alt="Prop Dev DNA"
-              style={{ width:'100%', height:'auto', objectFit:'contain', mixBlendMode:'lighten', opacity:0.75 }}
-              onError={e => e.target.style.display='none'}
-            />
+        {/* ── HERO: 50/50 SPLIT ── */}
+        <div style={{ minHeight:'100vh', display:'flex', flexDirection:'row', position:'relative', overflow:'hidden', background:'#0D0D0D' }}>
+          {/* DOT GRID */}
+          <div style={{ position:'absolute', inset:0, backgroundImage:'radial-gradient(circle, rgba(201,168,76,0.18) 1px, transparent 1px)', backgroundSize:'28px 28px', zIndex:0, pointerEvents:'none' }} />
+
+          {/* LEFT — INVESTORS */}
+          <div style={{ flex:'0 0 50%', display:'flex', flexDirection:'column', justifyContent:'center', padding:'80px 60px 100px 64px', position:'relative', zIndex:1 }}>
+            <div style={{ fontSize:9, letterSpacing:'4px', textTransform:'uppercase', color:'rgba(201,168,76,0.6)', marginBottom:16 }}>For Wholesale Investors</div>
+            <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(32px,3.5vw,52px)', fontWeight:600, color:'#fff', lineHeight:1.05, marginBottom:20, letterSpacing:'-0.5px' }}>
+              Where <em style={{ color:'var(--gold)', fontStyle:'italic' }}>Capital</em><br />Meets Returns
+            </h2>
+            <div style={{ width:48, height:2, background:'linear-gradient(to right, var(--gold), transparent)', marginBottom:28 }} />
+            {[
+              ['🎯','Wholesale-only access','Pre-screened opportunities unavailable on public markets'],
+              ['📊','FEASO-grade due diligence','Every project reviewed against industry feasibility standards'],
+              ['🔐','4-tier investor verification','From registered to PDD-endorsed — access scales with trust'],
+              ['💰','18–25% target IRR','Equity, mezz & JV structures across residential and mixed-use'],
+              ['📁','Secure data room','Full IM, financials and developer profiles — post-verification only'],
+              ['🤝','Broker pre-qualification','Anthony Lawson personally reviews capital-ready investor profiles'],
+            ].map(([icon,title,desc]) => (
+              <div key={title} style={{ display:'flex', gap:12, alignItems:'flex-start', marginBottom:14 }}>
+                <div style={{ fontSize:16, width:24, flexShrink:0, marginTop:1 }}>{icon}</div>
+                <div>
+                  <div style={{ fontSize:13, fontWeight:500, color:'rgba(245,242,236,0.9)', marginBottom:2 }}>{title}</div>
+                  <div style={{ fontSize:11, color:'rgba(245,242,236,0.35)', lineHeight:1.6 }}>{desc}</div>
+                </div>
+              </div>
+            ))}
+            <div style={{ marginTop:28, display:'flex', gap:12, flexWrap:'wrap' }}>
+              <button className="btn btn-g" onClick={() => go('listings')}>Browse Opportunities →</button>
+              <button className="btn btn-o" onClick={() => user ? go('dashboard') : setShowAuth(true)}>Verify My Status</button>
+            </div>
           </div>
 
-          {/* RIGHT — content 50% */}
-          <div style={{ flex:'0 0 50%', display:'flex', flexDirection:'column', justifyContent:'center', padding:'60px 56px 60px 48px' }}>
-            <div className="badge-hero" style={{ alignSelf:'flex-start', marginBottom:24 }}><span className="bdot" />{listings.length || '6'} Live Opportunities</div>
-            <h1 className="h1" style={{ textAlign:'left' }}>Where Capital<br />Meets <em>Development</em></h1>
-            <p className="hsub" style={{ textAlign:'left' }}>Australia's professional platform connecting wholesale investors with curated property development opportunities. FEASO-grade due diligence. Real projects. Real returns.</p>
-            <div className="hbtns" style={{ justifyContent:'flex-start' }}>
-              <button className="btn btn-g" onClick={() => go('listings')}>Browse Opportunities →</button>
-              <button className="btn btn-o" onClick={() => go('portal')}>List Your Project</button>
+          {/* CENTRE DIVIDER */}
+          <div style={{ position:'absolute', left:'50%', top:0, bottom:0, width:1, background:'linear-gradient(to bottom, transparent 0%, rgba(201,168,76,0.6) 25%, rgba(201,168,76,1) 50%, rgba(201,168,76,0.6) 75%, transparent 100%)', zIndex:2, boxShadow:'0 0 20px rgba(201,168,76,0.35)', transform:'translateX(-50%)' }}>
+            <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:52, height:52, background:'#0D0D0D', border:'1px solid rgba(201,168,76,0.7)', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, color:'var(--gold)', boxShadow:'0 0 28px rgba(201,168,76,0.5)', fontFamily:"'Cormorant Garamond',serif" }}>⊕</div>
+          </div>
+
+          {/* RIGHT — DEVELOPERS */}
+          <div style={{ flex:'0 0 50%', display:'flex', flexDirection:'column', justifyContent:'center', padding:'80px 64px 100px 60px', position:'relative', zIndex:1, background:'rgba(42,58,46,0.25)' }}>
+            <div style={{ fontSize:9, letterSpacing:'4px', textTransform:'uppercase', color:'rgba(120,180,120,0.7)', marginBottom:16 }}>For Developers · Builders · Agents</div>
+            <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(32px,3.5vw,52px)', fontWeight:600, color:'#fff', lineHeight:1.05, marginBottom:20, letterSpacing:'-0.5px' }}>
+              Where Projects<br />Find <em style={{ color:'#7DC47D', fontStyle:'italic' }}>Capital</em>
+            </h2>
+            <div style={{ width:48, height:2, background:'linear-gradient(to right, #4A9A4A, transparent)', marginBottom:28 }} />
+            {[
+              ['🏗️','Verified capital network','Access to pre-screened wholesale investors ready to deploy'],
+              ['📐','FEASO builder included','Live auto-calc feasibility tool with 6-tab analysis built in'],
+              ['📄','IM generator + review','16-page IM with ASIC disclaimers, reviewed within 48 hours'],
+              ['⚡','48-hour go-live','Pass quality review and your project is live to the investor network'],
+              ['🗂️','Developer data room','Securely share documents with verified investors only'],
+              ['✅','Success fee only on close','1.5% of capital raised — payable only when your project settles'],
+            ].map(([icon,title,desc]) => (
+              <div key={title} style={{ display:'flex', gap:12, alignItems:'flex-start', marginBottom:14 }}>
+                <div style={{ fontSize:16, width:24, flexShrink:0, marginTop:1 }}>{icon}</div>
+                <div>
+                  <div style={{ fontSize:13, fontWeight:500, color:'rgba(245,242,236,0.9)', marginBottom:2 }}>{title}</div>
+                  <div style={{ fontSize:11, color:'rgba(245,242,236,0.35)', lineHeight:1.6 }}>{desc}</div>
+                </div>
+              </div>
+            ))}
+            <div style={{ marginTop:28, display:'flex', gap:12, flexWrap:'wrap' }}>
+              <button className="btn btn-g" style={{ background:'#2A5A2A' }} onClick={() => go('portal')}>Submit Your Project →</button>
+              <button className="btn btn-o" onClick={() => go('pricing')}>View Pricing</button>
             </div>
-            <div className="hstats" style={{ justifyContent:'flex-start', paddingTop:32, marginTop:40 }}>
-              {[['$140M+','Deals in Network'],[String(listings.length||6),'Live Listings'],['22%','Avg. Target IRR'],['4 Tiers','Investor Verification']].map(([n,l]) => (
-                <div key={l} style={{ textAlign:'left' }}><div className="sn">{n}</div><div className="sl">{l}</div></div>
-              ))}
-            </div>
+          </div>
+
+          {/* BOTTOM TAGLINE BAR */}
+          <div style={{ position:'absolute', bottom:0, left:0, right:0, background:'rgba(201,168,76,0.07)', borderTop:'1px solid rgba(201,168,76,0.18)', padding:'11px 48px', display:'flex', alignItems:'center', justifyContent:'center', gap:20, zIndex:3 }}>
+            <div style={{ width:48, height:1, background:'rgba(201,168,76,0.4)' }} />
+            <span style={{ fontSize:10, letterSpacing:'4px', textTransform:'uppercase', color:'rgba(201,168,76,0.75)', fontFamily:"'DM Sans',sans-serif", fontWeight:300 }}>Performance Meets Accountability</span>
+            <div style={{ width:48, height:1, background:'rgba(201,168,76,0.4)' }} />
           </div>
         </div>
 
+        {/* ── COMPLIANCE BADGES ── */}
+        <div style={{ background:'#080808', padding:'20px 48px', borderBottom:'1px solid rgba(255,255,255,0.04)', display:'flex', gap:12, flexWrap:'wrap', justifyContent:'center', alignItems:'center' }}>
+          {[['⚖️','s.761G Compliant','Corporations Act 2001'],['🏛️','Introduction-Only','No AFSL held'],['📋','ASIC Aware','Innovation Hub engagement'],['🔒','7-Year Records','Full audit trail maintained'],['🛡️','Wholesale Only','No retail investors admitted']].map(([icon,title,sub]) => (
+            <div key={title} style={{ display:'flex', alignItems:'center', gap:8, padding:'8px 16px', border:'1px solid rgba(201,168,76,0.13)', background:'rgba(201,168,76,0.03)' }}>
+              <span style={{ fontSize:14 }}>{icon}</span>
+              <div>
+                <div style={{ fontSize:10, fontWeight:600, color:'rgba(245,242,236,0.65)', letterSpacing:'0.3px' }}>{title}</div>
+                <div style={{ fontSize:9, color:'rgba(245,242,236,0.22)' }}>{sub}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* ── ACCOUNTABILITY: THREE PILLARS ── */}
+        <sec style={{ background:'#060606', paddingTop:64, paddingBottom:64 }}>
+          <div style={{ textAlign:'center', marginBottom:48 }}>
+            <div className="slbl">Our Commitment</div>
+            <div className="stitle" style={{ color:'#fff' }}>Performance Meets Accountability</div>
+            <p className="ssub" style={{ color:'rgba(245,242,236,0.35)', margin:'0 auto' }}>Three pillars that underpin every transaction on the platform.</p>
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:1, background:'rgba(201,168,76,0.07)' }}>
+            {[
+              { n:'01', icon:'🔍', title:'Verified Capital Only', desc:'Every investor passes our 4-tier verification — wholesale certificate, proof of funds, and broker review. No unqualified money enters the network.' },
+              { n:'02', icon:'📊', title:'Transparent Feasibility', desc:'Every project undergoes FEASO analysis before listing. Developers provide full financial models, DA status, and track record. No black boxes.' },
+              { n:'03', icon:'⚖️', title:'Legal Framework First', desc:'Introduction-only model under s.761G. No financial product advice given or implied. Independent legal and financial advice always recommended.' },
+            ].map(p => (
+              <div key={p.n} style={{ background:'#0a0a0a', padding:'40px 32px' }}>
+                <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:52, color:'rgba(201,168,76,0.06)', lineHeight:1, marginBottom:16 }}>{p.n}</div>
+                <div style={{ fontSize:28, marginBottom:12 }}>{p.icon}</div>
+                <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, color:'#fff', fontWeight:600, marginBottom:12 }}>{p.title}</div>
+                <div style={{ fontSize:12, color:'rgba(245,242,236,0.38)', lineHeight:1.75 }}>{p.desc}</div>
+              </div>
+            ))}
+          </div>
+        </sec>
+
+        {/* ── SEVEN GATES ── */}
+        <sec style={{ background:'var(--ink)', paddingTop:64, paddingBottom:64 }}>
+          <div style={{ textAlign:'center', marginBottom:48 }}>
+            <div className="slbl">Due Diligence Process</div>
+            <div className="stitle" style={{ color:'#fff' }}>The Seven Gates</div>
+            <p className="ssub" style={{ color:'rgba(245,242,236,0.35)', margin:'0 auto' }}>Every project passes through seven quality gates before capital is deployed.</p>
+          </div>
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:1, background:'rgba(201,168,76,0.07)' }}>
+            {[
+              { n:'01', title:'Developer Application', desc:'Project brief, capital target & entity profile submitted' },
+              { n:'02', title:'FEASO Review', desc:'Feasibility analysis benchmarked against market data' },
+              { n:'03', title:'IM Preparation', desc:'16-page IM with ASIC disclaimers prepared' },
+              { n:'04', title:'Admin Approval', desc:'DA status, track record and risk profile reviewed' },
+              { n:'05', title:'Investor Access', desc:'Verified wholesale investors gain data room access' },
+              { n:'06', title:'EOI Collection', desc:'Interest logged; broker introductions facilitated' },
+              { n:'07', title:'Capital Close', desc:'Settlement confirmed — success fee invoiced in 7 days' },
+            ].map((g,i) => (
+              <div key={g.n} style={{ background: i===6 ? 'rgba(201,168,76,0.06)' : '#0D0D0D', padding:'24px 16px', borderTop:`2px solid ${i===6 ? 'var(--gold)' : 'rgba(201,168,76,0.2)'}` }}>
+                <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, color:'rgba(201,168,76,0.12)', lineHeight:1, marginBottom:10 }}>{g.n}</div>
+                <div style={{ fontSize:12, fontFamily:"'Cormorant Garamond',serif", color: i===6 ? 'var(--gold)' : '#fff', fontWeight:600, marginBottom:6, lineHeight:1.3 }}>{g.title}</div>
+                <div style={{ fontSize:9, color:'rgba(245,242,236,0.28)', lineHeight:1.65 }}>{g.desc}</div>
+              </div>
+            ))}
+          </div>
+        </sec>
+
+        {/* ── SIX REASONS + COMPARISON TABLE ── */}
+        <sec style={{ background:'var(--paper)' }}>
+          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:56, alignItems:'start' }}>
+            <div>
+              <div className="slbl">Why Prop Dev DNA</div>
+              <div className="stitle">Six Reasons Investors Choose Us</div>
+              {[
+                ['Access','Exclusive wholesale-only deal flow not available through retail channels or public markets.'],
+                ['Quality','FEASO-reviewed projects only — developer track record, DA status and feasibility all verified.'],
+                ['Structure','Equity, mezzanine and JV structures with monthly distributions and defined exit timelines.'],
+                ['Verification','4-tier investor verification protects all parties and ensures seriousness on both sides.'],
+                ['Broker Access','Direct access to Anthony Lawson — licensed mortgage broker — for senior debt introductions.'],
+                ['Accountability','Introduction-only model with full paper trail, 7-year record keeping and legal framework.'],
+              ].map(([t,d],i) => (
+                <div key={t} style={{ display:'flex', gap:16, padding:'14px 0', borderBottom:'1px solid rgba(0,0,0,0.06)' }}>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:26, color:'rgba(201,168,76,0.3)', lineHeight:1, flexShrink:0, width:32, paddingTop:2 }}>0{i+1}</div>
+                  <div>
+                    <div style={{ fontSize:13, fontWeight:500, color:'var(--ink)', marginBottom:3 }}>{t}</div>
+                    <div style={{ fontSize:11, color:'var(--muted)', lineHeight:1.7 }}>{d}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div>
+              <div className="slbl">Platform Comparison</div>
+              <div className="stitle">How We Stack Up</div>
+              <table style={{ width:'100%', borderCollapse:'collapse', fontSize:11, marginBottom:24 }}>
+                <thead>
+                  <tr style={{ background:'var(--ink)' }}>
+                    <th style={{ padding:'10px 12px', textAlign:'left', fontSize:9, letterSpacing:'1.5px', textTransform:'uppercase', fontWeight:500, color:'rgba(245,242,236,0.5)' }}>Feature</th>
+                    <th style={{ padding:'10px 12px', textAlign:'center', fontSize:9, letterSpacing:'1.5px', textTransform:'uppercase', fontWeight:500, color:'var(--gold)' }}>Prop Dev DNA</th>
+                    <th style={{ padding:'10px 12px', textAlign:'center', fontSize:9, letterSpacing:'1.5px', textTransform:'uppercase', fontWeight:500, color:'rgba(245,242,236,0.4)' }}>Direct</th>
+                    <th style={{ padding:'10px 12px', textAlign:'center', fontSize:9, letterSpacing:'1.5px', textTransform:'uppercase', fontWeight:500, color:'rgba(245,242,236,0.4)' }}>Others</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    ['FEASO due diligence','✓','✗','~'],
+                    ['Wholesale-only access','✓','✗','✗'],
+                    ['Broker pre-qualification','✓','✗','✗'],
+                    ['4-tier verification','✓','✗','~'],
+                    ['IM + data room','✓','✓','~'],
+                    ['Success fee only','✓','✗','✗'],
+                    ['s.761G framework','✓','~','~'],
+                  ].map(([f,a,b,c]) => (
+                    <tr key={f} style={{ borderBottom:'1px solid rgba(0,0,0,0.05)' }}>
+                      <td style={{ padding:'9px 12px', color:'var(--ink)', fontSize:11 }}>{f}</td>
+                      <td style={{ padding:'9px 12px', textAlign:'center', color:'#27ae60', fontWeight:700, fontSize:13 }}>{a}</td>
+                      <td style={{ padding:'9px 12px', textAlign:'center', color: b==='✓'?'#27ae60':b==='~'?'#c9a84c':'#e74c3c', fontSize:13 }}>{b}</td>
+                      <td style={{ padding:'9px 12px', textAlign:'center', color: c==='✓'?'#27ae60':c==='~'?'#c9a84c':'#e74c3c', fontSize:13 }}>{c}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <button className="btn btn-g" onClick={() => setShowAuth(true)}>Create Free Investor Account →</button>
+            </div>
+          </div>
+        </sec>
+
+        {/* ── FOUR TIERS ── */}
         <div style={{ borderTop: '1px solid rgba(201,168,76,0.2)' }} />
         <sec style={{ background: '#0a0a0a', padding: '24px 32px 40px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
@@ -951,10 +1126,8 @@ export default function App() {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 1, background: 'rgba(201,168,76,0.07)' }}>
             {Object.entries(TIERS).map(([key, t], i) => (
-              <div key={key} style={{ background: '#0f0f0f', padding: '28px 20px', borderTop: `2px solid ${t.color}`, position: 'relative' }}>
-                <div style={{ width: 36, height: 36, borderRadius: '50%', background: t.bg, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14, fontSize: 16 }}>
-                  {['🔵','🟡','🟢','⭐'][i]}
-                </div>
+              <div key={key} style={{ background: '#0f0f0f', padding: '28px 20px', borderTop: `2px solid ${t.color}` }}>
+                <div style={{ width: 36, height: 36, borderRadius: '50%', background: t.bg, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14, fontSize: 16 }}>{['🔵','🟡','🟢','⭐'][i]}</div>
                 <div style={{ fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', color: t.color, marginBottom: 6 }}>Tier {i+1}</div>
                 <div style={{ fontSize: 15, fontFamily: "'Cormorant Garamond',serif", color: '#fff', fontWeight: 600, marginBottom: 8 }}>{t.label}</div>
                 <div style={{ fontSize: 10, color: 'rgba(245,242,236,0.38)', lineHeight: 1.7 }}>{t.desc}</div>
@@ -973,11 +1146,7 @@ export default function App() {
               { n: '02', svg: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round"><path d="M3 3v18h18"/><path d="m7 16 4-4 4 4 4-4"/></svg>, t: 'Analyse', d: 'Access full Information Memoranda, FEASO reports, and developer profiles in the secure data room.' },
               { n: '03', svg: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>, t: 'Invest', d: 'Register interest, complete wholesale verification, and confirm your capital allocation.' },
             ].map(s => (
-              <div className="step" key={s.n}>
-                <div className="stn">{s.n}</div>
-                <div style={{ marginBottom: 16 }}>{s.svg}</div>
-                <h3>{s.t}</h3><p>{s.d}</p>
-              </div>
+              <div className="step" key={s.n}><div className="stn">{s.n}</div><div style={{ marginBottom: 16 }}>{s.svg}</div><h3>{s.t}</h3><p>{s.d}</p></div>
             ))}
           </div>
         </sec>
@@ -988,9 +1157,7 @@ export default function App() {
             <button className="btn btn-d btn-sm" onClick={() => go('listings')}>View All →</button>
           </div>
           {loadingListings ? <p style={{ color: 'var(--muted)' }}>Loading…</p> :
-            <div className="grid">
-              {listings.slice(0, 3).map(l => <Card key={l.id} l={l} onClick={() => { setSel(l); go('detail'); }} />)}
-            </div>
+            <div className="grid">{listings.slice(0,3).map(l => <Card key={l.id} l={l} onClick={() => { setSel(l); go('detail'); }} />)}</div>
           }
         </sec>
 
