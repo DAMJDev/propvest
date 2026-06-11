@@ -135,7 +135,7 @@ const css = `
   .fi::placeholder{color:rgba(245,242,236,0.16)}
   select.fi option{background:var(--ink)}
   .snote{background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.18);padding:12px;margin-top:14px;font-size:10px;color:rgba(201,168,76,0.75);line-height:1.6}
-  .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(201,168,76,0.07);margin-top:44px}
+  .pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(201,168,76,0.07);margin-top:44px}
   .pc{background:var(--ink);padding:40px 32px;position:relative}
   .pc.feat{background:#0f0f0f}
   .pc.feat::before{content:'Most Popular';position:absolute;top:-1px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--ink);font-size:8px;letter-spacing:2px;text-transform:uppercase;padding:3px 12px;font-weight:500}
@@ -1747,8 +1747,9 @@ export default function App() {
           <p className="ssub" style={{ color: 'rgba(245,242,236,0.38)' }}>Developers pay to list. Investors verify free.</p>
           <div className="pgrid">
             {[{ plan: 'Investor', price: 'Free', per: '', f: ['Browse all listings', 'Full IM access (Verified+)', 'Express interest on any deal', 'Proof of funds verification', 'PDD pre-qualification available', 'Complimentary broker referral'], cta: 'Create Free Account' },
-            { plan: 'Developer', price: '$299', per: '/month + GST', f: ['Unlimited listings', 'FEASO builder + IM generator', 'Investor tier filtering', 'Proof of funds badge visibility', 'Investor lead tracking', '1.5% success fee on closes'], cta: 'Start 7-Day Trial', feat: true },
+            { plan: 'Developer', price: '$299', per: '/month + GST', f: ['Unlimited listings', 'FEASO builder + IM generator', 'Investor tier filtering', 'Proof of funds badge visibility', 'Investor lead tracking', '1.5% success fee on closes', 'Optional add-ons available'], cta: 'Start 7-Day Trial', feat: true },
             { plan: 'Success Fee', price: '1.5%', per: 'of capital raised', f: ['Only on completed closes', 'Equity, mezz & JV raises', 'Broker referral $500–$1,500', 'Invoiced within 7 days of settlement'], cta: 'Discuss Your Project' },
+            { plan: 'Add-ons', price: '$149+', per: '/month, optional', f: ['Premium listing placement — $149–$299/month (featured spot)', 'IM white-label PDF export — $199 per IM (branded export)', 'No success fee if a deal doesn’t close'], cta: 'Discuss Your Project' },
             ].map(p => (
               <div className={`pc ${p.feat ? 'feat' : ''}`} key={p.plan}>
                 <div className="pplan">{p.plan}</div>
