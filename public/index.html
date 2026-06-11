@@ -1,14 +1,165 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-AU">
   <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- ── PRIMARY META ── -->
+    <title>Prop Dev DNA — Where Performance Meets Accountability</title>
+    <meta name="description" content="Australia's wholesale property investment platform. FEASO-verified deals. s.761G verified investors. Independent trust per deal. AFSL 479499." />
+    <meta name="keywords" content="wholesale property investment, development finance, mezzanine finance, FEASO, property development, wholesale investor, s.761G" />
+    <meta name="author" content="Anthony Lawson — Financial DNA Group" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- ── PWA MANIFEST ── -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- ── THEME COLOURS ── -->
+    <meta name="theme-color" content="#C9A84C" />
+    <meta name="background-color" content="#0D0D0D" />
+
+    <!-- ── APPLE / IOS PWA ── -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Prop Dev DNA" />
+    <link rel="apple-touch-icon" href="/logo.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/logo.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/logo.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/logo.png" />
+
+    <!-- Apple splash screens — critical for iOS PWA feel -->
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+    <!-- ── ANDROID / CHROME ── -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="Prop Dev DNA" />
+
+    <!-- ── MICROSOFT / WINDOWS ── -->
+    <meta name="msapplication-TileColor" content="#0D0D0D" />
+    <meta name="msapplication-TileImage" content="/logo.png" />
+    <meta name="msapplication-config" content="none" />
+
+    <!-- ── OPEN GRAPH (social sharing) ── -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://propdevdna.com.au" />
+    <meta property="og:title" content="Prop Dev DNA — Where Performance Meets Accountability" />
+    <meta property="og:description" content="Australia's wholesale property investment platform. FEASO-verified deals. Independent trust per deal. AFSL 479499." />
+    <meta property="og:image" content="https://propdevdna.com.au/logo.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:site_name" content="Prop Dev DNA" />
+    <meta property="og:locale" content="en_AU" />
+
+    <!-- ── TWITTER CARD ── -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Prop Dev DNA — Where Performance Meets Accountability" />
+    <meta name="twitter:description" content="Australia's wholesale property investment platform. FEASO-verified. AFSL 479499." />
+    <meta name="twitter:image" content="https://propdevdna.com.au/logo.png" />
+
+    <!-- ── CANONICAL ── -->
+    <link rel="canonical" href="https://propdevdna.com.au" />
+
+    <!-- ── FAVICON ── -->
     <link rel="icon" type="image/png" href="/logo.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Prop Dev DNA — Wholesale Property Investment Platform</title>
-    <meta name="description" content="Australia's professional platform connecting wholesale investors with curated property development opportunities." />
-    <script type="module" crossorigin src="/assets/index-BDxnMRfW.js"></script>
+    <link rel="shortcut icon" href="/logo.png" />
+
+    <!-- ── COMPLIANCE / LEGAL META ── -->
+    <meta name="rating" content="general" />
+    <meta name="revisit-after" content="7 days" />
+
+    <!-- ── STRUCTURED DATA (Google Rich Results) ── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FinancialService",
+      "name": "Prop Dev DNA",
+      "description": "Australia's wholesale property investment platform connecting verified wholesale investors with curated property development opportunities",
+      "url": "https://propdevdna.com.au",
+      "logo": "https://propdevdna.com.au/logo.png",
+      "areaServed": "AU",
+      "currenciesAccepted": "AUD",
+      "serviceType": "Wholesale Property Investment",
+      "provider": {
+        "@type": "Person",
+        "name": "Anthony Lawson",
+        "jobTitle": "Director",
+        "worksFor": {
+          "@type": "Organization",
+          "name": "Financial DNA Group Pty Ltd"
+        }
+      },
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Brighton-Le-Sands",
+        "addressRegion": "NSW",
+        "addressCountry": "AU"
+      },
+      "sameAs": [
+        "https://propdevdna.com.au"
+      ]
+    }
+    </script>
+    <script type="module" crossorigin src="/assets/index-CnJzkH9h.js"></script>
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- ── SERVICE WORKER REGISTRATION ── -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', async () => {
+          try {
+            const reg = await navigator.serviceWorker.register('/sw.js', {
+              scope: '/'
+            });
+            console.log('[PDD] Service worker registered:', reg.scope);
+
+            // Check for updates
+            reg.addEventListener('updatefound', () => {
+              const newWorker = reg.installing;
+              newWorker.addEventListener('statechange', () => {
+                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // New version available — show update prompt
+                  if (window.__pddShowUpdate) window.__pddShowUpdate();
+                }
+              });
+            });
+          } catch (err) {
+            console.warn('[PDD] SW registration failed:', err);
+          }
+        });
+      }
+
+      // ── INSTALL PROMPT ──────────────────────────────────────────
+      let deferredInstallPrompt = null;
+
+      window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        // Store for app to use
+        window.__pddInstallPrompt = e;
+        // Dispatch event so React can show install button
+        window.dispatchEvent(new CustomEvent('pdd-install-ready'));
+        console.log('[PDD] App install prompt ready');
+      });
+
+      window.addEventListener('appinstalled', () => {
+        deferredInstallPrompt = null;
+        window.__pddInstallPrompt = null;
+        console.log('[PDD] App installed successfully');
+        window.dispatchEvent(new CustomEvent('pdd-installed'));
+      });
+
+      // ── STARTUP ROUTE HANDLING ──────────────────────────────────
+      // Read ?page= param on launch (from manifest shortcuts)
+      const urlParams = new URLSearchParams(window.location.search);
+      const startPage = urlParams.get('page');
+      if (startPage) {
+        window.__pddStartPage = startPage;
+        // Clean URL without reloading
+        window.history.replaceState({}, '', '/');
+      }
+    </script>
+
   </body>
 </html>

@@ -27,162 +27,33 @@ const PROOF_TYPES = [
 
 const FILTERS = ["All","NSW","VIC","QLD","DA Approved","Construction","Pre-DA","High Yield (>20%)"];
 
-
-// ─── LISTING IMAGES ──────────────────────────────────────────────
-// High-quality Unsplash architectural photography — free to use
-const LISTING_IMAGES = {
-  residential: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&q=80&fit=crop',
-  boutique:    'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&q=80&fit=crop',
-  mixed:       'https://images.unsplash.com/photo-1449844908441-8829872d2607?w=800&q=80&fit=crop',
-  beach:       'https://images.unsplash.com/photo-1507652313519-d4e9174996dd?w=800&q=80&fit=crop',
-  townhouse:   'https://images.unsplash.com/photo-1580587771525-78b9dba3b914?w=800&q=80&fit=crop',
-  land:        'https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=800&q=80&fit=crop',
-  heritage:    'https://images.unsplash.com/photo-1464938050520-ef2270bb8ce8?w=800&q=80&fit=crop',
-  commercial:  'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=80&fit=crop',
-  luxury:      'https://images.unsplash.com/photo-1613977257363-707ba9348227?w=800&q=80&fit=crop',
-  highrise:    'https://images.unsplash.com/photo-1555636222-cae831e670b3?w=800&q=80&fit=crop',
-  penthouse:   'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&q=80&fit=crop',
-  default:     'https://images.unsplash.com/photo-1486325212027-8081e485255e?w=800&q=80&fit=crop',
-};
-
-function getListingImage(l) {
-  const type = (l.type || '').toLowerCase();
-  const name = (l.name || l.title || '').toLowerCase();
-  const loc  = (l.loc || l.suburb || '').toLowerCase();
-
-  if (name.includes('beach') || name.includes('coast') || name.includes('dune') || name.includes('pacifico') || loc.includes('gold coast') || loc.includes('mermaid'))
-    return LISTING_IMAGES.beach;
-  if (name.includes('penthouse') || name.includes('pacifico'))
-    return LISTING_IMAGES.penthouse;
-  if (name.includes('harbour') || name.includes('view') || name.includes('sky'))
-    return LISTING_IMAGES.highrise;
-  if (name.includes('heritage') || name.includes('collingwood') || name.includes('exchange') || name.includes('reuse'))
-    return LISTING_IMAGES.heritage;
-  if (name.includes('park') || name.includes('garden') || name.includes('quarter') || name.includes('riverside'))
-    return LISTING_IMAGES.boutique;
-  if (type.includes('mixed') || type.includes('retail'))
-    return LISTING_IMAGES.mixed;
-  if (type.includes('town') || type.includes('terrace'))
-    return LISTING_IMAGES.townhouse;
-  if (type.includes('land') || type.includes('subdiv'))
-    return LISTING_IMAGES.land;
-  if (type.includes('commercial') || type.includes('office'))
-    return LISTING_IMAGES.commercial;
-  if (type.includes('luxury') || (l.minInvest && l.minInvest >= 1000000))
-    return LISTING_IMAGES.luxury;
-  return LISTING_IMAGES.residential;
-}
-
-// ─── LISTING FIELD NORMALISER ────────────────────────────────────
-function parseMoney(v) {
-  if (!v && v !== 0) return null;
-  if (typeof v === 'number') return v;
-  const n = parseFloat(String(v).replace(/[$,]/g, ''));
-  return isNaN(n) ? null : n;
-}
-
-function parseIRR(v) {
-  if (!v && v !== 0) return '—';
-  if (typeof v === 'number') return `${v}%`;
-  return String(v).includes('%') ? String(v) : `${v}%`;
-}
-
-function parseTerm(v) {
-  if (!v) return '—';
-  return String(v);
-}
-
-function parseState(l) {
-  if (l.state) return l.state;
-  const loc = l.loc || l.location || l.address || '';
-  if (loc.includes('NSW')) return 'NSW';
-  if (loc.includes('VIC')) return 'VIC';
-  if (loc.includes('QLD')) return 'QLD';
-  if (loc.includes('WA'))  return 'WA';
-  if (loc.includes('SA'))  return 'SA';
-  return 'NSW';
-}
-
-function parseSuburb(l) {
-  if (l.suburb) return l.suburb;
-  const loc = l.loc || l.location || '';
-  return loc.replace(/^📍\s*/, '').replace(/\s*(NSW|VIC|QLD|WA|SA|ACT)$/, '').trim() || loc;
-}
-
-function normaliseListing(l) {
-  const raise     = parseMoney(l.raise || l.capitalRaise || l.capital_raise || l.raiseTarget);
-  const minInvest = parseMoney(l.minInvest || l.minimumInvestment || l.minimum_investment || l.minInvestment) || 50000;
-  const funded    = typeof l.fundedPct === 'number' ? l.fundedPct : null;
-  const raised    = parseMoney(l.raised || l.capitalRaised || l.capital_raised)
-                    || (raise && funded !== null ? Math.round(raise * funded / 100) : 0);
-
-  return {
-    ...l,
-    name:      l.name || l.title || l.projectName || 'Untitled Project',
-    type:      l.type || l.propertyType || l.developmentType || 'Development',
-    state:     parseState(l),
-    suburb:    parseSuburb(l),
-    stage:     l.stage || l.status || l.badge || 'Active',
-    irr:       parseIRR(l.irr || l.targetIRR || l.target_irr),
-    term:      parseTerm(l.term || l.hold || l.investmentTerm),
-    minInvest,
-    raise,
-    raised,
-    equity:    l.equity || l.equityRequired || '—',
-    ltv:       l.ltv || l.lvr || l.LVR || '—',
-    structure: l.structure || l.investmentStructure || '—',
-    desc:      l.desc || l.description || l.overview || l.projectDescription || '',
-    highlights:l.highlights || l.keyHighlights || l.key_highlights || [],
-    developer: l.developer || l.developerName || l.developer?.name || l.developerInfo?.name || '',
-    units:     l.units || l.totalUnits || l.numUnits || l.lots || l.stats?.[0]?.[0] || 0,
-    emoji:     l.emoji || '🏗️',
-    imageUrl:  (() => { const picsumOrEmpty = !l.photo || l.photo.includes('picsum') || l.photo.includes('placeholder'); return picsumOrEmpty ? getListingImage({...l, minInvest: parseMoney(l.minInvest || l.minimumInvestment) || 50000}) : (l.imageUrl || l.photo || l.heroPhoto); })(),
-  };
-}
-
-
-
 // ─── CSS ─────────────────────────────────────────────────────────
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@300;400;500&display=swap');
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
   :root{--gold:#C9A84C;--ink:#0D0D0D;--paper:#F5F2EC;--sage:#2A3A2E;--muted:#6B6B5A}
   body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);overflow-x:hidden;-webkit-font-smoothing:antialiased}
-  .notice{background:rgba(13,13,13,0.95);border-bottom:1px solid rgba(255,255,255,0.05);padding:6px 48px;text-align:center;font-size:10px;color:rgba(245,242,236,0.4)}
-  .notice strong{color:rgba(245,242,236,0.6)}
-  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:80px;background:rgba(13,13,13,0.98);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.12)}
-  .logo{cursor:pointer;background:none;border:none;display:flex;align-items:center;gap:12px;padding:0}
-  .nav-links{display:flex;align-items:center;gap:28px}
-  .nl{color:rgba(245,242,236,0.85);font-size:13px;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;font-weight:400;letter-spacing:0.5px;transition:color 0.2s;padding:0;white-space:nowrap}
+  .notice{background:rgba(201,168,76,0.08);border-bottom:1px solid rgba(201,168,76,0.2);padding:8px 20px;text-align:center;font-size:11px;color:rgba(13,13,13,0.6)}
+  .notice strong{color:var(--gold)}
+  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:center;gap:32px;padding:0 32px;height:48px;background:rgba(13,13,13,0.98);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.1)}
+  .logo{cursor:pointer;background:none;border:none;display:flex;align-items:center;gap:10px;padding:0}
+  .logo-text{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
+  .logo-name{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--gold);line-height:1}
+  .logo-slogan{font-size:13px;color:rgba(201,168,76,0.75);letter-spacing:1.5px;text-transform:uppercase;font-family:'DM Sans',sans-serif;font-weight:300}
+  .nav-links{display:flex;align-items:center;gap:20px}
+  .nl{color:rgba(245,242,236,0.55);font-size:12px;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif;transition:color 0.2s;padding:0}
   .nl:hover{color:var(--gold)}
-  .nl.cta{background:var(--gold);color:var(--ink);font-size:12px;font-weight:500;letter-spacing:2px;text-transform:uppercase;padding:9px 24px}
+  .nl.cta{background:var(--gold);color:var(--ink);font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;padding:8px 18px}
   .nl.cta:hover{opacity:0.85}
-  .hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;padding:8px;z-index:110}
-  .hamburger span{display:block;width:22px;height:2px;background:rgba(245,242,236,0.7);transition:all 0.25s}
-  .hamburger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
-  .hamburger.open span:nth-child(2){opacity:0}
-  .hamburger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
-  .mobile-menu{display:none;position:absolute;top:100%;left:0;right:0;background:rgba(13,13,13,0.98);border-bottom:1px solid rgba(201,168,76,0.15);padding:16px 0;flex-direction:column;z-index:99}
-  .mobile-menu.open{display:flex}
-  .mobile-menu .nl{padding:12px 32px;font-size:14px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.04)}
-  .mobile-menu .nl.cta{margin:12px 32px 4px;padding:10px 18px;text-align:center}
-  @media(max-width:768px){
-    nav{padding:0 20px;height:56px;position:relative}
-    .nav-links{display:none}
-    .hamburger{display:flex}
-    .nl{font-size:13px}
-    .hero{flex-direction:column !important}
-    .hero>div[style]{flex:unset !important;width:100% !important;border-right:none !important;padding:40px 24px !important}
-  }
-  .hero{min-height:100vh;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px;position:relative;overflow:hidden}
+  .hero{min-height:90vh;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:60px 24px;position:relative;overflow:hidden}
   .hgrid{position:absolute;inset:0;opacity:0.03;background-image:linear-gradient(var(--gold) 1px,transparent 1px),linear-gradient(90deg,var(--gold) 1px,transparent 1px);background-size:60px 60px}
   .hglow{position:absolute;top:25%;left:50%;transform:translateX(-50%);width:500px;height:250px;background:radial-gradient(ellipse,rgba(201,168,76,0.06) 0%,transparent 70%);pointer-events:none}
-  .badge-hero{display:inline-flex;align-items:center;gap:7px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.22);color:var(--gold);font-size:11px;letter-spacing:3px;text-transform:uppercase;padding:8px 20px;margin-bottom:32px}
+  .badge-hero{display:inline-flex;align-items:center;gap:7px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.22);color:var(--gold);font-size:9px;letter-spacing:3px;text-transform:uppercase;padding:6px 16px;margin-bottom:32px}
   .bdot{width:5px;height:5px;background:var(--gold);border-radius:50%;animation:pulse 2s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.3}}
-  .h1{font-family:'Cormorant Garamond',serif;font-size:clamp(40px,7vw,80px);font-weight:600;color:#ffffff;line-height:0.93;margin-bottom:20px;letter-spacing:-1px;text-shadow:0 2px 20px rgba(0,0,0,0.8)}
+  .h1{font-family:'Cormorant Garamond',serif;font-size:clamp(40px,7vw,80px);font-weight:600;color:#fff;line-height:0.93;margin-bottom:20px;letter-spacing:-1px}
   .h1 em{color:var(--gold);font-style:italic}
-  .hsub{font-size:17px;color:rgba(245,242,236,0.90);max-width:640px;line-height:1.75;margin-bottom:40px;font-weight:300;text-shadow:0 1px 12px rgba(0,0,0,0.9)}
+  .hsub{font-size:14px;color:rgba(245,242,236,0.45);max-width:460px;line-height:1.75;margin-bottom:40px;font-weight:300}
   .hbtns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
   .btn{font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;padding:12px 28px;border:none;cursor:pointer;transition:all 0.2s}
   .btn-g{background:var(--gold);color:var(--ink)}.btn-g:hover{opacity:0.85;transform:translateY(-1px)}
@@ -205,8 +76,10 @@ const css = `
   .step p{font-size:12px;color:rgba(245,242,236,0.37);line-height:1.7;font-weight:300}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;margin-top:32px}
   .card{background:#fff;border:1px solid rgba(0,0,0,0.07);overflow:hidden;cursor:pointer;transition:all 0.22s}
-  .card:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(0,0,0,0.12);border-color:var(--gold)}.card:hover .cimg img{transform:scale(1.05)}.card .cimg img{transition:transform 0.5s ease}
-  .cimg{height:220px;position:relative;overflow:hidden}
+  .card:hover{transform:translateY(-3px);box-shadow:0 14px 40px rgba(0,0,0,0.09);border-color:var(--gold)}
+  .cimg{height:200px;display:flex;align-items:center;justify-content:center;font-size:48px;position:relative;overflow:hidden;background:var(--ink)}
+  .cimg-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0.6;transition:opacity 0.3s}
+  .card:hover .cimg-photo{opacity:0.8}
   .cstage{position:absolute;top:10px;left:10px;background:var(--ink);color:var(--gold);font-size:8px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;padding:3px 8px}
   .cbody{padding:16px}
   .ctype{font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:5px}
@@ -346,6 +219,19 @@ const css = `
   .fbot{border-top:1px solid rgba(255,255,255,0.04);padding-top:18px;display:flex;justify-content:space-between;align-items:flex-start;gap:16px}
   .flegal{font-size:9px;color:rgba(245,242,236,0.16);line-height:1.8;max-width:620px}
   .fcopy{font-size:10px;color:rgba(245,242,236,0.16);white-space:nowrap}
+  /* ── Details/summary custom styling ── */
+  details summary{outline:none}
+  details summary::-webkit-details-marker{display:none}
+  details[open] summary span:last-child{transform:rotate(45deg);display:inline-block}
+  details[open]{background:rgba(255,255,255,0.02)}
+
+  /* ── Button refinements ── */
+  .btn-o-light{background:transparent;color:var(--ink);border:1px solid rgba(13,13,13,0.2)}.btn-o-light:hover{border-color:var(--gold);color:var(--gold)}
+
+  /* ── Card image hover ── */
+  .acc-card:hover .acc-img{opacity:0.55}
+  .acc-img{transition:opacity 0.4s}
+
   @media(max-width:900px){
     .steps,.portal,.pgrid,.about-grid,.ftop,.tiers-grid,.dash-grid{grid-template-columns:1fr}
     .dbody{grid-template-columns:1fr}
@@ -355,18 +241,63 @@ const css = `
     .dh{padding:64px 20px 28px}
     .dbody{padding:24px 20px}
   }
+  @media(max-width:768px){
+    /* Sizzle hero stacks on mobile */
+    .sizzle-hero{flex-direction:column !important;min-height:auto !important}
+    .sizzle-left,.sizzle-right{flex:0 0 100% !important;padding:40px 24px 60px !important}
+    .sizzle-divider{display:none !important}
+    .sizzle-medallion{display:none !important}
+    /* Tiers 2x2 on tablet */
+    .tiers-grid{grid-template-columns:repeat(2,1fr) !important}
+    /* Accountability cards stack */
+    .acc-grid{grid-template-columns:1fr !important}
+    /* Footer simplified */
+    .ftop{grid-template-columns:1fr 1fr !important}
+    nav{gap:16px;padding:0 16px;overflow-x:auto;justify-content:flex-start}
+    .nl{font-size:10px;white-space:nowrap}
+  }
+  @media(max-width:480px){
+    nav{gap:12px}
+    .ftop{grid-template-columns:1fr !important}
+    .sizzle-left,.sizzle-right{padding:32px 20px 56px !important}
+  }
 `;
 
 // ─── HELPERS ─────────────────────────────────────────────────────
-function PBar({ raised, target }) {
-  if (!target || isNaN(target) || isNaN(raised)) return null;
-  const pct = Math.min(100, Math.round(((raised || 0) / target) * 100));
-  const fmt = v => {
-    if (!v && v !== 0) return '—';
-    if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
-    if (v >= 1e3) return `$${(v / 1e3).toFixed(0)}K`;
-    return `$${v}`;
+function parseMoney(v) {
+  if (typeof v === 'number') return v;
+  if (!v) return 0;
+  const n = parseFloat(String(v).replace(/[^0-9.]/g, ''));
+  return isNaN(n) ? 0 : n;
+}
+
+function normaliseListing(l) {
+  const raise = parseMoney(l.raise);
+  const minInvest = parseMoney(l.minInvest);
+  const raised = Math.round(raise * (l.fundedPct || 0) / 100);
+  const loc = (l.loc || '').replace('📍', '').trim();
+  const parts = loc.split(',').map(s => s.trim());
+  let suburb = loc, state = '';
+  if (parts.length > 1) {
+    const tail = parts[parts.length - 1].split(' ');
+    state = tail[tail.length - 1];
+    const tailRest = tail.slice(0, -1).join(' ');
+    suburb = parts.slice(0, -1).join(', ') + (tailRest ? ` ${tailRest}` : '');
+  }
+  return {
+    ...l,
+    raise, minInvest, raised, suburb, state,
+    term: l.hold || l.term,
+    irr: l.irr != null ? `${l.irr}%` : l.irr,
+    stage: l.badge || l.status,
+    desc: l.overview || l.desc,
+    developer: l.developer?.name || l.developer,
   };
+}
+
+function PBar({ raised, target }) {
+  const pct = Math.min(100, Math.round((raised / target) * 100));
+  const fmt = v => v >= 1e6 ? `$${(v / 1e6).toFixed(2)}M` : `$${(v / 1e3).toFixed(0)}K`;
   return (
     <div className="pw">
       <div className="pls"><span>{fmt(raised)} raised</span><span>{pct}% of {fmt(target)}</span></div>
@@ -385,20 +316,21 @@ function TierBadge({ tier, size = "sm" }) {
 }
 
 function Card({ l, onClick }) {
-  const closing = l.raise && l.raised && (l.raised / l.raise > 0.85);
-  const imgUrl = l.imageUrl || l.image_url || l.coverImage || getListingImage(l);
+  const closing = l.raised / l.raise > 0.85;
+  const cardPhotos = [
+    'photo-1545324418-cc1a3fa10c00','photo-1590650153855-d9e808231d41',
+    'photo-1486406146926-c627a92ad1ab','photo-1580587771525-78b9dba3b914',
+    'photo-1512917774080-9991f1c4c750','photo-1460317442991-0ec209397118',
+  ];
+  const photoIdx = (l.id||l.name||'').split('').reduce((a,c)=>a+c.charCodeAt(0),0)%cardPhotos.length;
+  const cardPhoto = l.photo||`https://images.unsplash.com/${cardPhotos[photoIdx]}?w=600&q=80&fit=crop&auto=format`;
   return (
     <div className="card" onClick={onClick}>
-      <div className="cimg" style={{ position: 'relative', overflow: 'hidden', height: 220 }}>
-        <img
-          src={imgUrl}
-          alt={l.name || l.title}
-          style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s ease' }}
-          onError={e => { e.target.style.display = 'none'; e.target.parentNode.style.background = 'linear-gradient(135deg,#2A3A2E,#1a2a1e)'; }}
-        />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.55) 100%)' }} />
-        <div className="cstage">{l.stage || l.status}</div>
-        {l.state && <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(201,168,76,0.9)', color: '#0D0D0D', fontSize: 9, fontWeight: 600, letterSpacing: '1.5px', textTransform: 'uppercase', padding: '3px 8px' }}>{l.state}</div>}
+      <div className="cimg" style={{ background:'#0a0a0a' }}>
+        <img src={cardPhoto} alt={l.name||l.title} loading="lazy" className="cimg-photo" />
+        <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, transparent 40%, rgba(13,13,13,0.85) 100%)' }} />
+        <div className="cstage">{l.stage||l.status}</div>
+        {l.irr && <div style={{ position:'absolute', bottom:10, right:10, background:'rgba(201,168,76,0.9)', color:'#0D0D0D', fontSize:11, fontWeight:600, padding:'4px 10px' }}>{l.irr} IRR</div>}
       </div>
       <div className="cbody">
         <div className="ctype">{l.type} · {l.state}</div>
@@ -407,7 +339,7 @@ function Card({ l, onClick }) {
         <div className="cmets">
           <div className="cm"><div className="cmv">{l.irr || '—'}</div><div className="cml">IRR</div></div>
           <div className="cm"><div className="cmv">{l.term || '—'}</div><div className="cml">Term</div></div>
-          <div className="cm"><div className="cmv">{l.minInvest >= 1000000 ? `$${(l.minInvest/1e6).toFixed(1)}M` : `$${((l.minInvest||50000)/1000).toFixed(0)}K`}</div><div className="cml">Min.</div></div>
+          <div className="cm"><div className="cmv">${((l.minInvest || 50000) / 1000).toFixed(0)}K</div><div className="cml">Min.</div></div>
         </div>
         {l.raise && <PBar raised={l.raised || 0} target={l.raise} />}
         {closing && <div className="closing">⚡ Closing soon — {Math.round(100 - (l.raised / l.raise * 100))}% remaining</div>}
@@ -566,7 +498,7 @@ function AuthModal({ onClose, onLogin }) {
     <div className="overlay" onClick={onClose}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 100, width: 'auto', objectFit: 'contain' }} />
+          <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 72, width: 'auto', objectFit: 'contain' }} />
         </div>
         <div className="atabs">
           {[['login', 'Sign In'], ['register', 'Create Account']].map(([m, l]) => (
@@ -705,6 +637,7 @@ function AdminPortal({ toast }) {
 
       {loading && <div style={{ textAlign: 'center', padding: 48, color: 'var(--muted)', fontSize: 13 }}>Loading…</div>}
 
+      {/* ── WHOLESALE CERTS ── */}
       {!loading && tab === 'certs' && (
         <div>
           <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>{certs.filter(c => c.status === 'pending').length} pending review · {certs.length} total</div>
@@ -742,6 +675,7 @@ function AdminPortal({ toast }) {
         </div>
       )}
 
+      {/* ── SUBSCRIPTIONS ── */}
       {!loading && tab === 'subs' && (
         <div>
           <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>{subs.filter(s => s.status === 'pending').length} pending · {subs.filter(s => s.status === 'active').length} active</div>
@@ -765,6 +699,7 @@ function AdminPortal({ toast }) {
         </div>
       )}
 
+      {/* ── IM REVIEWS ── */}
       {!loading && tab === 'reviews' && (
         <div>
           <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>{reviews.filter(r => r.status === 'submitted').length} awaiting review</div>
@@ -788,6 +723,7 @@ function AdminPortal({ toast }) {
         </div>
       )}
 
+      {/* ── LEADS ── */}
       {!loading && tab === 'leads' && (
         <div>
           <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>{leads.length} total leads</div>
@@ -810,6 +746,7 @@ function AdminPortal({ toast }) {
         </div>
       )}
 
+      {/* ── USERS ── */}
       {!loading && tab === 'users' && (
         <div>
           <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>{users.length} registered users</div>
@@ -837,7 +774,10 @@ function AdminPortal({ toast }) {
 
 // ─── MAIN APP ────────────────────────────────────────────────────
 export default function App() {
-  const [page, setPage] = useState('home');
+  const [page, setPage] = useState(window.__pddStartPage || 'home');
+  const [installPrompt, setInstallPrompt] = useState(null);
+  const [showInstall, setShowInstall] = useState(false);
+  const [appInstalled, setAppInstalled] = useState(false);
   const [filter, setFilter] = useState('All');
   const [user, setUser] = useState(null);
   const [listings, setListings] = useState([]);
@@ -849,19 +789,20 @@ export default function App() {
   const [toast, setToast] = useState(null);
   const [pDone, setPDone] = useState(false);
   const [pf, setPf] = useState({ company: '', name: '', email: '', phone: '', type: '', raise: '' });
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const showT = msg => { setToast(msg); setTimeout(() => setToast(null), 3500); };
   const go = pg => { setPage(pg); window.scrollTo && window.scrollTo(0, 0); };
   const invest = () => { if (!user) { setShowAuth(true); return; } setShowComp(true); };
   const setP = (k, v) => setPf(p => ({ ...p, [k]: v }));
 
+  // Load current user session
   useEffect(() => {
     API.get('/api/auth/me').then(res => {
       if (res && !res.error) setUser(res);
     }).catch(() => {});
   }, []);
 
+  // Load listings when on listings/home page
   useEffect(() => {
     if (page === 'listings' || page === 'home') {
       setLoadingListings(true);
@@ -871,6 +812,25 @@ export default function App() {
       }).catch(() => setLoadingListings(false));
     }
   }, [page]);
+
+  // PWA install prompt
+  useEffect(() => {
+    const onReady = () => { setInstallPrompt(window.__pddInstallPrompt); setShowInstall(true); };
+    const onInstalled = () => { setShowInstall(false); setAppInstalled(true); };
+    window.addEventListener('pdd-install-ready', onReady);
+    window.addEventListener('pdd-installed', onInstalled);
+    if (window.matchMedia('(display-mode: standalone)').matches) { setAppInstalled(true); setShowInstall(false); }
+    return () => { window.removeEventListener('pdd-install-ready', onReady); window.removeEventListener('pdd-installed', onInstalled); };
+  }, []);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') { setShowInstall(false); setAppInstalled(true); }
+    setInstallPrompt(null);
+    window.__pddInstallPrompt = null;
+  };
 
   const filtered = listings.filter(l => {
     if (filter === 'All') return true;
@@ -889,248 +849,364 @@ export default function App() {
   return (
     <>
       <style>{css}</style>
-      {/* NAV */}
-      <nav style={{ position:'sticky', top:0, zIndex:100, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 48px', height:56, background:'rgba(13,13,13,0.97)', backdropFilter:'blur(16px)', borderBottom:'1px solid rgba(201,168,76,0.12)' }}>
-        <button onClick={() => go('home')} style={{ background:'none', border:'none', cursor:'pointer', padding:0, display:'flex', alignItems:'center', flexShrink:0 }}>
-          <img src="/logo.png" alt="Prop Dev DNA" style={{ height:36, width:'auto', objectFit:'contain', mixBlendMode:'lighten' }} onError={e => e.target.style.display='none'} />
-        </button>
-        <div style={{ display:'flex', alignItems:'center', gap:24, flexWrap:'nowrap' }}>
-          <button className="nl" onClick={() => go('listings')}>Opportunities</button>
-          <button className="nl" onClick={() => go('portal')}>Developers</button>
-          <button className="nl" onClick={() => go('tiers')}>Investor Tiers</button>
-          <button className="nl" onClick={() => go('about')}>About</button>
-          <button className="nl" onClick={() => go('pricing')}>Pricing</button>
-          {user
-            ? <>
-              {user.role === 'admin' && <button className="nl" style={{ color:'#e74c3c' }} onClick={() => go('admin')}>⚙ Admin</button>}
-              <button className="nl" style={{ color:'var(--gold)' }} onClick={() => go('dashboard')}>My Account</button>
-              <button className="nl" onClick={logout}>Sign Out</button>
-            </>
-            : <button className="nl cta" onClick={() => setShowAuth(true)}>Sign In</button>
-          }
+      {/* ── PWA INSTALL BANNER ── */}
+      {showInstall && !appInstalled && (
+        <div style={{ background:'rgba(201,168,76,0.95)', padding:'10px 24px', display:'flex', alignItems:'center', justifyContent:'space-between', gap:16, flexWrap:'wrap', zIndex:300, position:'relative' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+            <img src="/logo.png" alt="" style={{ height:32, width:'auto' }} />
+            <div>
+              <div style={{ fontSize:12, fontWeight:600, color:'#0D0D0D', lineHeight:1.2 }}>Install Prop Dev DNA</div>
+              <div style={{ fontSize:10, color:'rgba(13,13,13,0.65)', lineHeight:1.4 }}>Add to your home screen for the full app experience</div>
+            </div>
+          </div>
+          <div style={{ display:'flex', gap:8 }}>
+            <button onClick={handleInstall} style={{ background:'#0D0D0D', color:'var(--gold)', border:'none', padding:'8px 18px', fontSize:10, fontWeight:500, letterSpacing:'1.5px', textTransform:'uppercase', cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }}>
+              Install App
+            </button>
+            <button onClick={() => setShowInstall(false)} style={{ background:'transparent', border:'1px solid rgba(13,13,13,0.25)', color:'#0D0D0D', padding:'8px 12px', fontSize:11, cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }}>
+              ✕
+            </button>
+          </div>
         </div>
-      </nav>
-      <div className="notice">
-        <strong>For Wholesale &amp; Sophisticated Investors</strong> · s.761G Corporations Act 2001 (Cth) · General information only · Not financial product advice
+      )}
+
+      {/* LOGO HEADER — top bar with logo left */}
+      <div style={{ background:'#0D0D0D', padding:'10px 32px', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'1px solid rgba(201,168,76,0.15)', zIndex:200, position:'relative' }}>
+        <button onClick={() => go('home')} style={{ background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:14, padding:0 }}>
+          <img src="/logo.png" alt="Prop Dev DNA"
+            style={{ height:52, width:'auto', objectFit:'contain' }}
+            onError={e => { e.target.style.display='none'; }}
+          />
+          <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-start' }}>
+            <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:700, color:'var(--gold)', lineHeight:1.1, letterSpacing:'-0.3px' }}>Prop Dev DNA</span>
+            <span style={{ fontSize:9, letterSpacing:'2.5px', textTransform:'uppercase', color:'rgba(201,168,76,0.5)', marginTop:3, fontWeight:300 }}>Where Performance Meets Accountability</span>
+          </div>
+        </button>
+        <div style={{ fontSize:10, color:'rgba(245,242,236,0.3)', textAlign:'right' }}>
+          <strong style={{ color:'rgba(201,168,76,0.5)' }}>Wholesale &amp; Sophisticated Investors Only</strong><br />
+          <span>s.761G Corporations Act 2001 (Cth) · General information only · Not financial product advice</span>
+        </div>
       </div>
+
+      {/* NAV — sticky, centred links */}
+      <nav style={{ position:'sticky', top:0, zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'0 32px', height:46, background:'rgba(13,13,13,0.98)', backdropFilter:'blur(16px)', borderBottom:'1px solid rgba(201,168,76,0.1)', gap:36 }}>
+        <button className="nl" onClick={() => go('listings')}>Opportunities</button>
+        <button className="nl" onClick={() => go('portal')}>Developers</button>
+        <button className="nl" onClick={() => go('partners')}>Partners</button>
+        <button className="nl" onClick={() => go('tiers')}>Investor Tiers</button>
+        <button className="nl" onClick={() => go('pricing')}>Pricing</button>
+        <button className="nl" onClick={() => go('compliance')}>Compliance</button>
+        <button className="nl" onClick={() => go('about')}>About</button>
+        {showInstall && !appInstalled && (
+          <button onClick={handleInstall} style={{ background:'rgba(201,168,76,0.1)', border:'1px solid rgba(201,168,76,0.3)', color:'var(--gold)', fontSize:9, letterSpacing:'1.5px', textTransform:'uppercase', padding:'6px 12px', cursor:'pointer', fontFamily:"'DM Sans',sans-serif", marginLeft:8 }}>
+            ⬇ Install App
+          </button>
+        )}
+        {user
+          ? <>
+            {user.role === 'admin' && <button className="nl" style={{ color: '#e74c3c' }} onClick={() => go('admin')}>⚙ Admin</button>}
+            <button className="nl" style={{ color: 'var(--gold)' }} onClick={() => go('dashboard')}>My Account</button>
+            <button className="nl" onClick={logout}>Sign Out</button>
+          </>
+          : <button className="nl cta" onClick={() => setShowAuth(true)}>Sign In</button>
+        }
+      </nav>
 
       {/* ── HOME ── */}
       {page === 'home' && <>
 
-        {/* ── HERO: 50/50 SPLIT ── */}
-        <div style={{ minHeight:'100vh', display:'flex', flexDirection:'row', position:'relative', overflow:'hidden', background:'#0D0D0D' }}>
-          {/* DOT GRID */}
-          <div style={{ position:'absolute', inset:0, backgroundImage:'radial-gradient(circle, rgba(201,168,76,0.18) 1px, transparent 1px)', backgroundSize:'28px 28px', zIndex:0, pointerEvents:'none' }} />
+        {/* ══ SIZZLE HERO — split two audiences ══ */}
+        <div className="sizzle-hero" style={{ position:'relative', minHeight:'92vh', display:'flex', overflow:'hidden', background:'#050505' }}>
+
+          {/* Particle grid */}
+          <div style={{ position:'absolute', inset:0, zIndex:1, backgroundImage:'radial-gradient(circle, rgba(201,168,76,0.06) 1px, transparent 1px)', backgroundSize:'40px 40px', pointerEvents:'none' }} />
+
+          {/* Centre divider */}
+          <div className="sizzle-divider" style={{ position:'absolute', left:'50%', top:0, bottom:0, width:1, background:'linear-gradient(to bottom, transparent, rgba(201,168,76,0.5) 30%, rgba(201,168,76,0.9) 50%, rgba(201,168,76,0.5) 70%, transparent)', zIndex:10, transform:'translateX(-50%)' }} />
+          <div className="sizzle-medallion" style={{ position:'absolute', left:'50%', top:'50%', transform:'translate(-50%,-50%)', zIndex:11, background:'rgba(5,5,5,0.9)', border:'1px solid rgba(201,168,76,0.5)', borderRadius:'50%', width:44, height:44, display:'flex', alignItems:'center', justifyContent:'center', backdropFilter:'blur(8px)' }}>
+            <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, color:'var(--gold)', lineHeight:1 }}>⊕</span>
+          </div>
 
           {/* LEFT — INVESTORS */}
-          <div style={{ flex:'0 0 50%', display:'flex', flexDirection:'column', justifyContent:'center', padding:'80px 60px 100px 64px', position:'relative', zIndex:1 }}>
-            <div style={{ fontSize:9, letterSpacing:'4px', textTransform:'uppercase', color:'rgba(201,168,76,0.6)', marginBottom:16 }}>For Wholesale Investors</div>
-            <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(32px,3.5vw,52px)', fontWeight:600, color:'#fff', lineHeight:1.05, marginBottom:20, letterSpacing:'-0.5px' }}>
-              Where <em style={{ color:'var(--gold)', fontStyle:'italic' }}>Capital</em><br />Meets Returns
-            </h2>
-            <div style={{ width:48, height:2, background:'linear-gradient(to right, var(--gold), transparent)', marginBottom:28 }} />
-            {[
-              ['🎯','Wholesale-only access','Pre-screened opportunities unavailable on public markets'],
-              ['📊','FEASO-grade due diligence','Every project reviewed against industry feasibility standards'],
-              ['🔐','4-tier investor verification','From registered to PDD-endorsed — access scales with trust'],
-              ['💰','18–25% target IRR','Equity, mezz & JV structures across residential and mixed-use'],
-              ['📁','Secure data room','Full IM, financials and developer profiles — post-verification only'],
-              ['🤝','Broker pre-qualification','Anthony Lawson personally reviews capital-ready investor profiles'],
-            ].map(([icon,title,desc]) => (
-              <div key={title} style={{ display:'flex', gap:12, alignItems:'flex-start', marginBottom:14 }}>
-                <div style={{ fontSize:16, width:24, flexShrink:0, marginTop:1 }}>{icon}</div>
-                <div>
-                  <div style={{ fontSize:13, fontWeight:500, color:'rgba(245,242,236,0.9)', marginBottom:2 }}>{title}</div>
-                  <div style={{ fontSize:11, color:'rgba(245,242,236,0.35)', lineHeight:1.6 }}>{desc}</div>
-                </div>
+          <div className="sizzle-left" style={{ flex:'0 0 50%', position:'relative', overflow:'hidden', display:'flex', flexDirection:'column', justifyContent:'center', zIndex:2 }}>
+            <img src="https://images.unsplash.com/photo-1486325212027-8081e485255e?w=900&q=85&fit=crop&auto=format" alt="Investor returns" loading="lazy" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0.15 }} />
+            <div style={{ position:'absolute', inset:0, background:'linear-gradient(135deg, #050505 0%, #0a0a0a 65%, rgba(201,168,76,0.03) 100%)' }} />
+            <div style={{ position:'relative', zIndex:2, padding:'56px 48px 80px 56px' }}>
+
+              <div style={{ display:'inline-flex', alignItems:'center', gap:8, background:'rgba(201,168,76,0.08)', border:'1px solid rgba(201,168,76,0.25)', padding:'6px 14px', marginBottom:24 }}>
+                <span style={{ width:6, height:6, borderRadius:'50%', background:'var(--gold)', display:'block' }} />
+                <span style={{ fontSize:9, letterSpacing:'3px', textTransform:'uppercase', color:'var(--gold)' }}>For Wholesale Investors</span>
               </div>
-            ))}
-            <div style={{ marginTop:28, display:'flex', gap:12, flexWrap:'wrap' }}>
-              <button className="btn btn-g" onClick={() => go('listings')}>Browse Opportunities →</button>
-              <button className="btn btn-o" onClick={() => user ? go('dashboard') : setShowAuth(true)}>Verify My Status</button>
+
+              <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(26px,3vw,46px)', fontWeight:600, color:'#fff', lineHeight:1.05, marginBottom:16, letterSpacing:'-0.3px' }}>
+                Development Returns.<br /><em style={{ color:'var(--gold)', fontStyle:'italic' }}>Without the Guesswork.</em>
+              </h2>
+
+              <p style={{ fontSize:13, color:'rgba(245,242,236,0.55)', lineHeight:1.85, marginBottom:24, maxWidth:360 }}>
+                Curated deals that pass independent FEASO review, QS certification, and admin approval — before you see a single number. Performance with accountability built in.
+              </p>
+
+              <div style={{ display:'flex', flexDirection:'column', gap:0, marginBottom:28 }}>
+                {[
+                  ['🎯','18–26% target IRR','Returns above term deposits, bonds, and most listed equities'],
+                  ['✅','s.761G verified access only','Wholesale-only deals not available to retail investors'],
+                  ['🔒','Independent trust per deal','Your capital never held by the platform — always in trust'],
+                  ['📋','FEASO-verified listings','Every deal stress-tested before you see it — min 15% margin on cost'],
+                  ['⚖️','Investor-first waterfall','You are repaid principal and preferred return before developer profit'],
+                  ['🏛','AFSL 479499 regulated','DFP Corporate Pty Ltd — licensed since 2015, audited by Hall Chadwick'],
+                ].map(([icon,title,desc]) => (
+                  <div key={title} style={{ display:'flex', gap:12, padding:'10px 0', borderBottom:'1px solid rgba(201,168,76,0.07)' }}>
+                    <span style={{ fontSize:15, flexShrink:0, marginTop:1 }}>{icon}</span>
+                    <div>
+                      <div style={{ fontSize:12, fontWeight:500, color:'rgba(245,242,236,0.88)', marginBottom:2 }}>{title}</div>
+                      <div style={{ fontSize:10, color:'rgba(245,242,236,0.32)', lineHeight:1.5 }}>{desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display:'flex', gap:24, paddingTop:18, borderTop:'1px solid rgba(201,168,76,0.1)', marginBottom:24, flexWrap:'wrap' }}>
+                {[['18–26%','Target IRR'],['$140M+','Deal Network'],['4','Investor Tiers'],['s.761G','Verified Only']].map(([n,l]) => (
+                  <div key={l}>
+                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:600, color:'var(--gold)', lineHeight:1 }}>{n}</div>
+                    <div style={{ fontSize:8, letterSpacing:'2px', textTransform:'uppercase', color:'rgba(245,242,236,0.28)', marginTop:3 }}>{l}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+                <button className="btn btn-g" onClick={() => go('listings')}>Browse Opportunities →</button>
+                <button className="btn btn-o" onClick={() => user ? go('dashboard') : setShowAuth(true)}>Verify My Status</button>
+              </div>
             </div>
           </div>
 
-          {/* CENTRE DIVIDER */}
-          <div style={{ position:'absolute', left:'50%', top:0, bottom:0, width:1, background:'linear-gradient(to bottom, transparent 0%, rgba(201,168,76,0.6) 25%, rgba(201,168,76,1) 50%, rgba(201,168,76,0.6) 75%, transparent 100%)', zIndex:2, boxShadow:'0 0 20px rgba(201,168,76,0.35)', transform:'translateX(-50%)' }}>
-            <div style={{ position:'absolute', top:'50%', left:'50%', transform:'translate(-50%,-50%)', width:52, height:52, background:'#0D0D0D', border:'1px solid rgba(201,168,76,0.7)', borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', fontSize:22, color:'var(--gold)', boxShadow:'0 0 28px rgba(201,168,76,0.5)', fontFamily:"'Cormorant Garamond',serif" }}>⊕</div>
-          </div>
+          {/* RIGHT — DEVELOPERS / BUILDERS / BUYERS AGENTS */}
+          <div className="sizzle-right" style={{ flex:'0 0 50%', position:'relative', overflow:'hidden', display:'flex', flexDirection:'column', justifyContent:'center', zIndex:2 }}>
+            <img src="https://images.unsplash.com/photo-1590650153855-d9e808231d41?w=900&q=85&fit=crop&auto=format" alt="Development capital" loading="lazy" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0.18 }} />
+            <div style={{ position:'absolute', inset:0, background:'linear-gradient(225deg, #050505 0%, #0d0d0a 65%, rgba(42,58,46,0.12) 100%)' }} />
+            <div style={{ position:'relative', zIndex:2, padding:'56px 56px 80px 48px' }}>
 
-          {/* RIGHT — DEVELOPERS */}
-          <div style={{ flex:'0 0 50%', display:'flex', flexDirection:'column', justifyContent:'center', padding:'80px 64px 100px 60px', position:'relative', zIndex:1, background:'rgba(42,58,46,0.25)' }}>
-            <div style={{ fontSize:9, letterSpacing:'4px', textTransform:'uppercase', color:'rgba(120,180,120,0.7)', marginBottom:16 }}>For Developers · Builders · Agents</div>
-            <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(32px,3.5vw,52px)', fontWeight:600, color:'#fff', lineHeight:1.05, marginBottom:20, letterSpacing:'-0.5px' }}>
-              Where Projects<br />Find <em style={{ color:'#7DC47D', fontStyle:'italic' }}>Capital</em>
-            </h2>
-            <div style={{ width:48, height:2, background:'linear-gradient(to right, #4A9A4A, transparent)', marginBottom:28 }} />
-            {[
-              ['🏗️','Verified capital network','Access to pre-screened wholesale investors ready to deploy'],
-              ['📐','FEASO builder included','Live auto-calc feasibility tool with 6-tab analysis built in'],
-              ['📄','IM generator + review','16-page IM with ASIC disclaimers, reviewed within 48 hours'],
-              ['⚡','48-hour go-live','Pass quality review and your project is live to the investor network'],
-              ['🗂️','Developer data room','Securely share documents with verified investors only'],
-              ['✅','Success fee only on close','1.5% of capital raised — payable only when your project settles'],
-            ].map(([icon,title,desc]) => (
-              <div key={title} style={{ display:'flex', gap:12, alignItems:'flex-start', marginBottom:14 }}>
-                <div style={{ fontSize:16, width:24, flexShrink:0, marginTop:1 }}>{icon}</div>
-                <div>
-                  <div style={{ fontSize:13, fontWeight:500, color:'rgba(245,242,236,0.9)', marginBottom:2 }}>{title}</div>
-                  <div style={{ fontSize:11, color:'rgba(245,242,236,0.35)', lineHeight:1.6 }}>{desc}</div>
-                </div>
+              <div style={{ display:'inline-flex', alignItems:'center', gap:8, background:'rgba(42,58,46,0.25)', border:'1px solid rgba(74,140,92,0.4)', padding:'6px 14px', marginBottom:24 }}>
+                <span style={{ width:6, height:6, borderRadius:'50%', background:'#4a8c5c', display:'block' }} />
+                <span style={{ fontSize:9, letterSpacing:'3px', textTransform:'uppercase', color:'#7ab88a' }}>Developers · Builders · Buyers Agents</span>
               </div>
-            ))}
-            <div style={{ marginTop:28, display:'flex', gap:12, flexWrap:'wrap' }}>
-              <button className="btn btn-g" style={{ background:'#2A5A2A' }} onClick={() => go('portal')}>Submit Your Project →</button>
-              <button className="btn btn-o" onClick={() => go('pricing')}>View Pricing</button>
+
+              <h2 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(26px,3vw,46px)', fontWeight:600, color:'#fff', lineHeight:1.05, marginBottom:16, letterSpacing:'-0.3px' }}>
+                Capital. Presales.<br /><em style={{ color:'#7ab88a', fontStyle:'italic' }}>Full Stack.</em>
+              </h2>
+
+              <p style={{ fontSize:13, color:'rgba(245,242,236,0.55)', lineHeight:1.85, marginBottom:24, maxWidth:360 }}>
+                One platform. Subordinated capital raised. Senior debt arranged through DFP. Development stock presold to verified wholesale investors before public launch.
+              </p>
+
+              <div style={{ display:'flex', flexDirection:'column', gap:0, marginBottom:28 }}>
+                {[
+                  ['🏗','Raise subordinated capital','Mezzanine, preferred equity, and JV equity from verified wholesale investors'],
+                  ['🏦','Full capital stack — PDD + DFP','Subordinated capital plus senior debt — one conversation, one relationship'],
+                  ['🏠','Presale your development stock','Platform investors get VIP first access — satisfies lender presale requirements'],
+                  ['📋','FEASO builder built in','Complete your feasibility on platform — IM generated automatically for investors'],
+                  ['⚡','Live within 48 hours','Pass quality review and reach verified wholesale investors fast'],
+                  ['🤝','Buyers agents — refer clients','Introduce buyer clients to VIP presale access — earn referral income on settlement'],
+                ].map(([icon,title,desc]) => (
+                  <div key={title} style={{ display:'flex', gap:12, padding:'10px 0', borderBottom:'1px solid rgba(42,58,46,0.25)' }}>
+                    <span style={{ fontSize:15, flexShrink:0, marginTop:1 }}>{icon}</span>
+                    <div>
+                      <div style={{ fontSize:12, fontWeight:500, color:'rgba(245,242,236,0.88)', marginBottom:2 }}>{title}</div>
+                      <div style={{ fontSize:10, color:'rgba(245,242,236,0.32)', lineHeight:1.5 }}>{desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display:'flex', gap:24, paddingTop:18, borderTop:'1px solid rgba(42,58,46,0.35)', marginBottom:24, flexWrap:'wrap' }}>
+                {[['1.5%','Success Fee'],['$299/mo','Subscription'],['48hr','Go Live'],['QS Cert','Above $2M']].map(([n,l]) => (
+                  <div key={l}>
+                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:600, color:'#7ab88a', lineHeight:1 }}>{n}</div>
+                    <div style={{ fontSize:8, letterSpacing:'2px', textTransform:'uppercase', color:'rgba(245,242,236,0.28)', marginTop:3 }}>{l}</div>
+                  </div>
+                ))}
+              </div>
+
+              <div style={{ display:'flex', gap:10, flexWrap:'wrap' }}>
+                <button className="btn btn-g" onClick={() => go('portal')}>Submit Your Project →</button>
+                <button className="btn btn-o" onClick={() => go('compliance')}>View Compliance Framework</button>
+              </div>
             </div>
           </div>
 
-          {/* BOTTOM TAGLINE BAR */}
-          <div style={{ position:'absolute', bottom:0, left:0, right:0, background:'rgba(201,168,76,0.07)', borderTop:'1px solid rgba(201,168,76,0.18)', padding:'11px 48px', display:'flex', alignItems:'center', justifyContent:'center', gap:20, zIndex:3 }}>
-            <div style={{ width:48, height:1, background:'rgba(201,168,76,0.4)' }} />
-            <span style={{ fontSize:10, letterSpacing:'4px', textTransform:'uppercase', color:'rgba(201,168,76,0.75)', fontFamily:"'DM Sans',sans-serif", fontWeight:300 }}>Performance Meets Accountability</span>
-            <div style={{ width:48, height:1, background:'rgba(201,168,76,0.4)' }} />
+          {/* Tagline bar */}
+          <div style={{ position:'absolute', bottom:0, left:0, right:0, zIndex:12, background:'rgba(0,0,0,0.8)', backdropFilter:'blur(12px)', borderTop:'1px solid rgba(201,168,76,0.15)', padding:'10px 48px', display:'flex', justifyContent:'space-between', alignItems:'center', flexWrap:'wrap', gap:12 }}>
+            <div style={{ fontSize:10, letterSpacing:'3px', textTransform:'uppercase', color:'rgba(201,168,76,0.55)' }}>Where Performance Meets Accountability</div>
+            <div style={{ display:'flex', gap:20, flexWrap:'wrap' }}>
+              {[[`${listings.length || '6'} Live Deals`,'var(--gold)'],['AFSL 479499','rgba(245,242,236,0.35)'],['s.761G Verified','rgba(245,242,236,0.35)'],['Independent Trust','rgba(245,242,236,0.35)']].map(([t,c]) => (
+                <div key={t} style={{ fontSize:9, letterSpacing:'1.5px', textTransform:'uppercase', color:c }}>{t}</div>
+              ))}
+            </div>
           </div>
         </div>
 
         {/* ── COMPLIANCE BADGES ── */}
-        <div style={{ background:'#080808', padding:'20px 48px', borderBottom:'1px solid rgba(255,255,255,0.04)', display:'flex', gap:12, flexWrap:'wrap', justifyContent:'center', alignItems:'center' }}>
-          {[['⚖️','s.761G Compliant','Corporations Act 2001'],['🏛️','Introduction-Only','No AFSL held'],['📋','ASIC Aware','Innovation Hub engagement'],['🔒','7-Year Records','Full audit trail maintained'],['🛡️','Wholesale Only','No retail investors admitted']].map(([icon,title,sub]) => (
-            <div key={title} style={{ display:'flex', alignItems:'center', gap:8, padding:'8px 16px', border:'1px solid rgba(201,168,76,0.13)', background:'rgba(201,168,76,0.03)' }}>
-              <span style={{ fontSize:14 }}>{icon}</span>
-              <div>
-                <div style={{ fontSize:10, fontWeight:600, color:'rgba(245,242,236,0.65)', letterSpacing:'0.3px' }}>{title}</div>
-                <div style={{ fontSize:9, color:'rgba(245,242,236,0.22)' }}>{sub}</div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* ── ACCOUNTABILITY: THREE PILLARS ── */}
-        <sec style={{ background:'#060606', paddingTop:64, paddingBottom:64 }}>
-          <div style={{ textAlign:'center', marginBottom:48 }}>
-            <div className="slbl">Our Commitment</div>
-            <div className="stitle" style={{ color:'#fff' }}>Performance Meets Accountability</div>
-            <p className="ssub" style={{ color:'rgba(245,242,236,0.35)', margin:'0 auto' }}>Three pillars that underpin every transaction on the platform.</p>
-          </div>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:1, background:'rgba(201,168,76,0.07)' }}>
+        <sec style={{ background:'#050505', padding:'20px 32px', borderTop:'1px solid rgba(201,168,76,0.15)', borderBottom:'1px solid rgba(201,168,76,0.08)' }}>
+          <div style={{ display:'flex', justifyContent:'center', alignItems:'stretch', gap:1, background:'rgba(201,168,76,0.08)', flexWrap:'wrap' }}>
             {[
-              { n:'01', icon:'🔍', title:'Verified Capital Only', desc:'Every investor passes our 4-tier verification — wholesale certificate, proof of funds, and broker review. No unqualified money enters the network.' },
-              { n:'02', icon:'📊', title:'Transparent Feasibility', desc:'Every project undergoes FEASO analysis before listing. Developers provide full financial models, DA status, and track record. No black boxes.' },
-              { n:'03', icon:'⚖️', title:'Legal Framework First', desc:'Introduction-only model under s.761G. No financial product advice given or implied. Independent legal and financial advice always recommended.' },
-            ].map(p => (
-              <div key={p.n} style={{ background:'#0a0a0a', padding:'40px 32px' }}>
-                <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:52, color:'rgba(201,168,76,0.06)', lineHeight:1, marginBottom:16 }}>{p.n}</div>
-                <div style={{ fontSize:28, marginBottom:12 }}>{p.icon}</div>
-                <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, color:'#fff', fontWeight:600, marginBottom:12 }}>{p.title}</div>
-                <div style={{ fontSize:12, color:'rgba(245,242,236,0.38)', lineHeight:1.75 }}>{p.desc}</div>
+              { icon:'🛡', title:'AFSL 479499', sub:'Regulated under DFP Corporate Pty Ltd' },
+              { icon:'📋', title:'FEASO Verified', sub:'Every deal independently feasibility-checked' },
+              { icon:'✅', title:'s.761G Verified', sub:'Wholesale investors only — Corporations Act 2001' },
+              { icon:'🔒', title:'Independent Trust', sub:'Investor funds never held by this platform' },
+              { icon:'📨', title:'ASIC Engaged', sub:'Innovation Hub enquiry lodged June 2026' },
+            ].map(b => (
+              <div key={b.title} onClick={() => go('compliance')}
+                style={{ flex:'1 1 160px', background:'#0a0a0a', padding:'16px 20px', cursor:'pointer', textAlign:'center', transition:'background 0.2s', minWidth:140 }}
+                onMouseEnter={e => e.currentTarget.style.background='#111'}
+                onMouseLeave={e => e.currentTarget.style.background='#0a0a0a'}>
+                <div style={{ fontSize:22, marginBottom:6 }}>{b.icon}</div>
+                <div style={{ fontSize:11, fontWeight:500, color:'var(--gold)', letterSpacing:'1px', marginBottom:4 }}>{b.title}</div>
+                <div style={{ fontSize:10, color:'rgba(245,242,236,0.4)', lineHeight:1.5 }}>{b.sub}</div>
               </div>
             ))}
           </div>
         </sec>
 
-        {/* ── SEVEN GATES ── */}
-        <sec style={{ background:'var(--ink)', paddingTop:64, paddingBottom:64 }}>
-          <div style={{ textAlign:'center', marginBottom:48 }}>
-            <div className="slbl">Due Diligence Process</div>
-            <div className="stitle" style={{ color:'#fff' }}>The Seven Gates</div>
-            <p className="ssub" style={{ color:'rgba(245,242,236,0.35)', margin:'0 auto' }}>Every project passes through seven quality gates before capital is deployed.</p>
+        {/* ══ ACCOUNTABILITY SECTION — full bleed visual cards ══ */}
+        <sec style={{ background:'var(--paper)', padding:'80px 0 0' }}>
+          <div style={{ textAlign:'center', padding:'0 32px 48px' }}>
+            <div className="slbl">Why Prop Dev DNA</div>
+            <div className="stitle" style={{ marginBottom:16 }}>Where Performance Meets Accountability</div>
+            <p style={{ fontSize:15, color:'var(--muted)', maxWidth:600, margin:'0 auto', lineHeight:1.85 }}>
+              Every competing platform that has failed wholesale investors did so because accountability was optional. On Prop Dev DNA it is structural — built into the platform before any investor sees a single deal.
+            </p>
           </div>
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:1, background:'rgba(201,168,76,0.07)' }}>
-            {[
-              { n:'01', title:'Developer Application', desc:'Project brief, capital target & entity profile submitted' },
-              { n:'02', title:'FEASO Review', desc:'Feasibility analysis benchmarked against market data' },
-              { n:'03', title:'IM Preparation', desc:'16-page IM with ASIC disclaimers prepared' },
-              { n:'04', title:'Admin Approval', desc:'DA status, track record and risk profile reviewed' },
-              { n:'05', title:'Investor Access', desc:'Verified wholesale investors gain data room access' },
-              { n:'06', title:'EOI Collection', desc:'Interest logged; broker introductions facilitated' },
-              { n:'07', title:'Capital Close', desc:'Settlement confirmed — success fee invoiced in 7 days' },
-            ].map((g,i) => (
-              <div key={g.n} style={{ background: i===6 ? 'rgba(201,168,76,0.06)' : '#0D0D0D', padding:'24px 16px', borderTop:`2px solid ${i===6 ? 'var(--gold)' : 'rgba(201,168,76,0.2)'}` }}>
-                <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, color:'rgba(201,168,76,0.12)', lineHeight:1, marginBottom:10 }}>{g.n}</div>
-                <div style={{ fontSize:12, fontFamily:"'Cormorant Garamond',serif", color: i===6 ? 'var(--gold)' : '#fff', fontWeight:600, marginBottom:6, lineHeight:1.3 }}>{g.title}</div>
-                <div style={{ fontSize:9, color:'rgba(245,242,236,0.28)', lineHeight:1.65 }}>{g.desc}</div>
-              </div>
-            ))}
-          </div>
-        </sec>
 
-        {/* ── SIX REASONS + COMPARISON TABLE ── */}
-        <sec style={{ background:'var(--paper)' }}>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:56, alignItems:'start' }}>
-            <div>
-              <div className="slbl">Why Prop Dev DNA</div>
-              <div className="stitle">Six Reasons Investors Choose Us</div>
-              {[
-                ['Access','Exclusive wholesale-only deal flow not available through retail channels or public markets.'],
-                ['Quality','FEASO-reviewed projects only — developer track record, DA status and feasibility all verified.'],
-                ['Structure','Equity, mezzanine and JV structures with monthly distributions and defined exit timelines.'],
-                ['Verification','4-tier investor verification protects all parties and ensures seriousness on both sides.'],
-                ['Broker Access','Direct access to Anthony Lawson — licensed mortgage broker — for senior debt introductions.'],
-                ['Accountability','Introduction-only model with full paper trail, 7-year record keeping and legal framework.'],
-              ].map(([t,d],i) => (
-                <div key={t} style={{ display:'flex', gap:16, padding:'14px 0', borderBottom:'1px solid rgba(0,0,0,0.06)' }}>
-                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:26, color:'rgba(201,168,76,0.3)', lineHeight:1, flexShrink:0, width:32, paddingTop:2 }}>0{i+1}</div>
-                  <div>
-                    <div style={{ fontSize:13, fontWeight:500, color:'var(--ink)', marginBottom:3 }}>{t}</div>
-                    <div style={{ fontSize:11, color:'var(--muted)', lineHeight:1.7 }}>{d}</div>
+          {/* Three full-bleed visual accountability cards */}
+          <div className="acc-grid" style={{ display:'grid', gridTemplateColumns:'repeat(3,1fr)', gap:2, background:'rgba(0,0,0,0.08)' }}>
+            {[
+              {
+                img:'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&q=85&fit=crop&auto=format',
+                color:'#C9A84C',
+                badge:'FEASIBILITY ACCOUNTABILITY',
+                title:'Every Number Verified Before Listing',
+                lead:'No developer can publish a deal until their feasibility passes our independent review. VentureCrowd accepted a 7.1% margin feasibility without review and listed it to investors. That deal collapsed. We built the system that makes this impossible.',
+                points:[
+                  ['Live FEASO Builder','Developer completes every input on platform — land cost, construction, fees, finance, sales, holding — all locked and versioned on submission. No offline spreadsheets accepted.'],
+                  ['Margin Gate','Platform calculates margin on cost in real time. Below 15% — blocked automatically, deal cannot proceed. 15–20% — mandatory admin review with documented decision. Above 20% — approved to continue.'],
+                  ['Independent QS Certification','For every raise above $2,000,000 — an independent Quantity Surveyor registered with the AIQS must certify construction cost inputs before the deal goes live. Admin cross-checks every input against the QS report.'],
+                  ['Admin Sign-Off','A human reviews every FEASO before any investor sees it. The review is documented — reviewer name, date, inputs assessed, decision recorded — and retained for 7 years minimum.'],
+                  ['Locked Inputs','Once submitted, FEASO inputs are locked. The developer cannot alter numbers after admin review commences. Version history maintained.'],
+                ],
+                stat:'15%',
+                statLabel:'Minimum margin on cost to list'
+              },
+              {
+                img:'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=800&q=85&fit=crop&auto=format',
+                color:'#27AE60',
+                badge:'INVESTOR ACCOUNTABILITY',
+                title:'Every Investor Verified Before Access',
+                lead:'Not everyone who wants to invest in development finance should. The s.761G wholesale investor framework exists for a reason — development deals carry risk that retail investors are not equipped to assess. Our four-tier verification enforces this without exception.',
+                points:[
+                  ['s.761G Certificate Mandatory','Every investor must submit an accountant certificate confirming net assets of at least $2.5M or gross income of at least $250,000 p.a. Signed by a current CPA Australia, CA ANZ, or IPA member — on letterhead, dated within 2 years.'],
+                  ['Accountant Membership Verified','Admin verifies the certifying accountant\'s membership number on the relevant professional body\'s public register before approving the certificate. No unverified certificates accepted.'],
+                  ['Four-Tier Access System','Tier 1 — Registered. Tier 2 — Wholesale Verified (s.761G approved). Tier 3 — Funds Verified (proof of funds confirmed). Tier 4 — PDD Endorsed (personally pre-qualified by Anthony Lawson, licensed mortgage broker). Deal access scales with tier.'],
+                  ['Timestamped Risk Acknowledgment','Before any expression of interest can be submitted — every investor completes a mandatory risk acknowledgment. Capital loss, illiquidity, no guarantee of returns, wholesale confirmation. Timestamped, IP-logged, stored per deal per investor.'],
+                  ['Certificate Expiry Enforced','All certificates expire 2 years from issue date. Platform sends automated renewal reminders 60 days before expiry. Lapsed certificates — Tier 2 access suspended until renewed.'],
+                ],
+                stat:'4',
+                statLabel:'Verification tiers before capital commitment'
+              },
+              {
+                img:'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&q=90&fit=crop&auto=format',
+                color:'#4A90D9',
+                badge:'CAPITAL ACCOUNTABILITY',
+                title:'Your Money Never Touches This Platform',
+                lead:'The single biggest structural failure in alternative investment platforms is fund mishandling. Prop Dev DNA eliminates this risk entirely — not through policy, but through structure. Your capital never enters our accounts at any point.',
+                points:[
+                  ['Independent Trust Per Deal','Each development opportunity has its own independent trust established before capital is raised. One trust per deal. Independent trustee appointed — not Prop Dev DNA, not the developer.'],
+                  ['Solicitor\'s Trust Account','During the raise period, committed investor funds are held in a solicitor\'s trust account or the trust\'s dedicated bank account — not accessible by Prop Dev DNA under any circumstances.'],
+                  ['Minimum Raise Protection','If the minimum raise target is not met by the close date — all committed capital is returned to investors in full within 5 business days. No exceptions. No deductions.'],
+                  ['Investor-First Waterfall','On deal completion: senior debt repaid first, then development costs, then investor principal, then investor preferred return, then platform success fee, then developer profit. Investors are always paid before the developer takes a dollar.'],
+                  ['AFSL 479499 Regulated','Platform operates as a Corporate Authorised Representative of DFP Corporate Pty Ltd (AFSL 479499) — licensed since November 2015 and audited annually by Hall Chadwick. ASIC Innovation Hub engaged proactively — June 2026.'],
+                ],
+                stat:'$0',
+                statLabel:'Investor capital ever held by Prop Dev DNA'
+              },
+            ].map((card,i) => (
+              <div key={card.badge} style={{ position:'relative', overflow:'hidden', background:'#0a0a0a' }}>
+                {/* Full bleed image */}
+                <div style={{ height:280, position:'relative', overflow:'hidden' }}>
+                  <img src={card.img} alt={card.title} style={{ width:'100%', height:'100%', objectFit:'cover', opacity:0.4, transition:'opacity 0.4s' }}
+                    onMouseEnter={e => e.target.style.opacity=0.6}
+                    onMouseLeave={e => e.target.style.opacity=0.4}
+                  />
+                  <div style={{ position:'absolute', inset:0, background:`linear-gradient(to bottom, rgba(10,10,10,0.2) 0%, rgba(10,10,10,0.98) 100%)` }} />
+                  {/* Floating stat */}
+                  <div style={{ position:'absolute', top:20, right:20, background:'rgba(0,0,0,0.7)', border:`1px solid ${card.color}`, padding:'12px 16px', backdropFilter:'blur(8px)' }}>
+                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:28, fontWeight:600, color:card.color, lineHeight:1 }}>{card.stat}</div>
+                    <div style={{ fontSize:8, letterSpacing:'1.5px', textTransform:'uppercase', color:'rgba(245,242,236,0.4)', marginTop:4, maxWidth:100, lineHeight:1.4 }}>{card.statLabel}</div>
+                  </div>
+                  {/* Badge */}
+                  <div style={{ position:'absolute', bottom:20, left:20 }}>
+                    <div style={{ fontSize:8, letterSpacing:'2.5px', textTransform:'uppercase', color:card.color, marginBottom:8 }}>{card.badge}</div>
+                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, fontWeight:600, color:'#fff', lineHeight:1.2, maxWidth:260 }}>{card.title}</div>
                   </div>
                 </div>
-              ))}
-            </div>
+
+                {/* Lead paragraph */}
+                <div style={{ padding:'24px 24px 0', borderTop:`3px solid ${card.color}` }}>
+                  <p style={{ fontSize:13, color:'rgba(245,242,236,0.6)', lineHeight:1.85, marginBottom:24 }}>{card.lead}</p>
+
+                  {/* Detail points */}
+                  <div style={{ display:'flex', flexDirection:'column', gap:0 }}>
+                    {card.points.map(([title,detail]) => (
+                      <details key={title} style={{ borderTop:'1px solid rgba(255,255,255,0.06)', cursor:'pointer' }}>
+                        <summary style={{ padding:'13px 0', fontSize:12, fontWeight:500, color:'rgba(245,242,236,0.85)', listStyle:'none', display:'flex', justifyContent:'space-between', alignItems:'center', userSelect:'none' }}>
+                          <span style={{ display:'flex', alignItems:'center', gap:8 }}>
+                            <span style={{ width:5, height:5, borderRadius:'50%', background:card.color, display:'block', flexShrink:0 }} />
+                            {title}
+                          </span>
+                          <span style={{ color:card.color, fontSize:16, fontWeight:300, transition:'transform 0.2s', display:'inline-block' }}>+</span>
+                        </summary>
+                        <div style={{ padding:'0 0 16px 13px', fontSize:12, color:'rgba(245,242,236,0.45)', lineHeight:1.75 }}>{detail}</div>
+                      </details>
+                    ))}
+                  </div>
+
+                  <div style={{ padding:'20px 0 24px', borderTop:'1px solid rgba(255,255,255,0.06)', marginTop:4 }}>
+                    <button className="btn btn-o btn-sm" onClick={() => go('compliance')} style={{ width:'100%', justifyContent:'center' }}>
+                      View Full Compliance Framework →
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom accountability bar */}
+          <div style={{ background:'var(--ink)', padding:'28px 48px', display:'flex', alignItems:'center', justifyContent:'space-between', flexWrap:'wrap', gap:20 }}>
             <div>
-              <div className="slbl">Platform Comparison</div>
-              <div className="stitle">How We Stack Up</div>
-              <table style={{ width:'100%', borderCollapse:'collapse', fontSize:11, marginBottom:24 }}>
-                <thead>
-                  <tr style={{ background:'var(--ink)' }}>
-                    <th style={{ padding:'10px 12px', textAlign:'left', fontSize:9, letterSpacing:'1.5px', textTransform:'uppercase', fontWeight:500, color:'rgba(245,242,236,0.5)' }}>Feature</th>
-                    <th style={{ padding:'10px 12px', textAlign:'center', fontSize:9, letterSpacing:'1.5px', textTransform:'uppercase', fontWeight:500, color:'var(--gold)' }}>Prop Dev DNA</th>
-                    <th style={{ padding:'10px 12px', textAlign:'center', fontSize:9, letterSpacing:'1.5px', textTransform:'uppercase', fontWeight:500, color:'rgba(245,242,236,0.4)' }}>Direct</th>
-                    <th style={{ padding:'10px 12px', textAlign:'center', fontSize:9, letterSpacing:'1.5px', textTransform:'uppercase', fontWeight:500, color:'rgba(245,242,236,0.4)' }}>Others</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    ['FEASO due diligence','✓','✗','~'],
-                    ['Wholesale-only access','✓','✗','✗'],
-                    ['Broker pre-qualification','✓','✗','✗'],
-                    ['4-tier verification','✓','✗','~'],
-                    ['IM + data room','✓','✓','~'],
-                    ['Success fee only','✓','✗','✗'],
-                    ['s.761G framework','✓','~','~'],
-                  ].map(([f,a,b,c]) => (
-                    <tr key={f} style={{ borderBottom:'1px solid rgba(0,0,0,0.05)' }}>
-                      <td style={{ padding:'9px 12px', color:'var(--ink)', fontSize:11 }}>{f}</td>
-                      <td style={{ padding:'9px 12px', textAlign:'center', color:'#27ae60', fontWeight:700, fontSize:13 }}>{a}</td>
-                      <td style={{ padding:'9px 12px', textAlign:'center', color: b==='✓'?'#27ae60':b==='~'?'#c9a84c':'#e74c3c', fontSize:13 }}>{b}</td>
-                      <td style={{ padding:'9px 12px', textAlign:'center', color: c==='✓'?'#27ae60':c==='~'?'#c9a84c':'#e74c3c', fontSize:13 }}>{c}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-              <button className="btn btn-g" onClick={() => setShowAuth(true)}>Create Free Investor Account →</button>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, color:'#fff', marginBottom:6 }}>The Standard No Competitor Has Matched</div>
+              <div style={{ fontSize:13, color:'rgba(245,242,236,0.4)', maxWidth:680, lineHeight:1.7 }}>
+                VentureCrowd accepted a 7.1% margin feasibility without independent review and listed it to investors — that deal failed. MBI has no FEASO process. Investing Platform has no verification framework. Prop Dev DNA blocks non-viable deals before investors ever see them — structurally, not contractually.
+              </div>
             </div>
+            <button className="btn btn-g" onClick={() => go('compliance')}>View Full Compliance Framework →</button>
           </div>
         </sec>
 
-        {/* ── FOUR TIERS ── */}
-        <div style={{ borderTop: '1px solid rgba(201,168,76,0.2)' }} />
-        <sec style={{ background: '#0a0a0a', padding: '24px 32px 40px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, marginBottom: 24 }}>
+        {/* ══ FOUR TIERS ══ */}
+        <sec style={{ background: '#0a0a0a', padding: '48px 32px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 16, marginBottom: 32 }}>
             <div>
               <div className="slbl">Investor Verification</div>
               <div className="stitle" style={{ color: '#fff', marginBottom: 0 }}>Four Tiers of Trust</div>
             </div>
             <button className="btn btn-o btn-sm" onClick={() => go('tiers')}>Learn More →</button>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 1, background: 'rgba(201,168,76,0.07)' }}>
-            {Object.entries(TIERS).map(([key, t], i) => (
-              <div key={key} style={{ background: '#0f0f0f', padding: '28px 20px', borderTop: `2px solid ${t.color}` }}>
-                <div style={{ width: 36, height: 36, borderRadius: '50%', background: t.bg, border: `1px solid ${t.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14, fontSize: 16 }}>{['🔵','🟡','🟢','⭐'][i]}</div>
-                <div style={{ fontSize: 9, letterSpacing: '2px', textTransform: 'uppercase', color: t.color, marginBottom: 6 }}>Tier {i+1}</div>
-                <div style={{ fontSize: 15, fontFamily: "'Cormorant Garamond',serif", color: '#fff', fontWeight: 600, marginBottom: 8 }}>{t.label}</div>
-                <div style={{ fontSize: 10, color: 'rgba(245,242,236,0.38)', lineHeight: 1.7 }}>{t.desc}</div>
+          <div className="tiers-grid-inner" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 1, background: 'rgba(201,168,76,0.07)' }}>
+            {Object.entries(TIERS).map(([key, t]) => (
+              <div key={key} style={{ background: '#0f0f0f', padding: '20px 16px' }}>
+                <div style={{ fontSize: 24, marginBottom: 8 }}>{t.badge}</div>
+                <div style={{ fontSize: 13, fontFamily: "'Cormorant Garamond',serif", color: '#fff', fontWeight: 600, marginBottom: 6 }}>{t.label}</div>
+                <div style={{ fontSize: 10, color: 'rgba(245,242,236,0.35)', lineHeight: 1.6 }}>{t.desc}</div>
               </div>
             ))}
           </div>
@@ -1141,12 +1217,13 @@ export default function App() {
           <div className="stitle" style={{ color: '#fff' }}>Built for Serious Capital</div>
           <p className="ssub" style={{ color: 'rgba(245,242,236,0.38)' }}>From feasibility to funded — three steps.</p>
           <div className="steps">
-            {[
-              { n: '01', svg: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>, t: 'Discover', d: 'Browse FEASO-reviewed development opportunities filtered by state, stage, and return profile.' },
-              { n: '02', svg: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round"><path d="M3 3v18h18"/><path d="m7 16 4-4 4 4 4-4"/></svg>, t: 'Analyse', d: 'Access full Information Memoranda, FEASO reports, and developer profiles in the secure data room.' },
-              { n: '03', svg: <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5" strokeLinecap="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>, t: 'Invest', d: 'Register interest, complete wholesale verification, and confirm your capital allocation.' },
+            {[{ n: '01', i: '🔍', t: 'Discover', d: 'Browse FEASO-reviewed opportunities by state, stage, and return profile.' },
+            { n: '02', i: '📊', t: 'Analyse', d: 'Access full IMs, feasibility reports, and developer profiles.' },
+            { n: '03', i: '✅', t: 'Invest', d: 'Register interest, complete verification, and confirm your allocation.' }
             ].map(s => (
-              <div className="step" key={s.n}><div className="stn">{s.n}</div><div style={{ marginBottom: 16 }}>{s.svg}</div><h3>{s.t}</h3><p>{s.d}</p></div>
+              <div className="step" key={s.n}>
+                <div className="stn">{s.n}</div><div className="sti">{s.i}</div><h3>{s.t}</h3><p>{s.d}</p>
+              </div>
             ))}
           </div>
         </sec>
@@ -1157,18 +1234,17 @@ export default function App() {
             <button className="btn btn-d btn-sm" onClick={() => go('listings')}>View All →</button>
           </div>
           {loadingListings ? <p style={{ color: 'var(--muted)' }}>Loading…</p> :
-            <div className="grid">{listings.slice(0,3).map(l => <Card key={l.id} l={l} onClick={() => { setSel(l); go('detail'); }} />)}</div>
+            <div className="grid">
+              {listings.slice(0, 3).map(l => <Card key={l.id} l={l} onClick={() => { setSel(l); go('detail'); }} />)}
+            </div>
           }
         </sec>
 
-        <sec style={{ background: 'var(--sage)', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
-          <div style={{ position: 'absolute', inset: 0, backgroundImage: 'url(https://images.unsplash.com/photo-1504307651254-35680f356dfd?w=1400&q=80&fit=crop)', backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.12 }} />
-          <div style={{ position: 'relative', zIndex: 1 }}>
-            <div className="slbl" style={{ color: 'rgba(201,168,76,0.55)' }}>For Developers</div>
-            <div className="stitle" style={{ color: '#fff', maxWidth: 520, margin: '0 auto 14px' }}>Ready to Raise Capital for Your Next Project?</div>
-            <p className="ssub" style={{ color: 'rgba(255,255,255,0.38)', margin: '0 auto 32px' }}>FEASO builder + IM generator + verified wholesale investor network.</p>
-            <button className="btn btn-g" onClick={() => go('portal')}>Submit Your Project →</button>
-          </div>
+        <sec style={{ background: 'var(--sage)', textAlign: 'center' }}>
+          <div className="slbl" style={{ color: 'rgba(201,168,76,0.55)' }}>For Developers</div>
+          <div className="stitle" style={{ color: '#fff', maxWidth: 520, margin: '0 auto 14px' }}>Ready to Raise Capital for Your Next Project?</div>
+          <p className="ssub" style={{ color: 'rgba(255,255,255,0.38)', margin: '0 auto 32px' }}>FEASO builder + IM generator + verified wholesale investor network.</p>
+          <button className="btn btn-g" onClick={() => go('portal')}>Submit Your Project →</button>
         </sec>
       </>}
 
@@ -1267,7 +1343,9 @@ export default function App() {
       )}
 
       {/* ── ADMIN PORTAL ── */}
-      {page === 'admin' && user?.role === 'admin' && <AdminPortal toast={showT} />}
+      {page === 'admin' && user?.role === 'admin' && (
+        <AdminPortal toast={showT} />
+      )}
       {page === 'admin' && user?.role !== 'admin' && (
         <sec style={{ paddingTop: 80, textAlign: 'center' }}>
           <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
@@ -1278,60 +1356,356 @@ export default function App() {
 
       {/* ── DEVELOPER PORTAL ── */}
       {page === 'portal' && (
-        <sec style={{ paddingTop: 80 }}>
-          {pDone ? (
-            <div style={{ maxWidth: 500, margin: '0 auto', textAlign: 'center', padding: '40px 0' }}>
-              <div style={{ fontSize: 56, marginBottom: 20 }}>🧬</div>
-              <div className="slbl">Application Received</div>
-              <div className="stitle">We'll Be in Touch</div>
-              <p className="ssub" style={{ margin: '0 auto' }}>Our team will review your project and contact you within 2 business days.</p>
-            </div>
-          ) : (
-            <div className="portal">
-              <div>
-                <div className="slbl">For Developers</div>
-                <div className="stitle">List Your Project.<br />Connect with Capital.</div>
-                <p className="ssub">Professional FEASO builder, IM generator, and verified wholesale investor access.</p>
-                <ul className="pfeats">
-                  {[{ i: '🎯', t: 'Qualified Investors', d: 'Pre-screened wholesale investors with verified proof of funds.' },
-                  { i: '📋', t: 'FEASO & IM Tools', d: 'Live feasibility calculator and 16-page IM with ASIC disclaimers.' },
-                  { i: '🔒', t: 'Secure Data Room', d: 'Share project documents privately with verified investors only.' },
-                  { i: '⚡', t: '48-Hour Live', d: 'Pass quality review and go live within 48 hours.' },
-                  ].map(f => (
-                    <li className="pf2" key={f.t}>
-                      <div className="pfi">{f.i}</div>
-                      <div><h4>{f.t}</h4><p>{f.d}</p></div>
-                    </li>
-                  ))}
-                </ul>
+        <div>
+          {/* DEVELOPER HERO */}
+          <div style={{ background:'var(--ink)', minHeight:'52vh', display:'flex', alignItems:'flex-end', padding:'80px 56px 52px', position:'relative', overflow:'hidden' }}>
+            <img src="https://images.unsplash.com/photo-1590650153855-d9e808231d41?w=1400&q=85&fit=crop&auto=format" loading="lazy" alt="Development" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0.2 }} />
+            <div style={{ position:'absolute', inset:0, background:'linear-gradient(to right, rgba(13,13,13,0.97) 0%, rgba(13,13,13,0.6) 60%, rgba(13,13,13,0.3) 100%)' }} />
+            <div style={{ position:'relative', zIndex:2, maxWidth:720 }}>
+              <div className="slbl" style={{ color:'rgba(201,168,76,0.6)', marginBottom:16 }}>For Developers · Builders · Owner-Builders</div>
+              <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(32px,5vw,64px)', fontWeight:600, color:'#fff', lineHeight:1, marginBottom:20, letterSpacing:'-0.5px' }}>
+                Your Project.<br /><em style={{ color:'var(--gold)' }}>Fully Funded.</em>
+              </h1>
+              <p style={{ fontSize:15, color:'rgba(245,242,236,0.6)', maxWidth:560, lineHeight:1.85, marginBottom:32 }}>
+                Most developers lose 6–12 months finding subordinated capital. On Prop Dev DNA, verified wholesale investors are ready to deploy — and DFP arranges the senior debt. One platform. Full capital stack. Live in 48 hours.
+              </p>
+              <div style={{ display:'flex', gap:16, flexWrap:'wrap' }}>
+                <button className="btn btn-g" onClick={() => document.getElementById('dev-form').scrollIntoView({behavior:'smooth'})}>Submit Your Project →</button>
+                <button className="btn btn-o" onClick={() => go('compliance')}>View Our Standards</button>
               </div>
-              <div className="pform">
-                <h3>Submit Your Project</h3>
-                <p>All submissions reviewed within 48 hours.</p>
-                {[['company', 'Company / Entity'], ['name', 'Your Name'], ['email', 'Email'], ['phone', 'Phone']].map(([k, l]) => (
-                  <div className="fg" key={k}><label className="fl">{l}</label><input className="fi" value={pf[k]} onChange={e => setP(k, e.target.value)} /></div>
+            </div>
+          </div>
+
+          {/* CAPITAL STACK VISUAL */}
+          <div style={{ background:'#0a0a0a', padding:'52px 56px' }}>
+            <div style={{ maxWidth:1100, margin:'0 auto' }}>
+              <div className="slbl" style={{ color:'rgba(201,168,76,0.5)', marginBottom:16 }}>The Full Capital Stack</div>
+              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:28, color:'#fff', marginBottom:8 }}>One Relationship. Senior Debt + Subordinated Capital.</div>
+              <p style={{ fontSize:13, color:'rgba(245,242,236,0.4)', marginBottom:32, maxWidth:560, lineHeight:1.8 }}>Prop Dev DNA raises the subordinated layer. DFP arranges the senior debt. You deal with one team for the entire capital stack.</p>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr 1fr', gap:1, background:'rgba(201,168,76,0.08)' }}>
+                {[
+                  { label:'Developer Equity / Land', pct:'10–15%', color:'#555', who:'You', desc:'Your land contribution or existing equity counts toward the required developer contribution' },
+                  { label:'PDD Equity Bridge', pct:'5–15%', color:'#C9A84C', who:'Prop Dev DNA raises', desc:'Wholesale investors provide preferred equity to satisfy lender contribution requirement — sub-$3M projects' },
+                  { label:'PDD Mezz / JV Equity', pct:'10–20%', color:'#C9A84C', who:'Prop Dev DNA raises', desc:'Mezzanine or preferred equity raised from the platform investor network — 1.5% success fee on settlement' },
+                  { label:'Senior Debt', pct:'60–70%', color:'#4A90D9', who:'DFP arranges', desc:"Construction finance arranged through DFP's lender panel — Baxter Gamble, $3B+ funded" },
+                ].map((layer,i) => (
+                  <div key={layer.label} style={{ background:i<2?'#0f0f0f':'#0a0a0a', borderTop:`3px solid ${layer.color}`, padding:'24px 20px' }}>
+                    <div style={{ fontSize:9, letterSpacing:'2px', textTransform:'uppercase', color:layer.color, marginBottom:8 }}>{layer.who}</div>
+                    <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, color:'#fff', marginBottom:6, lineHeight:1.2 }}>{layer.label}</div>
+                    <div style={{ fontSize:24, fontWeight:600, color:layer.color, fontFamily:"'Cormorant Garamond',serif", marginBottom:12 }}>{layer.pct}</div>
+                    <div style={{ fontSize:11, color:'rgba(245,242,236,0.35)', lineHeight:1.65 }}>{layer.desc}</div>
+                  </div>
                 ))}
-                <div className="fg"><label className="fl">Development Type</label>
-                  <select className="fi" value={pf.type} onChange={e => setP('type', e.target.value)}>
-                    <option value="">Select</option>
-                    {['Residential Apartments', 'Townhouses', 'Land Subdivision', 'Mixed-Use', 'Adaptive Reuse', 'Commercial'].map(t => <option key={t}>{t}</option>)}
-                  </select>
+              </div>
+              {/* Revenue illustration */}
+              <div style={{ marginTop:1, background:'#111', padding:'20px 24px', display:'flex', justifyContent:'space-between', flexWrap:'wrap', gap:16 }}>
+                <div style={{ fontSize:12, color:'rgba(245,242,236,0.4)' }}>Illustrative $8M TDC deal — developer retains 70% of net profit after all costs and investor returns</div>
+                <div style={{ display:'flex', gap:24 }}>
+                  {[['1.5%','PDD success fee'],['$299/mo','Subscription'],['48hr','To go live'],['70%','Developer profit share']].map(([v,l]) => (
+                    <div key={l} style={{ textAlign:'center' }}>
+                      <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:18, color:'var(--gold)' }}>{v}</div>
+                      <div style={{ fontSize:9, letterSpacing:'1.5px', textTransform:'uppercase', color:'rgba(245,242,236,0.3)', marginTop:2 }}>{l}</div>
+                    </div>
+                  ))}
                 </div>
-                <div className="fg"><label className="fl">Capital Raise Target</label>
-                  <select className="fi" value={pf.raise} onChange={e => setP('raise', e.target.value)}>
-                    <option value="">Select</option>
-                    {['Under $1M', '$1M–$3M', '$3M–$5M', '$5M–$10M', '$10M+'].map(r => <option key={r}>{r}</option>)}
-                  </select>
-                </div>
-                <button className="btn btn-g" style={{ width: '100%', marginTop: 6 }}
-                  onClick={() => pf.company && pf.name && pf.email ? setPDone(true) : showT('Fill in required fields')}>
-                  Submit Project →
-                </button>
-                <div className="snote">💳 Developer subscription ($299/month + GST) activated after project review.</div>
               </div>
             </div>
-          )}
-        </sec>
+          </div>
+
+          {/* PROCESS + REQUIREMENTS */}
+          <div style={{ background:'var(--paper)', padding:'52px 56px' }}>
+            <div style={{ maxWidth:1100, margin:'0 auto', display:'grid', gridTemplateColumns:'1fr 1fr', gap:48, alignItems:'start' }}>
+              <div>
+                <div className="slbl">How It Works</div>
+                <div className="stitle" style={{ marginBottom:20 }}>From Submission to Funded</div>
+                <div style={{ display:'flex', flexDirection:'column', gap:0 }}>
+                  {[
+                    ['01','Submit your project','Company details, site address, DA status, and capital raise target. Takes 5 minutes.'],
+                    ['02','Complete the FEASO builder','Our live feasibility tool calculates your margin on cost, IRR, and debt metrics. Inputs are locked on submission.'],
+                    ['03','QS certification','For raises above $2M — engage a registered QS to certify construction costs. We can recommend firms.'],
+                    ['04','Admin review','Our team reviews your FEASO, verifies your project details, and generates your Information Memorandum within 48 hours.'],
+                    ['05','Go live','Your listing is published to verified wholesale investors. Tier 3 and 4 investors see it first.'],
+                    ['06','Capital raised','Investor commitments close. Independent trustee receives funds. Construction begins.'],
+                  ].map(([n,t,d]) => (
+                    <div key={n} style={{ display:'flex', gap:20, padding:'18px 0', borderBottom:'1px solid rgba(0,0,0,0.07)' }}>
+                      <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:28, color:'rgba(201,168,76,0.3)', lineHeight:1, flexShrink:0, width:36 }}>{n}</div>
+                      <div>
+                        <div style={{ fontSize:13, fontWeight:500, color:'var(--ink)', marginBottom:4 }}>{t}</div>
+                        <div style={{ fontSize:12, color:'var(--muted)', lineHeight:1.65 }}>{d}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <div className="slbl">What We Require</div>
+                <div className="stitle" style={{ marginBottom:20 }}>Our Quality Standards</div>
+                <p style={{ fontSize:13, color:'var(--muted)', lineHeight:1.85, marginBottom:24 }}>
+                  These standards exist to protect investors — and to protect you from association with deals that fail. Every requirement is documented, reviewed, and retained.
+                </p>
+                {[
+                  { icon:'📋', req:'FEASO completion', detail:'All six tabs completed — site, construction, fees, finance, sales, holding. Margin must exceed 15% to proceed.' },
+                  { icon:'🔬', req:'QS certification (raises >$2M)', detail:'Independent Quantity Surveyor registered with AIQS certifies construction cost inputs.' },
+                  { icon:'📄', req:'DA status confirmed', detail:'Development Approval approved or pending — we do not list pre-DA projects for capital raising.' },
+                  { icon:'🏦', req:'Senior debt indicative', detail:'Evidence of senior lender interest strengthens your listing significantly.' },
+                  { icon:'💳', req:'$299/month subscription', detail:'Activated after project approval. Paused if listing is withdrawn. No upfront listing fee.' },
+                  { icon:'📊', req:'Quarterly investor updates', detail:'Once capital is raised — quarterly progress reports distributed to investors via the platform.' },
+                ].map(item => (
+                  <div key={item.req} style={{ display:'flex', gap:14, padding:'14px 0', borderBottom:'1px solid rgba(0,0,0,0.06)' }}>
+                    <span style={{ fontSize:20, flexShrink:0 }}>{item.icon}</span>
+                    <div>
+                      <div style={{ fontSize:13, fontWeight:500, color:'var(--ink)', marginBottom:3 }}>{item.req}</div>
+                      <div style={{ fontSize:11, color:'var(--muted)', lineHeight:1.65 }}>{item.detail}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* SUBMISSION FORM */}
+          <div id="dev-form" style={{ background:'var(--sage)', padding:'52px 56px' }}>
+            <div style={{ maxWidth:800, margin:'0 auto' }}>
+              {pDone ? (
+                <div style={{ textAlign:'center', padding:'40px 0' }}>
+                  <div style={{ fontSize:56, marginBottom:20 }}>🧬</div>
+                  <div className="slbl" style={{ color:'rgba(201,168,76,0.6)' }}>Application Received</div>
+                  <div className="stitle" style={{ color:'#fff', marginBottom:16 }}>We'll Be in Touch Within 48 Hours</div>
+                  <p style={{ color:'rgba(255,255,255,0.5)', fontSize:14, maxWidth:400, margin:'0 auto', lineHeight:1.8 }}>Our team will review your project and contact you to discuss next steps including the FEASO builder and QS requirements.</p>
+                </div>
+              ) : (
+                <div>
+                  <div className="slbl" style={{ color:'rgba(201,168,76,0.6)', marginBottom:8 }}>Submit Your Project</div>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, color:'#fff', marginBottom:8 }}>Get Started in 5 Minutes</div>
+                  <p style={{ fontSize:13, color:'rgba(255,255,255,0.4)', marginBottom:32, lineHeight:1.8 }}>Tell us about your project. We'll review within 48 hours and reach out to discuss the FEASO builder and capital raise structure.</p>
+                  <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:16 }}>
+                    {[['company','Entity / Company Name'],['name','Your Full Name'],['email','Email Address'],['phone','Phone Number']].map(([k,l]) => (
+                      <div className="fg" key={k}>
+                        <label className="fl" style={{ color:'rgba(245,242,236,0.4)' }}>{l}</label>
+                        <input className="fi" value={pf[k]} onChange={e => setP(k, e.target.value)} placeholder={l} />
+                      </div>
+                    ))}
+                    <div className="fg">
+                      <label className="fl" style={{ color:'rgba(245,242,236,0.4)' }}>Site Address</label>
+                      <input className="fi" value={pf.site||''} onChange={e => setP('site', e.target.value)} placeholder="Street, Suburb, State" />
+                    </div>
+                    <div className="fg">
+                      <label className="fl" style={{ color:'rgba(245,242,236,0.4)' }}>DA Status</label>
+                      <select className="fi" value={pf.da||''} onChange={e => setP('da', e.target.value)}>
+                        <option value="">Select</option>
+                        {['DA Approved','DA Pending','Pre-DA — concept only'].map(o => <option key={o}>{o}</option>)}
+                      </select>
+                    </div>
+                    <div className="fg">
+                      <label className="fl" style={{ color:'rgba(245,242,236,0.4)' }}>Development Type</label>
+                      <select className="fi" value={pf.type} onChange={e => setP('type', e.target.value)}>
+                        <option value="">Select</option>
+                        {['Residential Apartments','Townhouses','Land Subdivision','Mixed-Use','Adaptive Reuse','Commercial'].map(t => <option key={t}>{t}</option>)}
+                      </select>
+                    </div>
+                    <div className="fg">
+                      <label className="fl" style={{ color:'rgba(245,242,236,0.4)' }}>Capital Raise Target</label>
+                      <select className="fi" value={pf.raise} onChange={e => setP('raise', e.target.value)}>
+                        <option value="">Select</option>
+                        {['Under $1M','$1M–$3M','$3M–$5M','$5M–$10M','$10M+'].map(r => <option key={r}>{r}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div style={{ marginTop:8 }}>
+                    <button className="btn btn-g" style={{ width:'100%', padding:'16px', fontSize:11, letterSpacing:'2px' }}
+                      onClick={() => pf.company && pf.name && pf.email ? setPDone(true) : showT('Please fill in required fields')}>
+                      Submit Project for Review →
+                    </button>
+                    <div className="snote" style={{ marginTop:12 }}>💳 Developer subscription ($299/month + GST) activated only after project review and approval. No upfront cost.</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── PARTNERS PAGE ── */}
+      {page === 'partners' && (
+        <div>
+          {/* Hero */}
+          <div style={{ background:'var(--ink)', minHeight:'44vh', display:'flex', alignItems:'flex-end', padding:'80px 56px 52px', position:'relative', overflow:'hidden' }}>
+            <img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?w=1400&q=85&fit=crop&auto=format" loading="lazy" alt="Partners" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0.15 }} />
+            <div style={{ position:'absolute', inset:0, background:'linear-gradient(to right, rgba(13,13,13,0.97) 0%, rgba(13,13,13,0.5) 100%)' }} />
+            <div style={{ position:'relative', zIndex:2, maxWidth:680 }}>
+              <div className="slbl" style={{ color:'rgba(201,168,76,0.6)', marginBottom:16 }}>Accountants · Financial Advisers · Mortgage Brokers · Buyers Agents</div>
+              <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(32px,5vw,60px)', fontWeight:600, color:'#fff', lineHeight:1, marginBottom:20 }}>
+                Your Clients Need This.<br /><em style={{ color:'var(--gold)' }}>You Make It Possible.</em>
+              </h1>
+              <p style={{ fontSize:14, color:'rgba(245,242,236,0.55)', maxWidth:520, lineHeight:1.85 }}>
+                Prop Dev DNA gives professionals a compliant, credible way to connect their clients with Australia's highest-returning asset class — without carrying the regulatory burden yourself.
+              </p>
+            </div>
+          </div>
+
+          {/* Four audience cards */}
+          <div style={{ background:'var(--paper)', padding:'64px 56px' }}>
+            <div style={{ textAlign:'center', marginBottom:48 }}>
+              <div className="slbl">Who This Is For</div>
+              <div className="stitle">Four Ways to Partner</div>
+              <p style={{ fontSize:14, color:'var(--muted)', maxWidth:520, margin:'0 auto', lineHeight:1.85 }}>Each profession has a different role. We have structured the platform to accommodate all of them — compliantly, with clear boundaries and real income potential.</p>
+            </div>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(2,1fr)', gap:2, background:'rgba(0,0,0,0.07)' }}>
+              {[
+                {
+                  icon:'📊',
+                  color:'#C9A84C',
+                  audience:'Accountants',
+                  headline:'You Already Know Who Qualifies',
+                  body:'You sign the s.761G certificates that grant wholesale investor access. Your clients are already asking you about alternatives to residential property and equities. Prop Dev DNA gives you a compliant, credible answer.',
+                  howItWorks:[
+                    'You introduce your client to the platform — verbally, as a reference, not a recommendation',
+                    'Your client registers independently and uploads their s.761G certificate',
+                    'We verify your membership number on the CPA Australia / CA ANZ / IPA public register',
+                    'Your client gains Tier 2 access and can evaluate deals independently',
+                    'You are not providing financial product advice — you are making a professional introduction',
+                  ],
+                  compliance:'Pure warm introduction model — no AFSL required. Your existing professional obligations are not affected. You are not recommending an investment — you are introducing a person to a regulated platform.',
+                  income:'Where you hold no existing AFSL or AR appointment — you may be eligible for appointment as an Authorised Representative under AFSL 479499, which provides a documented income framework for introductions. Contact us to discuss.',
+                  cta:'Enquire About Partnership',
+                },
+                {
+                  icon:'💼',
+                  audience:'Financial Advisers',
+                  color:'#27AE60',
+                  headline:'Your Wholesale Clients Are Already Asking',
+                  body:'HNW clients with s.761G-qualifying assets are increasingly seeking development finance exposure — returns that outperform listed equities without the volatility. The problem has been finding a platform with the compliance standards that survive scrutiny.',
+                  howItWorks:[
+                    'You introduce your wholesale-eligible client to the platform — no product recommendation required',
+                    'The platform handles all s.761G verification, risk acknowledgments, and compliance documentation',
+                    'Your client evaluates and invests independently — you are not the advice provider',
+                    'If you hold your own AFSL — the Category B warm introduction model applies: no fee, no recommendation, no compliance exposure',
+                    'If you hold no existing AFSL — AR appointment under AFSL 479499 may be available',
+                  ],
+                  compliance:'We are conscious that licensed advisers who already hold an AFSL or AR appointment face dual authorisation constraints. The Category B model — pure warm introduction, no financial consideration, client-initiated — is designed for you. No compliance exposure. No AFSL conflict.',
+                  income:'For advisers without existing AFSL obligations — we are exploring a structured referral income framework under AFSL 479499. For licensed advisers — the value is client service quality and access to a product that differentiates your practice.',
+                  cta:'Register Your Interest',
+                },
+                {
+                  icon:'🏠',
+                  audience:'Mortgage Brokers',
+                  color:'#4A90D9',
+                  headline:'You Understand the Deal Table. So Do We.',
+                  body:'Mortgage brokers are the natural referral partner for Prop Dev DNA. You understand credit, you have developer relationships, and you already sit at the intersection of capital and property. The platform is built by a licensed mortgage broker — the product language is yours.',
+                  howItWorks:[
+                    'Introduce developer clients to the platform for subordinated capital raising — complement your senior debt placement',
+                    'Introduce wholesale investor clients to the investor network — earn referral income',
+                    'Where you do not hold an AFSL — AR appointment under AFSL 479499 may be available',
+                    'Where you do hold an ACL — your credit activities are unaffected; the referral sits separately',
+                    'Broker commission on senior debt arranged through DFP continues as normal — we add the PDD layer alongside',
+                  ],
+                  compliance:'Mortgage brokers hold an ACL — not an AFSL. Referring clients to a wholesale investment platform is generally separate from your credit licence activities. Where an AR appointment is appropriate, the scope is clearly documented and ASIC-notified.',
+                  income:'Referral income for investor introductions — where AR appointment is in place. Developer introductions to the platform — separate commercial arrangement. Senior debt broker commission through DFP on the same deal. Three potential income streams from one developer relationship.',
+                  cta:'Register as a Partner Broker',
+                },
+                {
+                  icon:'🔑',
+                  audience:'Buyers Agents',
+                  color:'#7ab88a',
+                  headline:'VIP Presale Access for Your Investor Clients',
+                  body:"Your investor clients want off-market, developer-priced stock before public launch. Prop Dev DNA's presale program gives Tier 2+ wholesale investors first access to off-the-plan units at developer pricing — 10–15% below projected market value at completion.",
+                  howItWorks:[
+                    'Your client registers on the platform as a wholesale investor — you assist with the process',
+                    'Once Tier 2 verified — your client receives VIP presale alerts before any public marketing',
+                    'Presale contracts executed through Prop Dev Realty at developer pricing',
+                    'At completion — client settles (owns the unit) or assigns the contract (profit without settlement)',
+                    'You earn your buyers advocacy fee directly from your client as normal — the platform is a source of stock, not a competitor',
+                  ],
+                  compliance:'Buyers agents are not providing financial product advice by introducing clients to a platform to evaluate investment opportunities. The platform handles all wholesale verification and compliance. Your buyers advocacy licence and the platform operate in separate regulatory frameworks.',
+                  income:"Your standard buyers advocacy fee from your client. Where a buyers agent AR appointment is appropriate — referral income from Prop Dev DNA for introductions. Commission from Prop Dev Realty on presale contracts where you act as the buyer's representative.",
+                  cta:'Register as a Buyers Agent Partner',
+                },
+              ].map(card => (
+                <div key={card.audience} style={{ background:'#fff', borderTop:`4px solid ${card.color}`, padding:'36px 32px' }}>
+                  <div style={{ fontSize:36, marginBottom:16 }}>{card.icon}</div>
+                  <div style={{ fontSize:10, letterSpacing:'2.5px', textTransform:'uppercase', color:card.color, marginBottom:10 }}>{card.audience}</div>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:24, fontWeight:600, color:'var(--ink)', marginBottom:14, lineHeight:1.2 }}>{card.headline}</div>
+                  <p style={{ fontSize:13, color:'var(--muted)', lineHeight:1.85, marginBottom:24 }}>{card.body}</p>
+
+                  <div style={{ marginBottom:20 }}>
+                    <div style={{ fontSize:10, letterSpacing:'2px', textTransform:'uppercase', color:card.color, marginBottom:12 }}>How It Works</div>
+                    {card.howItWorks.map((step,i) => (
+                      <div key={i} style={{ display:'flex', gap:10, marginBottom:10 }}>
+                        <span style={{ fontSize:9, letterSpacing:'1px', color:card.color, flexShrink:0, marginTop:3, fontWeight:600 }}>{String(i+1).padStart(2,'0')}</span>
+                        <span style={{ fontSize:12, color:'var(--muted)', lineHeight:1.65 }}>{step}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div style={{ background:'rgba(0,0,0,0.03)', border:'1px solid rgba(0,0,0,0.07)', padding:'16px', marginBottom:20 }}>
+                    <div style={{ fontSize:10, letterSpacing:'2px', textTransform:'uppercase', color:'var(--muted)', marginBottom:8 }}>Compliance Position</div>
+                    <p style={{ fontSize:11, color:'var(--muted)', lineHeight:1.7 }}>{card.compliance}</p>
+                  </div>
+
+                  <div style={{ borderLeft:`3px solid ${card.color}`, paddingLeft:14, marginBottom:24 }}>
+                    <div style={{ fontSize:10, letterSpacing:'2px', textTransform:'uppercase', color:card.color, marginBottom:6 }}>Income Potential</div>
+                    <p style={{ fontSize:11, color:'var(--muted)', lineHeight:1.7 }}>{card.income}</p>
+                  </div>
+
+                  <button className="btn btn-g" style={{ width:'100%', justifyContent:'center' }}
+                    onClick={() => setShowAuth(true)}>
+                    {card.cta} →
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* s.761G Certificate explainer for accountants */}
+          <div style={{ background:'var(--ink)', padding:'52px 56px' }}>
+            <div style={{ maxWidth:1100, margin:'0 auto', display:'grid', gridTemplateColumns:'1fr 1fr', gap:48, alignItems:'start' }}>
+              <div>
+                <div className="slbl" style={{ color:'rgba(201,168,76,0.5)' }}>For Accountants</div>
+                <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, color:'#fff', marginBottom:16, lineHeight:1.1 }}>What the s.761G Certificate Means — and What It Doesn't</div>
+                <p style={{ fontSize:13, color:'rgba(245,242,236,0.5)', lineHeight:1.85, marginBottom:20 }}>
+                  Signing a s.761G wholesale investor certificate does not expose you to liability for your client's investment decisions. The certificate confirms your client meets a statutory eligibility threshold — it is not an endorsement of any investment.
+                </p>
+                <p style={{ fontSize:13, color:'rgba(245,242,236,0.5)', lineHeight:1.85, marginBottom:24 }}>
+                  Prop Dev DNA verifies your membership number on the relevant professional body's public register before accepting any certificate. This protects you, your client, and the platform.
+                </p>
+                {[
+                  ['The certificate confirms','Net assets of at least $2.5M (excluding principal residence) OR gross income of at least $250,000 p.a. for each of the last two financial years'],
+                  ['The certificate does NOT confirm','That the investment is suitable. That the client can afford to lose the capital. That the investment will perform.'],
+                  ['Your liability is limited to','The accuracy of the financial information you have reviewed. Standard professional obligations apply.'],
+                  ['Certificate validity','2 years from the date of signing. The platform sends renewal reminders automatically.'],
+                ].map(([label,text]) => (
+                  <div key={label} style={{ padding:'14px 0', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
+                    <div style={{ fontSize:11, fontWeight:500, color:'var(--gold)', marginBottom:5 }}>{label}</div>
+                    <div style={{ fontSize:12, color:'rgba(245,242,236,0.4)', lineHeight:1.65 }}>{text}</div>
+                  </div>
+                ))}
+              </div>
+              <div>
+                <div className="slbl" style={{ color:'rgba(201,168,76,0.5)', marginBottom:16 }}>Enquire About Partnership</div>
+                <div style={{ background:'rgba(255,255,255,0.03)', border:'1px solid rgba(201,168,76,0.15)', padding:'32px' }}>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, color:'#fff', marginBottom:8 }}>Register Your Interest</div>
+                  <p style={{ fontSize:12, color:'rgba(245,242,236,0.35)', marginBottom:24, lineHeight:1.7 }}>Tell us your profession and how you'd like to engage. We'll be in touch within 2 business days with the right structure for your situation.</p>
+                  {[['pname','Your Full Name'],['pemail','Email Address'],['pphone','Phone Number'],['pfirm','Firm / Practice Name']].map(([k,l]) => (
+                    <div className="fg" key={k}>
+                      <label className="fl" style={{ color:'rgba(245,242,236,0.3)' }}>{l}</label>
+                      <input className="fi" placeholder={l} />
+                    </div>
+                  ))}
+                  <div className="fg">
+                    <label className="fl" style={{ color:'rgba(245,242,236,0.3)' }}>Your Profession</label>
+                    <select className="fi">
+                      <option value="">Select</option>
+                      {['Accountant — CPA Australia','Accountant — CA ANZ','Accountant — IPA','Financial Adviser','Mortgage Broker','Buyers Agent','Other'].map(o => <option key={o}>{o}</option>)}
+                    </select>
+                  </div>
+                  <button className="btn btn-g" style={{ width:'100%', marginTop:8 }} onClick={() => showT('Thank you — we will be in touch within 2 business days')}>
+                    Register Interest →
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* ── ABOUT ── */}
@@ -1355,18 +1729,7 @@ export default function App() {
               ))}
             </div>
             <div>
-              <div className="aphoto" style={{ position: 'relative', overflow: 'hidden', borderRadius: 0 }}>
-                <img
-                  src="https://images.unsplash.com/photo-1560250097-0b93528c311a?w=600&q=80&fit=crop&crop=face"
-                  alt="Anthony Lawson"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'top' }}
-                  onError={e => { e.target.style.display='none'; }}
-                />
-                <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'linear-gradient(to top, rgba(42,58,46,0.9) 0%, transparent 60%)', padding: '24px 20px 16px' }}>
-                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 20, color: '#fff', fontWeight: 600 }}>Anthony Lawson</div>
-                  <div style={{ fontSize: 11, color: 'rgba(201,168,76,0.8)', letterSpacing: '1.5px', textTransform: 'uppercase', marginTop: 4 }}>Director — Financial DNA Group</div>
-                </div>
-              </div>
+              <div className="aphoto">👤</div>
               <div style={{ background: 'rgba(201,168,76,0.05)', border: '1px solid rgba(201,168,76,0.16)', padding: '18px', marginTop: 14 }}>
                 <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 6 }}>Contact</div>
                 <p style={{ fontSize: '12px', color: 'var(--ink)', lineHeight: 1.7 }}>anthony@financialdnagroup.com.au<br />0414 744 516<br />Sydney NSW</p>
@@ -1402,23 +1765,76 @@ export default function App() {
         </sec>
       )}
 
+      {/* ── COMPLIANCE PAGE ── */}
+      {page === 'compliance' && (
+        <sec style={{ paddingTop:80 }}>
+          <div className="slbl">Regulatory Framework</div>
+          <div className="stitle">Compliance Foundation</div>
+          <p className="ssub" style={{ marginBottom:32 }}>
+            Prop Dev DNA is built on a compliance framework that goes beyond what any competitor has implemented.
+          </p>
+          <div style={{ background:'var(--ink)', border:'1px solid rgba(201,168,76,0.12)', marginBottom:32 }}>
+            {[
+              { icon:'🛡', title:'AFSL 479499 — Regulatory Foundation', body:'Prop Dev DNA operates as a Corporate Authorised Representative of DFP Corporate Pty Ltd (AFSL 479499). This AFSL has been current since November 2015 and is audited by Hall Chadwick. All platform financial services operate under active ASIC oversight.' },
+              { icon:'📋', title:'FEASO Builder — Viability Before Visibility', body:'Every development listing completes an independent feasibility assessment before any investor sees it. Below 15% margin on cost — blocked. 15–20% — admin review required. Above 20% — approved. Raises above $2M require independent QS sign-off on construction costs.' },
+              { icon:'✅', title:'Four-Tier Wholesale Investor Verification', body:"All investors must submit an s.761G accountant certificate from a CPA Australia, CA ANZ, or IPA member before accessing any deal information. Admin verifies the certifying accountant's membership before granting access." },
+              { icon:'🔒', title:'Independent Trust — Funds Never Touch Prop Dev DNA', body:'Investor capital is never held by Prop Dev DNA. Each deal establishes an independent trust with an independent trustee. On minimum raise not met — all funds returned within 5 business days. On completion — waterfall distribution to investors before developer profit.' },
+              { icon:'⏱', title:'Timestamped Risk Acknowledgment', body:'Every investor must complete a mandatory risk acknowledgment before any expression of interest can be submitted. Timestamped, IP-logged, stored per deal per investor. Records retained minimum 7 years.' },
+              { icon:'👁', title:'Admin Approval Gate', body:'No listing goes live without internal admin review. FEASO reviewed, QS report cross-checked, IM reviewed for ASIC disclaimers. A human sees every deal before any investor does.' },
+            ].map((s,i) => (
+              <div key={s.title} style={{ display:'flex', gap:20, borderBottom:'1px solid rgba(255,255,255,0.04)', padding:'24px 28px', background:i%2===0?'#0a0a0a':'#0d0d0d' }}>
+                <div style={{ fontSize:28, flexShrink:0, marginTop:2 }}>{s.icon}</div>
+                <div>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, color:'#fff', fontWeight:600, marginBottom:10 }}>{s.title}</div>
+                  <div style={{ fontSize:13, color:'rgba(245,242,236,0.55)', lineHeight:1.8 }}>{s.body}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div style={{ background:'rgba(201,168,76,0.05)', border:'1px solid rgba(201,168,76,0.2)', padding:'28px 32px', marginBottom:32 }}>
+            <div style={{ fontSize:10, letterSpacing:'3px', textTransform:'uppercase', color:'var(--gold)', marginBottom:10 }}>ASIC Innovation Hub</div>
+            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, color:'var(--ink)', marginBottom:12 }}>Proactive Regulatory Engagement</div>
+            <p style={{ fontSize:13, color:'var(--muted)', lineHeight:1.8, marginBottom:0 }}>
+              Prop Dev DNA has lodged a formal enquiry with the ASIC Innovation Hub covering the CAR structure under AFSL 479499, the per-deal trust model, wholesale investor verification, AML/CTF obligations, FSG requirements, and record retention. <strong style={{ color:'var(--ink)' }}>Status:</strong> Awaiting response — lodged June 2026.
+            </p>
+          </div>
+          <div style={{ background:'var(--ink)', padding:'28px 32px' }}>
+            <div style={{ fontSize:10, letterSpacing:'3px', textTransform:'uppercase', color:'var(--gold)', marginBottom:10 }}>Dispute Resolution</div>
+            <p style={{ fontSize:13, color:'rgba(245,242,236,0.55)', lineHeight:1.8 }}>
+              Complaints: <span style={{ color:'var(--gold)' }}>anthony@financialdnagroup.com.au</span> — acknowledged within 2 business days, responded within 10 business days. External: <strong style={{ color:'#fff' }}>AFCA</strong> — afca.org.au · 1800 931 678 · Membership 106939. Free and independent.
+            </p>
+          </div>
+          <div style={{ marginTop:20, fontSize:11, color:'var(--muted)', lineHeight:1.8 }}>
+            General information only — not financial product advice · Wholesale investors only · s.761G Corporations Act 2001 (Cth) · © 2026 Prop Dev DNA Pty Ltd
+          </div>
+        </sec>
+      )}
+
       {/* ── FOOTER ── */}
       <footer>
         <div className="ftop">
           <div>
             <div className="flogo" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 44, width: 'auto', objectFit: 'contain' }} onError={e => e.target.style.display = 'none'} />
+              <img src="/logo.png" alt="Prop Dev DNA" style={{ height: 36, width: 'auto', objectFit: 'contain' }} onError={e => e.target.style.display = 'none'} />
               <span>Prop Dev DNA</span>
             </div>
             <p className="ftag">Australia's professional wholesale property investment platform.</p>
+            <p style={{ fontSize:9, letterSpacing:'1.5px', textTransform:'uppercase', color:'rgba(201,168,76,0.4)', marginTop:10, fontStyle:'italic' }}>Where Performance Meets Accountability</p>
           </div>
           <div>
             <div className="fch4">Platform</div>
-            {[['listings', 'Opportunities'], ['portal', 'For Developers'], ['tiers', 'Investor Tiers'], ['pricing', 'Pricing']].map(([pg, l]) => <button key={l} className="fl2" onClick={() => go(pg)}>{l}</button>)}
+            {[['listings','Opportunities'],['portal','For Developers'],['tiers','Investor Tiers'],['pricing','Pricing'],['compliance','Compliance']].map(([pg,l]) => <button key={l} className="fl2" onClick={() => go(pg)}>{l}</button>)}
           </div>
           <div>
             <div className="fch4">Company</div>
-            {[['about', 'About'], ['about', 'Contact']].map(([pg, l]) => <button key={l} className="fl2" onClick={() => go(pg)}>{l}</button>)}
+            {[['about','About'],['about','Contact']].map(([pg,l]) => <button key={l} className="fl2" onClick={() => go(pg)}>{l}</button>)}
+          </div>
+          <div>
+            <div className="fch4">Entities</div>
+            <p className="fl2" style={{cursor:'default'}}>Prop Dev DNA Pty Ltd</p>
+            <p className="fl2" style={{cursor:'default'}}>Prop Dev Capital Pty Ltd</p>
+            <p className="fl2" style={{cursor:'default'}}>Prop Dev Realty Pty Ltd</p>
+            <p className="fl2" style={{cursor:'default'}}>Financial DNA Group Pty Ltd</p>
           </div>
           <div>
             <div className="fch4">Contact</div>
@@ -1429,7 +1845,15 @@ export default function App() {
         </div>
         <div className="fbot">
           <p className="flegal">Restricted to wholesale investors under s.761G Corporations Act 2001 (Cth). No AFSL held. Not financial product advice. Capital at risk. © 2026 Prop Dev DNA Pty Ltd.</p>
-          <p className="fcopy">© 2026 Prop Dev DNA</p>
+          <div style={{ display:'flex', alignItems:'center', gap:16, flexWrap:'wrap' }}>
+            <p className="fcopy">© 2026 Prop Dev DNA Pty Ltd</p>
+            {!appInstalled && showInstall && (
+              <button onClick={handleInstall} style={{ background:'none', border:'1px solid rgba(201,168,76,0.2)', color:'rgba(201,168,76,0.5)', fontSize:9, letterSpacing:'1.5px', textTransform:'uppercase', padding:'5px 12px', cursor:'pointer', fontFamily:"'DM Sans',sans-serif" }}>
+                ⬇ Add to Home Screen
+              </button>
+            )}
+            {appInstalled && <span style={{ fontSize:9, color:'rgba(201,168,76,0.4)', letterSpacing:'1px', textTransform:'uppercase' }}>✓ App Installed</span>}
+          </div>
         </div>
       </footer>
 
