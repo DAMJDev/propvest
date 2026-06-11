@@ -1776,11 +1776,14 @@ export default function App() {
           <div style={{ background:'var(--ink)', border:'1px solid rgba(201,168,76,0.12)', marginBottom:32 }}>
             {[
               { icon:'🛡', title:'AFSL 479499 — Regulatory Foundation', body:'Prop Dev DNA operates as a Corporate Authorised Representative of DFP Corporate Pty Ltd (AFSL 479499). This AFSL has been current since November 2015 and is audited by Hall Chadwick. All platform financial services operate under active ASIC oversight.' },
-              { icon:'📋', title:'FEASO Builder — Viability Before Visibility', body:'Every development listing completes an independent feasibility assessment before any investor sees it. Below 15% margin on cost — blocked. 15–20% — admin review required. Above 20% — approved. Raises above $2M require independent QS sign-off on construction costs.' },
+              { icon:'📋', title:'FEASO Builder — Viability Before Visibility', body:'Every development listing completes an independent feasibility assessment before any investor sees it. Below 15% margin on cost — blocked. 15–20% — admin review required. Above 20% — approved. Raises above $2M require independent QS sign-off on construction costs. Completed builds — past projects with actual returns achieved, builder scorecards, and timeline performance — will be publicly visible as social proof.' },
+              { icon:'🔬', title:'Independent QS Certification', body:'For every capital raise above $2,000,000 — a registered AIQS Quantity Surveyor certifies construction cost inputs. Admin cross-checks every FEASO input against the QS report before a listing goes live.' },
               { icon:'✅', title:'Four-Tier Wholesale Investor Verification', body:"All investors must submit an s.761G accountant certificate from a CPA Australia, CA ANZ, or IPA member before accessing any deal information. Admin verifies the certifying accountant's membership before granting access." },
               { icon:'🔒', title:'Independent Trust — Funds Never Touch Prop Dev DNA', body:'Investor capital is never held by Prop Dev DNA. Each deal establishes an independent trust with an independent trustee. On minimum raise not met — all funds returned within 5 business days. On completion — waterfall distribution to investors before developer profit.' },
               { icon:'⏱', title:'Timestamped Risk Acknowledgment', body:'Every investor must complete a mandatory risk acknowledgment before any expression of interest can be submitted. Timestamped, IP-logged, stored per deal per investor. Records retained minimum 7 years.' },
-              { icon:'👁', title:'Admin Approval Gate', body:'No listing goes live without internal admin review. FEASO reviewed, QS report cross-checked, IM reviewed for ASIC disclaimers. A human sees every deal before any investor does.' },
+              { icon:'👁', title:'Admin Approval Gate', body:'No listing goes live without internal admin review. FEASO reviewed, QS report cross-checked, IM reviewed for ASIC disclaimers. A human sees every deal before any investor does. Builder scorecard system and completed-build case studies will be publicly visible alongside every deal.' },
+              { icon:'💼', title:'Full Conflict Disclosure — All Four Revenue Streams', body:'Platform success fee (1.5%), broker commission (0.55% + 0.15% trail), presale agency commission (2.5%), and Prop Dev Capital co-investment returns are all disclosed in the FSG and in every relevant Information Memorandum. No hidden revenue.' },
+              { icon:'🏠', title:'Presale Agency Accountability — Prop Dev Realty', body:'Prop Dev Realty Pty Ltd operates under a separate NSW real estate licence (Property and Stock Agents Act 2002). VIP presale access is restricted to Tier 2+ verified wholesale investors. Presale deposits are held in solicitors’ trust accounts — not by any Prop Dev DNA Group entity.' },
             ].map((s,i) => (
               <div key={s.title} style={{ display:'flex', gap:20, borderBottom:'1px solid rgba(255,255,255,0.04)', padding:'24px 28px', background:i%2===0?'#0a0a0a':'#0d0d0d' }}>
                 <div style={{ fontSize:28, flexShrink:0, marginTop:2 }}>{s.icon}</div>
@@ -1796,6 +1799,32 @@ export default function App() {
             <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:22, color:'var(--ink)', marginBottom:12 }}>Proactive Regulatory Engagement</div>
             <p style={{ fontSize:13, color:'var(--muted)', lineHeight:1.8, marginBottom:0 }}>
               Prop Dev DNA has lodged a formal enquiry with the ASIC Innovation Hub covering the CAR structure under AFSL 479499, the per-deal trust model, wholesale investor verification, AML/CTF obligations, FSG requirements, and record retention. <strong style={{ color:'var(--ink)' }}>Status:</strong> Awaiting response — lodged June 2026.
+            </p>
+          </div>
+          <div style={{ background:'var(--ink)', border:'1px solid rgba(201,168,76,0.12)', padding:'28px 32px', marginBottom:32 }}>
+            <div style={{ fontSize:10, letterSpacing:'3px', textTransform:'uppercase', color:'var(--gold)', marginBottom:16 }}>Document Register</div>
+            <div style={{ display:'grid', gap:0 }}>
+              {[
+                ['PDD-POL-001', 'Privacy Policy', 'Final — Legal Review'],
+                ['PDD-POL-002', 'Terms of Service', 'Final — Legal Review'],
+                ['PDD-FSG-001', 'Financial Services Guide', 'Final — AFSL Approval'],
+                ['PDD-COM-001', 'Compliance Manual', 'Draft — AFSL Approval'],
+                ['PDD-POL-003', 'Record Retention Policy', 'Final'],
+                ['PDD-PROC-001', 'FEASO Review Procedure', 'Final'],
+                ['PDD-PROC-002', 'Wholesale Cert Review Procedure', 'Final'],
+                ['PDD-PROC-003', 'Breach Reporting Procedure', 'Final — AFSL Approval'],
+              ].map(([ref, title, status], i) => (
+                <div key={ref} style={{ display:'flex', justifyContent:'space-between', alignItems:'center', gap:16, padding:'14px 0', borderTop: i===0 ? 'none' : '1px solid rgba(255,255,255,0.04)' }}>
+                  <div style={{ display:'flex', gap:16, alignItems:'center', minWidth:0 }}>
+                    <span style={{ fontFamily:'monospace', fontSize:11, color:'var(--gold)', flexShrink:0 }}>{ref}</span>
+                    <span style={{ fontSize:13, color:'#fff' }}>{title}</span>
+                  </div>
+                  <span style={{ fontSize:10, letterSpacing:'1px', textTransform:'uppercase', color:'rgba(245,242,236,0.4)', flexShrink:0 }}>{status}</span>
+                </div>
+              ))}
+            </div>
+            <p style={{ fontSize:11, color:'var(--muted)', lineHeight:1.8, marginTop:16, marginBottom:0 }}>
+              Full copies available on request from <span style={{ color:'var(--gold)' }}>anthony@financialdnagroup.com.au</span>.
             </p>
           </div>
           <div style={{ background:'var(--ink)', padding:'28px 32px' }}>
