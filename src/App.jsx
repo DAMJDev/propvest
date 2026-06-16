@@ -1004,15 +1004,19 @@ export default function App() {
       )}
 
       {/* LOGO HEADER — top bar with logo left */}
-      <div style={{ background:'#0D0D0D', padding:'10px 32px', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'1px solid rgba(201,168,76,0.15)', zIndex:200, position:'relative' }}>
-        <button onClick={() => go('home')} style={{ background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:14, padding:0 }}>
-          <img src="/logo.png" alt="Prop Dev DNA"
-            style={{ height:52, width:'auto', objectFit:'contain' }}
-            onError={e => { e.target.style.display='none'; }}
-          />
+      <div style={{ background:'#0D0D0D', padding:'20px 32px', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'1px solid rgba(201,168,76,0.2)', zIndex:200, position:'relative' }}>
+        <button onClick={() => go('home')} style={{ background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:20, padding:0 }}>
+          {/* Logo with gold ring — sized to match header prominence */}
+          <div style={{ position:'relative', flexShrink:0 }}>
+            <div style={{ position:'absolute', inset:-3, borderRadius:'50%', background:'rgba(201,168,76,0.1)', border:'1px solid rgba(201,168,76,0.35)' }} />
+            <img src="/logo.png" alt="Prop Dev DNA"
+              style={{ height:140, width:140, objectFit:'contain', position:'relative', zIndex:1, display:'block' }}
+              onError={e => { e.target.style.display='none'; }}
+            />
+          </div>
           <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-start' }}>
-            <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:20, fontWeight:700, color:'var(--gold)', lineHeight:1.1, letterSpacing:'-0.3px' }}>Prop Dev DNA</span>
-            <span style={{ fontSize:9, letterSpacing:'2.5px', textTransform:'uppercase', color:'rgba(201,168,76,0.5)', marginTop:3, fontWeight:300 }}>Where Performance Meets Accountability</span>
+            <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:700, color:'var(--gold)', lineHeight:1.1, letterSpacing:'-0.5px' }}>Prop Dev DNA</span>
+            <span style={{ fontSize:10, letterSpacing:'3px', textTransform:'uppercase', color:'rgba(201,168,76,0.55)', marginTop:6, fontWeight:300 }}>Where Performance Meets Accountability</span>
           </div>
         </button>
         <div style={{ fontSize:10, color:'rgba(245,242,236,0.3)', textAlign:'right' }}>
