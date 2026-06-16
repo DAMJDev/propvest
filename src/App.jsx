@@ -315,7 +315,7 @@ function TierBadge({ tier, size = "sm" }) {
   );
 }
 
-function Card({ l, onClick }) {
+function Card({ l, onClick, user }) {
   const closing = l.raised / l.raise > 0.85;
   const cardPhotos = [
     'photo-1545324418-cc1a3fa10c00','photo-1590650153855-d9e808231d41',
@@ -324,8 +324,18 @@ function Card({ l, onClick }) {
   ];
   const photoIdx = (l.id||l.name||'').split('').reduce((a,c)=>a+c.charCodeAt(0),0)%cardPhotos.length;
   const cardPhoto = l.photo||`https://images.unsplash.com/${cardPhotos[photoIdx]}?w=600&q=80&fit=crop&auto=format`;
+  const riskMap = { conservative:['low'], balanced:['low','medium'], growth:['low','medium','high'], aggressive:['low','medium','high','very-high'] };
+  const investorProfile = user?.riskProfile || 'balanced';
+  const dealRisk = l.riskLevel || 'medium';
+  const isSuitable = !user || (riskMap[investorProfile]||['low','medium']).includes(dealRisk);
   return (
-    <div className="card" onClick={onClick}>
+    <div className="card" onClick={onClick} style={{ position:'relative' }}>
+      {!isSuitable && (
+        <div style={{ background:'rgba(201,168,76,0.95)', padding:'5px 12px', display:'flex', alignItems:'center', gap:8 }}>
+          <span style={{ fontSize:11 }}>⚠️</span>
+          <span style={{ fontSize:9, fontWeight:500, color:'#0D0D0D', letterSpacing:'0.5px', textTransform:'uppercase' }}>Outside your risk profile — review carefully</span>
+        </div>
+      )}
       <div className="cimg" style={{ background:'#0a0a0a' }}>
         <img src={cardPhoto} alt={l.name||l.title} loading="lazy" className="cimg-photo" />
         <div style={{ position:'absolute', inset:0, background:'linear-gradient(to bottom, transparent 40%, rgba(13,13,13,0.85) 100%)' }} />
@@ -404,11 +414,24 @@ function EOIModal({ listing, onClose, toast, user }) {
   if (done) return (
     <div className="overlay" onClick={onClose}>
       <div className="modal" style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>✓</div>
-        <div className="mlbl">Interest Registered</div>
-        <h2>{listing.name || listing.title}</h2>
-        <p>Your expression of interest has been submitted. The team will be in touch within 24 hours.</p>
-        <button className="btn btn-g" onClick={onClose}>Done</button>
+        <div style={{ fontSize: 48, marginBottom: 16 }}>⏳</div>
+        <div className="mlbl" style={{ color: 'var(--gold)' }}>48-Hour Confirmation Window</div>
+        <h2 style={{ marginBottom: 12 }}>{listing.name || listing.title}</h2>
+        <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', padding: '16px 20px', marginBottom: 16, textAlign: 'left' }}>
+          <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--ink)', marginBottom: 8 }}>Your expression of interest has been received.</div>
+          <div style={{ fontSize: 11, color: 'var(--muted)', lineHeight: 1.7 }}>
+            This is <strong>not a binding commitment</strong>. You have <strong>48 hours</strong> to confirm or withdraw.<br/>
+            We will send a confirmation email to <strong>{f.email}</strong> with a confirm and withdraw link.<br/>
+            If you do not confirm within 48 hours your expression of interest will be automatically withdrawn.
+          </div>
+        </div>
+        <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 20, lineHeight: 1.6 }}>
+          This voluntary cooling-off window is provided as an additional investor protection measure. Wholesale investment products are not legally required to offer a cooling-off period — we do so by choice.
+        </div>
+        <button className="btn btn-g" onClick={onClose}>Understood — Check My Email</button>
+        <div style={{ marginTop: 12, fontSize: 10, color: 'var(--muted)', letterSpacing: '1px', textTransform: 'uppercase' }}>
+          s.761G Corporations Act 2001 · Not financial product advice
+        </div>
       </div>
     </div>
   );
@@ -441,12 +464,35 @@ function EOIModal({ listing, onClose, toast, user }) {
             ))}
           </div>
           <div className="fg"><label className="fl">Funding Source</label>
-            {[['Cash / Existing Funds', 'Ready to deploy'], ['SMSF', 'Super fund'], ['Trust / Company', 'Via entity'], ['Finance Required', 'Need to arrange']].map(([v, s]) => (
+            {[['Cash / Existing Funds', 'Ready to deploy'], ['SMSF', 'Super fund — additional checklist applies'], ['Trust / Company', 'Via entity'], ['Finance Required', 'Need to arrange']].map(([v, s]) => (
               <div key={v} className={`eoiopt ${f.fund === v ? 'sel' : ''}`} onClick={() => set('fund', v)}>
                 <div className="eoiopt-t">{v}</div><div className="eoiopt-s">{s}</div>
               </div>
             ))}
           </div>
+          {f.fund === 'SMSF' && (
+            <div style={{ background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.2)', padding: '14px 16px', marginTop: 8 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', marginBottom: 10 }}>⚠️ SMSF Investment — Additional Requirements</div>
+              <div style={{ fontSize: 11, color: 'var(--muted)', lineHeight: 1.7, marginBottom: 10 }}>
+                SMSF investment in development finance requires specific compliance. Before proceeding please confirm:
+              </div>
+              {[
+                'Your SMSF trust deed permits investment in property development finance and managed investment scheme interests',
+                'This investment will be made on commercial arm\'s length terms — not with a related party of the fund',
+                'The investment is consistent with your fund\'s investment strategy and the sole purpose test',
+                'All SMSF trustees have provided written consent to this investment',
+                'You have sought or will seek advice from an SMSF specialist accountant or financial adviser',
+              ].map((item, i) => (
+                <div key={i} style={{ display: 'flex', gap: 8, marginBottom: 6, fontSize: 11, color: 'var(--muted)' }}>
+                  <span style={{ color: 'var(--gold)', flexShrink: 0 }}>✓</span>
+                  <span>{item}</span>
+                </div>
+              ))}
+              <div style={{ marginTop: 12, fontSize: 10, color: 'var(--muted)', fontStyle: 'italic', lineHeight: 1.6 }}>
+                By selecting SMSF as your funding source you confirm you have read and understood the above requirements. This platform does not provide SMSF or financial advice — seek independent SMSF specialist advice before investing.
+              </div>
+            </div>
+          )}
           <div className="matns">
             <button className="btn btn-o" onClick={() => setStep(1)}>Back</button>
             <button className="btn btn-g" style={{ flex: 1 }} onClick={() => setStep(3)}>Continue →</button>
@@ -461,10 +507,13 @@ function EOIModal({ listing, onClose, toast, user }) {
               </div>
             ))}
           </div>
-          <p>By submitting I consent to Prop Dev DNA contacting me.</p>
+          <div style={{ background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.15)', padding: '12px 14px', marginBottom: 14, fontSize: 11, color: 'var(--muted)', lineHeight: 1.65 }}>
+            ⏳ <strong style={{ color: 'var(--ink)' }}>48-hour cooling-off window applies.</strong> Submitting this form is not a binding commitment. You will receive an email to confirm or withdraw within 48 hours.
+          </div>
+          <p style={{ fontSize: 10, color: 'var(--muted)', marginBottom: 12 }}>By submitting I consent to Prop Dev DNA contacting me regarding this opportunity. Wholesale investors only · s.761G Corporations Act 2001.</p>
           <div className="matns">
             <button className="btn btn-o" onClick={() => setStep(2)}>Back</button>
-            <button className="btn btn-g" style={{ flex: 1 }} onClick={submit}>Submit →</button>
+            <button className="btn btn-g" style={{ flex: 1 }} onClick={submit}>Submit Expression of Interest →</button>
           </div>
         </>}
       </div>
@@ -576,6 +625,33 @@ function Detail({ l, onBack, onInvest }) {
             {l.raise && <PBar raised={l.raised || 0} target={l.raise} />}
             <button className="btn btn-g" style={{ width: '100%', marginTop: 20 }} onClick={onInvest}>Express Interest →</button>
             <div className="sdis">Wholesale investors only · Capital at risk · s.761G Corporations Act 2001</div>
+
+            {/* FEASO Actuals vs Forecast — shown once construction commenced */}
+            {(l.status === 'active' || l.status === 'construction') ? (
+              <div style={{ marginTop: 24, borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: 20 }}>
+                <div style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12 }}>FEASO — Live Actuals vs Forecast</div>
+                {[
+                  ['Construction Cost', l.forecastCost || '—', l.actualCost || 'In progress', l.costVariance],
+                  ['Average Sale Price', l.forecastSalePrice || '—', l.actualSalePrice || 'In progress', l.priceVariance],
+                  ['Completion Date', l.forecastCompletion || '—', l.actualCompletion || 'In progress', l.timeVariance],
+                  ['Gross Margin', l.forecastMargin || '—', l.actualMargin || 'In progress', l.marginVariance],
+                ].map(([label, forecast, actual, variance]) => {
+                  const varNum = parseFloat(variance);
+                  const varColor = !variance ? 'var(--muted)' : varNum > 10 ? '#C0392B' : varNum > 5 ? '#E67E22' : '#27AE60';
+                  return (
+                    <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', borderBottom: '1px solid rgba(0,0,0,0.05)', fontSize: 11 }}>
+                      <span style={{ color: 'var(--muted)', flex: 1 }}>{label}</span>
+                      <span style={{ color: 'var(--muted)', flex: 1, textAlign: 'center' }}>Forecast: {forecast}</span>
+                      <span style={{ color: 'var(--ink)', fontWeight: 500, flex: 1, textAlign: 'center' }}>Actual: {actual}</span>
+                      {variance && <span style={{ color: varColor, fontWeight: 600, fontSize: 10 }}>{varNum > 0 ? '+' : ''}{variance}%</span>}
+                    </div>
+                  );
+                })}
+                <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 10, fontStyle: 'italic' }}>
+                  Updated from QS progress reports. Last updated: {l.actualsUpdated ? new Date(l.actualsUpdated).toLocaleDateString('en-AU') : 'Pending first QS report'}.
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
@@ -620,7 +696,7 @@ function AdminPortal({ toast }) {
     return <span style={{ background: bg, color, fontSize: 10, padding: '3px 9px', fontWeight: 500 }}>{s?.replace(/_/g, ' ')}</span>;
   };
 
-  const TABS = [['certs', '📄 Wholesale Certs'], ['subs', '💳 Subscriptions'], ['reviews', '📋 IM Reviews'], ['leads', '📊 Leads'], ['users', '👥 Users']];
+  const TABS = [['certs', '📄 Wholesale Certs'], ['subs', '💳 Subscriptions'], ['reviews', '📋 IM Reviews'], ['leads', '📊 Leads'], ['users', '👥 Users'], ['actuals', '📊 FEASO Actuals'], ['valuations', '🏛 Completion Valuations']];
 
   return (
     <sec style={{ paddingTop: 80 }}>
@@ -768,6 +844,63 @@ function AdminPortal({ toast }) {
           ))}
         </div>
       )}
+      {/* ── FEASO ACTUALS ── */}
+      {!loading && tab === 'actuals' && (
+        <div>
+          <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 20 }}>Update actual construction costs, sale prices, and timelines from QS progress reports. Investors see these updates in their deal dashboard.</div>
+          <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 24 }}>
+            <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Update FEASO Actuals — Active Deal</div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              {[['actualCost','Actual Construction Cost (e.g. $3.2M)'],['actualSalePrice','Actual Avg Sale Price (e.g. $485,000)'],['actualMargin','Actual Margin on Cost (e.g. 21.4%)'],['actualCompletion','Actual/Expected Completion (e.g. Q3 2026)'],['costVariance','Cost Variance % (e.g. +3.2)'],['priceVariance','Price Variance % (e.g. -1.8)'],['timeVariance','Timeline Variance % (e.g. +8.0)'],['marginVariance','Margin Variance % (e.g. -2.1)']].map(([k,l]) => (
+                <div className="fg" key={k}>
+                  <label className="fl">{l}</label>
+                  <input className="fi" placeholder={l} />
+                </div>
+              ))}
+            </div>
+            <div className="fg" style={{ marginTop: 4 }}>
+              <label className="fl">QS Report Reference</label>
+              <input className="fi" placeholder="e.g. QS-Progress-Report-2-June2026.pdf" />
+            </div>
+            <button className="btn btn-g" style={{ marginTop: 8 }}>Save Actuals — Investors Notified</button>
+            <div style={{ marginTop: 10, fontSize: 10, color: 'var(--muted)' }}>Saving actuals sends an automated update notification to all investors in this deal.</div>
+          </div>
+        </div>
+      )}
+
+      {/* ── COMPLETION VALUATIONS ── */}
+      {!loading && tab === 'valuations' && (
+        <div>
+          <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 20 }}>For deals above $5M GRV — upload independent registered valuer completion report before waterfall distribution is approved.</div>
+          <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 24 }}>
+            <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, fontWeight: 600, marginBottom: 4 }}>Completion Valuation Gate</div>
+            <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 20 }}>The independent valuation must be uploaded and admin-approved before the trustee can release any waterfall distribution to investors.</p>
+            <div style={{ background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.2)', padding: '14px 16px', marginBottom: 20 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', marginBottom: 6 }}>Valuation Requirements</div>
+              {['Registered valuer — must be registered with the Australian Property Institute (API)','Desktop or full valuation — as determined by deal size and trustee requirements','Valuation date — within 30 days of practical completion','Valuation basis — market value of completed units/lots','Report format — PDF, signed by the registered valuer'].map((r,i) => (
+                <div key={i} style={{ fontSize: 11, color: 'var(--muted)', display: 'flex', gap: 8, marginBottom: 4 }}>
+                  <span style={{ color: 'var(--gold)' }}>→</span><span>{r}</span>
+                </div>
+              ))}
+            </div>
+            <div className="fg"><label className="fl">Valuation Report (PDF)</label>
+              <input type="file" className="fi" accept=".pdf" style={{ paddingTop: 8 }} />
+            </div>
+            <div className="fg"><label className="fl">Registered Valuer Name and API Number</label>
+              <input className="fi" placeholder="e.g. John Smith AAPI — API12345678" />
+            </div>
+            <div className="fg"><label className="fl">Valuation Date</label>
+              <input className="fi" type="date" />
+            </div>
+            <div className="fg"><label className="fl">Gross Realisable Value — Valuer's Assessment</label>
+              <input className="fi" placeholder="e.g. $11,400,000" />
+            </div>
+            <button className="btn btn-g" style={{ marginTop: 8 }}>Upload Valuation — Unlock Distribution Review</button>
+            <div style={{ marginTop: 10, fontSize: 10, color: 'var(--muted)', lineHeight: 1.6 }}>Uploading the valuation makes it visible to all investors in this deal. The waterfall distribution cannot be released until this valuation is uploaded and approved.</div>
+          </div>
+        </div>
+      )}
+
     </sec>
   );
 }
@@ -896,6 +1029,7 @@ export default function App() {
         <button className="nl" onClick={() => go('tiers')}>Investor Tiers</button>
         <button className="nl" onClick={() => go('pricing')}>Pricing</button>
         <button className="nl" onClick={() => go('compliance')}>Compliance</button>
+        <button className="nl" onClick={() => go('developers')}>Track Record</button>
         <button className="nl" onClick={() => go('about')}>About</button>
         {showInstall && !appInstalled && (
           <button onClick={handleInstall} style={{ background:'rgba(201,168,76,0.1)', border:'1px solid rgba(201,168,76,0.3)', color:'var(--gold)', fontSize:9, letterSpacing:'1.5px', textTransform:'uppercase', padding:'6px 12px', cursor:'pointer', fontFamily:"'DM Sans',sans-serif", marginLeft:8 }}>
@@ -1235,7 +1369,7 @@ export default function App() {
           </div>
           {loadingListings ? <p style={{ color: 'var(--muted)' }}>Loading…</p> :
             <div className="grid">
-              {listings.slice(0, 3).map(l => <Card key={l.id} l={l} onClick={() => { setSel(l); go('detail'); }} />)}
+              {listings.slice(0, 3).map(l => <Card key={l.id} l={l} onClick={() => { setSel(l); go('detail'); }} user={user} />)}
             </div>
           }
         </sec>
@@ -1262,7 +1396,7 @@ export default function App() {
               ? <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--muted)' }}>
                 {user ? 'No listings match this filter.' : 'Sign in to view available listings.'}
               </div>
-              : <div className="grid">{filtered.map(l => <Card key={l.id} l={l} onClick={() => { setSel(l); go('detail'); }} />)}</div>
+              : <div className="grid">{filtered.map(l => <Card key={l.id} l={l} onClick={() => { setSel(l); go('detail'); }} user={user} />)}</div>
           }
         </sec>
       )}
@@ -1698,13 +1832,80 @@ export default function App() {
                       {['Accountant — CPA Australia','Accountant — CA ANZ','Accountant — IPA','Financial Adviser','Mortgage Broker','Buyers Agent','Other'].map(o => <option key={o}>{o}</option>)}
                     </select>
                   </div>
-                  <button className="btn btn-g" style={{ width:'100%', marginTop:8 }} onClick={() => showT('Thank you — we will be in touch within 2 business days')}>
-                    Register Interest →
+                  <div className="fg">
+                    <label className="fl" style={{ color:'rgba(245,242,236,0.3)' }}>How did you hear about Prop Dev DNA?</label>
+                    <select className="fi">
+                      <option value="">Select</option>
+                      {['LinkedIn','Professional referral','Google Search','Industry event','Other'].map(o => <option key={o}>{o}</option>)}
+                    </select>
+                  </div>
+                  <button className="btn btn-g" style={{ width:'100%', marginTop:8 }} onClick={() => showT('Thank you — we will be in touch within 2 business days with your unique referral link')}>
+                    Register as Partner →
                   </button>
+                  <div style={{ marginTop:12, padding:'12px 14px', background:'rgba(201,168,76,0.06)', border:'1px solid rgba(201,168,76,0.15)', fontSize:11, color:'rgba(245,242,236,0.5)', lineHeight:1.7 }}>
+                    Once registered you will receive a unique referral link to share with clients. Your partner dashboard shows client registration status, deal progress, and — where applicable — income earned and pending.
+                  </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── DEVELOPER REGISTRY ── */}
+      {page === 'developers' && (
+        <div>
+          <sec style={{ paddingTop: 80 }}>
+            <div className="slbl">Accountability</div>
+            <div className="stitle">Developer Track Record Registry</div>
+            <p className="ssub" style={{ marginBottom: 32 }}>
+              Every developer who has listed on Prop Dev DNA has a verified track record — public, searchable, and updated on every project completion. Australia's first standardised development finance track record registry.
+            </p>
+            <div style={{ background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.15)', padding: '16px 20px', marginBottom: 32, fontSize: 13, color: 'var(--muted)', lineHeight: 1.75 }}>
+              <strong style={{ color: 'var(--ink)' }}>Why this exists:</strong> Banks have private blacklists. Brokers have network knowledge. Neither is public or standardised. Every investor on this platform deserves access to the same track record data that institutional lenders use to assess developers. This registry makes it public.
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 1, background: 'rgba(0,0,0,0.06)', marginBottom: 40 }}>
+              {[
+                ['🌱', 'Emerging', 'First project on platform — no completed track record yet', '#888'],
+                ['⭐', 'Established', '1–2 projects completed on platform — track record building', 'var(--gold)'],
+                ['⭐⭐', 'Verified', '3+ projects completed — consistent delivery record', '#27AE60'],
+                ['⭐⭐⭐', 'Elite', '5+ projects — outstanding track record on all metrics', '#C9A84C'],
+              ].map(([icon, rating, desc, color]) => (
+                <div key={rating} style={{ background: '#fff', padding: '20px 16px', textAlign: 'center' }}>
+                  <div style={{ fontSize: 24, marginBottom: 8 }}>{icon}</div>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: color, marginBottom: 6 }}>{rating}</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted)', lineHeight: 1.5 }}>{desc}</div>
+                </div>
+              ))}
+            </div>
+            <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>
+              Registry is updated automatically from completed project data. Developers cannot edit their own registry entries.
+            </div>
+            <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: '20px 24px', marginBottom: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
+                <div>
+                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>Sample Developer Pty Ltd</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 12 }}>Sydney NSW · Active since 2024 · 2 projects listed</div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
+                    {[['Projects Completed', '1', ''], ['Avg. Timeline Variance', '+8%', '#E67E22'], ['Avg. Cost Variance', '+3%', '#27AE60'], ['Investor Return vs Forecast', '−2%', '#E67E22']].map(([label, val, color]) => (
+                      <div key={label}>
+                        <div style={{ fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 4 }}>{label}</div>
+                        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, fontWeight: 600, color: color || 'var(--ink)' }}>{val}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'right' }}>
+                  <div style={{ fontSize: 22, marginBottom: 4 }}>⭐</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--gold)' }}>Established</div>
+                  <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 4 }}>1 project completed</div>
+                </div>
+              </div>
+            </div>
+            <div style={{ padding: '16px 20px', background: 'rgba(201,168,76,0.04)', border: '1px solid rgba(201,168,76,0.1)', fontSize: 12, color: 'var(--muted)', lineHeight: 1.75 }}>
+              <strong style={{ color: 'var(--ink)' }}>Note:</strong> The Developer Track Record Registry is populated from actual project outcomes on this platform only. Past performance is not a reliable indicator of future performance. This registry is provided as a transparency tool — not financial product advice or an endorsement of any developer.
+            </div>
+          </sec>
         </div>
       )}
 
