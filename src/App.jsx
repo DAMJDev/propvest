@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 const API = {
   get: (url) => fetch(url, { credentials: 'include' }).then(r => r.json()),
   post: (url, data) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(data) }).then(r => r.json()),
+  put: (url, data) => fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(data) }).then(r => r.json()),
 };
 
 // ─── INVESTOR VERIFICATION TIERS ─────────────────────────────────
@@ -524,7 +525,7 @@ function EOIModal({ listing, onClose, toast, user }) {
 // ─── AUTH MODAL ──────────────────────────────────────────────────
 function AuthModal({ onClose, onLogin }) {
   const [mode, setMode] = useState('login');
-  const [f, setF] = useState({ email: '', password: '', fname: '', lname: '', role: 'investor' });
+  const [f, setF] = useState({ email: '', password: '', fname: '', lname: '', role: 'investor', trade: '' });
   const [error, setError] = useState('');
   const set = (k, v) => setF(p => ({ ...p, [k]: v }));
 
@@ -535,7 +536,7 @@ function AuthModal({ onClose, onLogin }) {
       if (mode === 'login') {
         res = await API.post('/api/auth/login', { email: f.email, password: f.password });
       } else {
-        res = await API.post('/api/auth/register', { email: f.email, password: f.password, fname: f.fname, lname: f.lname, role: f.role });
+        res = await API.post('/api/auth/register', { email: f.email, password: f.password, fname: f.fname, lname: f.lname, role: f.role, trade: f.trade });
       }
       if (res.error) { setError(res.error); return; }
       onLogin(res.user || res);
@@ -556,7 +557,7 @@ function AuthModal({ onClose, onLogin }) {
         </div>
         {mode === 'register' && <>
           <div className="fg"><label className="fl">I am a…</label>
-            {[['investor', '💼 Investor', 'Browse & invest'], ['developer', '🏗 Developer', 'List opportunities']].map(([v, t, s]) => (
+            {[['investor', '💼 Investor', 'Browse & invest'], ['developer', '🏗 Developer', 'List opportunities'], ['subcontractor', '🔧 Subcontractor', 'Get assigned & scored on stages']].map(([v, t, s]) => (
               <div key={v} className={`eoiopt ${f.role === v ? 'sel' : ''}`} onClick={() => set('role', v)}>
                 <div className="eoiopt-t">{t}</div><div className="eoiopt-s">{s}</div>
               </div>
@@ -566,6 +567,9 @@ function AuthModal({ onClose, onLogin }) {
             <div className="fg"><label className="fl">First Name</label><input className="fi" value={f.fname} onChange={e => set('fname', e.target.value)} /></div>
             <div className="fg"><label className="fl">Last Name</label><input className="fi" value={f.lname} onChange={e => set('lname', e.target.value)} /></div>
           </div>
+          {f.role === 'subcontractor' && (
+            <div className="fg"><label className="fl">Trade / Specialty</label><input className="fi" placeholder="e.g. Concrete & Structural" value={f.trade} onChange={e => set('trade', e.target.value)} /></div>
+          )}
         </>}
         <div className="fg"><label className="fl">Email</label><input className="fi" type="email" value={f.email} onChange={e => set('email', e.target.value)} /></div>
         <div className="fg"><label className="fl">Password</label><input className="fi" type="password" value={f.password} onChange={e => set('password', e.target.value)} /></div>
@@ -577,6 +581,82 @@ function AuthModal({ onClose, onLogin }) {
           Wholesale investors only · s.761G Corporations Act 2001 · Not financial advice
         </p>
       </div>
+    </div>
+  );
+}
+
+// ─── STAGE SCORING (developer scores subcontractors against benchmarks) ──
+function ScoreBar({ label, value }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
+      <div style={{ fontSize: 10, color: 'var(--muted)', width: 150, flexShrink: 0 }}>{label}</div>
+      <div style={{ flex: 1, height: 6, background: 'rgba(0,0,0,0.08)', borderRadius: 3, overflow: 'hidden' }}>
+        <div style={{ width: `${(value / 5) * 100}%`, height: '100%', background: 'var(--gold)' }} />
+      </div>
+      <div style={{ fontSize: 11, fontWeight: 600, width: 20, textAlign: 'right' }}>{value}</div>
+    </div>
+  );
+}
+
+function StageRow({ stage, isDev, onAssign, onScore }) {
+  const [assignEmail, setAssignEmail] = useState('');
+  const [dueDate, setDueDate] = useState('');
+  const [scoring, setScoring] = useState(false);
+  const [vals, setVals] = useState({ ontime: 3, quality: 3, budget: 3, safety: 3 });
+  const [notes, setNotes] = useState('');
+
+  const statusColor = { unassigned: '#999', assigned: '#3498db', scored: '#27ae60' }[stage.status] || '#999';
+
+  return (
+    <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 16, marginBottom: 10 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, flexWrap: 'wrap', gap: 8 }}>
+        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 17 }}>{stage.name}</div>
+        <span style={{ fontSize: 9, letterSpacing: '1px', textTransform: 'uppercase', color: statusColor, border: `1px solid ${statusColor}`, padding: '2px 8px', borderRadius: 10 }}>{stage.status}</span>
+      </div>
+
+      {stage.subcontractorName && (
+        <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 8 }}>
+          Subcontractor: <strong>{stage.subcontractorName}</strong>
+          {stage.dueDate ? ` · Due ${new Date(stage.dueDate).toLocaleDateString('en-AU')}` : ''}
+        </div>
+      )}
+
+      {isDev && stage.status === 'unassigned' && (
+        <div style={{ display: 'flex', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+          <input className="fi" placeholder="Subcontractor email" value={assignEmail} onChange={e => setAssignEmail(e.target.value)} style={{ flex: 1, minWidth: 180, color: '#111', background: '#fafafa', borderColor: 'rgba(0,0,0,0.15)' }} />
+          <input className="fi" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} style={{ color: '#111', background: '#fafafa', borderColor: 'rgba(0,0,0,0.15)' }} />
+          <button className="btn btn-d btn-sm" onClick={() => onAssign(stage.id, assignEmail, dueDate)} disabled={!assignEmail}>Assign</button>
+        </div>
+      )}
+
+      {isDev && stage.status === 'assigned' && !scoring && (
+        <button className="btn btn-d btn-sm" onClick={() => setScoring(true)}>Score This Stage →</button>
+      )}
+
+      {isDev && scoring && (
+        <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+          {stage.benchmarks.map(b => (
+            <div key={b.id} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+              <div style={{ fontSize: 11, width: 150, flexShrink: 0 }}>{b.label}</div>
+              <input type="range" min="1" max="5" value={vals[b.id]} onChange={e => setVals(v => ({ ...v, [b.id]: Number(e.target.value) }))} style={{ flex: 1 }} />
+              <div style={{ fontSize: 12, fontWeight: 600, width: 16 }}>{vals[b.id]}</div>
+            </div>
+          ))}
+          <textarea className="fi" placeholder="Notes (optional)" value={notes} onChange={e => setNotes(e.target.value)} style={{ width: '100%', minHeight: 50, marginTop: 4, color: '#111', background: '#fafafa', borderColor: 'rgba(0,0,0,0.15)' }} />
+          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+            <button className="btn btn-g btn-sm" onClick={() => { onScore(stage.id, vals, notes); setScoring(false); }}>Submit Score</button>
+            <button className="btn btn-o btn-sm" onClick={() => setScoring(false)}>Cancel</button>
+          </div>
+        </div>
+      )}
+
+      {stage.status === 'scored' && stage.score && (
+        <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+          <div style={{ fontSize: 12, marginBottom: 8 }}>Overall: <strong style={{ color: 'var(--gold)', fontSize: 16 }}>{stage.score.overall}/5</strong></div>
+          {stage.benchmarks.map(b => <ScoreBar key={b.id} label={b.label} value={stage.score.values[b.id] || 0} />)}
+          {stage.score.notes && <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 8, fontStyle: 'italic' }}>"{stage.score.notes}"</div>}
+        </div>
+      )}
     </div>
   );
 }
@@ -922,6 +1002,10 @@ export default function App() {
   const [toast, setToast] = useState(null);
   const [pDone, setPDone] = useState(false);
   const [pf, setPf] = useState({ company: '', name: '', email: '', phone: '', type: '', raise: '' });
+  const [devListings, setDevListings] = useState([]);
+  const [stageListingId, setStageListingId] = useState(null);
+  const [stages, setStages] = useState([]);
+  const [myStages, setMyStages] = useState(null);
 
   const showT = msg => { setToast(msg); setTimeout(() => setToast(null), 3500); };
   const go = pg => { setPage(pg); window.scrollTo && window.scrollTo(0, 0); };
@@ -931,7 +1015,7 @@ export default function App() {
   // Load current user session
   useEffect(() => {
     API.get('/api/auth/me').then(res => {
-      if (res && !res.error) setUser(res);
+      if (res && !res.error) setUser(res.user || null);
     }).catch(() => {});
   }, []);
 
@@ -945,6 +1029,46 @@ export default function App() {
       }).catch(() => setLoadingListings(false));
     }
   }, [page]);
+
+  // Dashboard data: developer's own listings, or a subcontractor's assigned stages
+  useEffect(() => {
+    if (page !== 'dashboard' || !user) return;
+    if (user.role === 'developer' || user.role === 'admin') {
+      API.get('/api/listings').then(res => {
+        if (Array.isArray(res)) setDevListings(res.filter(l => l.devId === user.id));
+      });
+    }
+    if (user.role === 'subcontractor') {
+      API.get('/api/my/stages').then(res => { if (res && !res.error) setMyStages(res); });
+    }
+  }, [page, user]);
+
+  // Stages for whichever listing the developer has expanded
+  useEffect(() => {
+    if (!stageListingId) { setStages([]); return; }
+    API.get(`/api/listings/${stageListingId}/stages`).then(res => { if (Array.isArray(res)) setStages(res); });
+  }, [stageListingId]);
+
+  const initStages = async (listingId) => {
+    const res = await API.post(`/api/listings/${listingId}/stages/init`, {});
+    if (res.error) { showT(res.error); return; }
+    setStageListingId(listingId);
+    setStages(res.stages);
+  };
+
+  const assignStage = async (stageId, email, dueDate) => {
+    const res = await API.put(`/api/listings/${stageListingId}/stages/${stageId}/assign`, { subcontractorEmail: email, dueDate });
+    if (res.error) { showT(res.error); return; }
+    setStages(s => s.map(x => x.id === stageId ? res.stage : x));
+    showT('Subcontractor assigned.');
+  };
+
+  const scoreStage = async (stageId, values, notes) => {
+    const res = await API.post(`/api/listings/${stageListingId}/stages/${stageId}/score`, { values, notes });
+    if (res.error) { showT(res.error); return; }
+    setStages(s => s.map(x => x.id === stageId ? res.stage : x));
+    showT('Stage scored.');
+  };
 
   // PWA install prompt
   useEffect(() => {
@@ -1453,7 +1577,7 @@ export default function App() {
       )}
 
       {/* ── DASHBOARD ── */}
-      {page === 'dashboard' && user && (
+      {page === 'dashboard' && user && user.role === 'investor' && (
         <sec style={{ paddingTop: 80 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
             <div>
@@ -1477,6 +1601,77 @@ export default function App() {
               💡 To unlock full IM access, submit your <strong>s.761G wholesale investor certificate</strong> via the profile page in the full platform.
             </div>
           </div>
+        </sec>
+      )}
+
+      {/* ── DEVELOPER DASHBOARD — stages & subcontractor scoring ── */}
+      {page === 'dashboard' && user && (user.role === 'developer' || user.role === 'admin') && (
+        <sec style={{ paddingTop: 80 }}>
+          <div style={{ marginBottom: 28 }}>
+            <div className="slbl">Developer Dashboard</div>
+            <div className="stitle" style={{ marginBottom: 4 }}>Welcome back, {user.fname || user.email}</div>
+            <p className="ssub" style={{ margin: 0 }}>Assign subcontractors to each project stage, then score their work against agreed benchmarks once complete.</p>
+          </div>
+
+          {devListings.length === 0 && (
+            <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 24, textAlign: 'center', color: 'var(--muted)', fontSize: 13 }}>
+              You don't have any listings yet. Submit a project via the <button className="nl" style={{ display: 'inline', color: 'var(--gold)' }} onClick={() => go('portal')}>Developers</button> page.
+            </div>
+          )}
+
+          {devListings.map(l => (
+            <div key={l.id} style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', marginBottom: 16 }}>
+              <div style={{ padding: '18px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, borderBottom: stageListingId === l.id ? '1px solid rgba(0,0,0,0.06)' : 'none' }}>
+                <div>
+                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 19 }}>{l.name}</div>
+                  <div style={{ fontSize: 11, color: 'var(--muted)' }}>{l.loc}</div>
+                </div>
+                {stageListingId === l.id
+                  ? <button className="btn btn-o btn-sm" onClick={() => setStageListingId(null)}>Hide Stages</button>
+                  : <button className="btn btn-d btn-sm" onClick={() => initStages(l.id)}>Manage Stages & Scoring →</button>
+                }
+              </div>
+              {stageListingId === l.id && (
+                <div style={{ padding: 20 }}>
+                  {stages.slice().sort((a, b) => a.order - b.order).map(s => (
+                    <StageRow key={s.id} stage={s} isDev onAssign={assignStage} onScore={scoreStage} />
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+        </sec>
+      )}
+
+      {/* ── SUBCONTRACTOR DASHBOARD — assigned stages & score history ── */}
+      {page === 'dashboard' && user && user.role === 'subcontractor' && (
+        <sec style={{ paddingTop: 80 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
+            <div>
+              <div className="slbl">Subcontractor Dashboard</div>
+              <div className="stitle" style={{ marginBottom: 4 }}>Welcome back, {user.fname || user.email}</div>
+              {user.trade && <p className="ssub" style={{ margin: 0 }}>{user.trade}</p>}
+            </div>
+            {myStages && myStages.avgScore !== null && (
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 32, color: 'var(--gold)', lineHeight: 1 }}>{myStages.avgScore}<span style={{ fontSize: 16 }}>/5</span></div>
+                <div style={{ fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--muted)' }}>Your Score · {myStages.scoredCount} stage{myStages.scoredCount === 1 ? '' : 's'} rated</div>
+              </div>
+            )}
+          </div>
+
+          {!myStages || myStages.stages.length === 0 ? (
+            <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 24, textAlign: 'center', color: 'var(--muted)', fontSize: 13 }}>
+              You haven't been assigned to any project stages yet. A developer will assign you once they set up their project.
+            </div>
+          ) : (
+            myStages.stages.slice().sort((a, b) => a.order - b.order).map(s => (
+              <div key={s.id} style={{ marginBottom: 4 }}>
+                <div style={{ fontSize: 10, letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 4 }}>{s.listingName}</div>
+                <StageRow stage={s} isDev={false} onAssign={() => {}} onScore={() => {}} />
+              </div>
+            ))
+          )}
         </sec>
       )}
 

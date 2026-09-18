@@ -161,7 +161,7 @@ const DEFAULT_LISTINGS = [
     financials:[['Land Acquisition','$14,200,000'],['Construction Cost','$38,500,000'],['Professional Fees','$3,200,000'],['Marketing & Sales','$1,800,000'],['Holding & Finance Costs','$4,100,000'],['Contingency (8%)','$3,040,000'],['TOTAL DEV. COST','$64,840,000','total'],['Gross Realisable Value','$89,700,000'],['Agent Commission','–$2,242,500'],['Net Revenue','$87,457,500'],['Estimated Profit','$22,617,500','profit'],['Profit Margin on Cost','34.9%','profit']],
     roi:{intro:'Projected returns for a $500,000 equity contribution over 3.5 year hold',bars:[['Year 1','28%','+8%','$540k'],['Year 2','52%','+14%','$570k'],['Year 3','76%','+21%','$605k'],['Exit','100%','+27%','$635k']],summary:'$135,000 profit on $500k (+27% / 3.5yr) · IRR: 18.2% p.a.'},
     developer:{name:'Meridian Property Group',est:'Est. 2004 · Sydney, NSW',completed:14,gdv:'$890M',bio:'20 years delivering premium residential and commercial projects across NSW & VIC. All projects delivered on time and on budget.',badges:['✓ Verified','✓ Licensed Builder','✓ ASIC Registered']},
-    devId:'system', createdAt: new Date().toISOString()
+    devId:'u-demo-dev', createdAt: new Date().toISOString()
   },
   {
     id:'cse-002', type:'commercial', badge:'LIMITED SPOTS', badgeClass:'limited', status:'active',
@@ -230,14 +230,78 @@ function writeDB(data) {
   fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
 }
 
+// ══════════════════════════════════════════════════
+//  PROJECT STAGES & SUBCONTRACTOR SCORING BENCHMARKS
+// ══════════════════════════════════════════════════
+const STAGE_TEMPLATE = [
+  'Site Establishment & Demolition',
+  'Slab / Foundations',
+  'Frame',
+  'Lock-up (Roof, Windows, External Walls)',
+  'Fit-Out & Fixing',
+  'Practical Completion & Handover'
+];
+
+const STAGE_BENCHMARKS = [
+  { id: 'ontime',  label: 'On-Time Delivery' },
+  { id: 'quality', label: 'Quality of Workmanship' },
+  { id: 'budget',  label: 'Budget Adherence' },
+  { id: 'safety',  label: 'Safety & Compliance' }
+];
+
+function makeStages() {
+  return STAGE_TEMPLATE.map((name, i) => ({
+    id: `stg-${Date.now()}-${i}`,
+    name,
+    order: i,
+    benchmarks: STAGE_BENCHMARKS,
+    subcontractorId: null,
+    subcontractorEmail: null,
+    subcontractorName: null,
+    dueDate: null,
+    status: 'unassigned',
+    score: null
+  }));
+}
+
+function computeOverall(values) {
+  const nums = STAGE_BENCHMARKS.map(b => Number(values[b.id])).filter(n => !isNaN(n) && n > 0);
+  if (!nums.length) return null;
+  return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
+}
+
 function seedDB() {
+  // Pre-populate the flagship demo listing with stages so the demo
+  // developer/subcontractor accounts have something real to show.
+  const demoStages = makeStages();
+  demoStages[0].subcontractorId = 'u-demo-sub';
+  demoStages[0].subcontractorEmail = 'subcontractor@demo.com';
+  demoStages[0].subcontractorName = 'Chris Demo';
+  demoStages[0].dueDate = new Date(Date.now() - 14 * 86400000).toISOString();
+  demoStages[0].status = 'scored';
+  demoStages[0].score = {
+    values: { ontime: 4, quality: 5, budget: 4, safety: 5 },
+    notes: 'Clean handover, minor delay waiting on council inspection.',
+    overall: 4.5,
+    ratedAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+    ratedBy: 'u-demo-dev'
+  };
+  demoStages[1].subcontractorId = 'u-demo-sub';
+  demoStages[1].subcontractorEmail = 'subcontractor@demo.com';
+  demoStages[1].subcontractorName = 'Chris Demo';
+  demoStages[1].dueDate = new Date(Date.now() + 21 * 86400000).toISOString();
+  demoStages[1].status = 'assigned';
+
+  const listings = DEFAULT_LISTINGS.map(l => l.id === 'hvr-001' ? { ...l, stages: demoStages } : l);
+
   const data = {
     users: [
       { id:'u-demo-inv', email:'investor@demo.com', password: hashPw('demo123'), fname:'Alex', lname:'Demo', role:'investor', joined: new Date().toISOString() },
       { id:'u-demo-dev', email:'developer@demo.com', password: hashPw('demo123'), fname:'Sam', lname:'Demo', role:'developer', joined: new Date().toISOString() },
+      { id:'u-demo-sub', email:'subcontractor@demo.com', password: hashPw('demo123'), fname:'Chris', lname:'Demo', role:'subcontractor', trade:'Concrete & Structural', joined: new Date().toISOString() },
       { id:'u-admin-001', email: ADMIN_EMAIL, password: hashPw(ADMIN_PASSWORD), fname:'Anthony', lname:'Admin', role:'admin', joined: new Date().toISOString() }
     ],
-    listings: DEFAULT_LISTINGS,
+    listings,
     interests: [],
     subscriptions: [
       { id:'sub-demo-dev', userId:'u-demo-dev', userEmail:'developer@demo.com', userName:'Sam Demo', userRole:'developer', plan:'developer_monthly', paymentRef:'DEMO', status:'active', requestedAt: new Date().toISOString(), activatedAt: new Date().toISOString() }
@@ -338,10 +402,10 @@ function getWholesaleStatus(db, userId) {
 
 // ── Auth ──────────────────────────────────────────
 app.post('/api/auth/register', async (req, res) => {
-  const { fname, lname, email, password, role, referralCode } = req.body;
+  const { fname, lname, email, password, role, referralCode, trade } = req.body;
   if (!fname || !email || !password || !role) return res.status(400).json({ error: 'All fields required.' });
   if (password.length < 6) return res.status(400).json({ error: 'Password must be at least 6 characters.' });
-  if (!['investor','developer'].includes(role)) return res.status(400).json({ error: 'Invalid role.' });
+  if (!['investor','developer','subcontractor'].includes(role)) return res.status(400).json({ error: 'Invalid role.' });
 
   const db = readDB();
   if (db.users.find(u => u.email === email.toLowerCase())) {
@@ -361,6 +425,7 @@ app.post('/api/auth/register', async (req, res) => {
     fname: fname.trim(),
     lname: (lname || '').trim(),
     role,
+    trade: role === 'subcontractor' ? (trade || '').trim() : undefined,
     joined: new Date().toISOString(),
     referredBy:     referringPartner ? referringPartner.referralCode : null,
     referredByName: referringPartner ? referringPartner.name        : null,
@@ -375,7 +440,7 @@ app.post('/api/auth/register', async (req, res) => {
   sendEmail(user.email, 'Welcome to Prop Dev DNA 🏗', `
     <h2 style="color:#e8e2d5;margin:0 0 12px">Welcome, ${user.fname}!</h2>
     <p style="color:#888;line-height:1.7">Your account has been created on <strong style="color:#c9a84c">Prop Dev DNA</strong> — Australia's wholesale property development investment platform.</p>
-    ${role === 'investor' ? `<p style="color:#888;line-height:1.7">Your next step is to complete your <strong style="color:#c9a84c">Wholesale Investor Certification</strong> (s761G Corporations Act). Once approved, you'll have full access to all Investment Memorandums and FEASO reports.</p>` : `<p style="color:#888;line-height:1.7">Upgrade to a Developer subscription to publish listings and generate Information Memorandums for wholesale investors.</p>`}
+    ${role === 'investor' ? `<p style="color:#888;line-height:1.7">Your next step is to complete your <strong style="color:#c9a84c">Wholesale Investor Certification</strong> (s761G Corporations Act). Once approved, you'll have full access to all Investment Memorandums and FEASO reports.</p>` : role === 'developer' ? `<p style="color:#888;line-height:1.7">Upgrade to a Developer subscription to publish listings and generate Information Memorandums for wholesale investors.</p>` : `<p style="color:#888;line-height:1.7">You'll be notified when a developer assigns you to a project stage. Once a stage is complete, the developer scores your work against agreed benchmarks — your track record builds automatically.</p>`}
     <a href="https://propdevdna.com.au" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">Go to Platform →</a>
   `);
 
@@ -578,6 +643,114 @@ app.post('/api/listings/:id/feaso', requireAuth, requireDev, (req, res) => {
   db.listings[idx].feaso = { ...req.body, updatedAt: new Date().toISOString() };
   writeDB(db);
   res.json({ ok: true, feaso: db.listings[idx].feaso });
+});
+
+// ── Project Stages & Subcontractor Scoring ────────
+app.get('/api/listings/:id/stages', requireAuth, (req, res) => {
+  const db = readDB();
+  const listing = db.listings.find(l => l.id === req.params.id);
+  if (!listing) return res.status(404).json({ error: 'Listing not found.' });
+  const user = db.users.find(u => u.id === req.session.userId);
+  const isOwner = listing.devId === user.id || user.role === 'admin';
+  const stages = listing.stages || [];
+  res.json(isOwner ? stages : stages.filter(s => s.subcontractorId === user.id));
+});
+
+app.post('/api/listings/:id/stages/init', requireAuth, requireDev, (req, res) => {
+  const db   = readDB();
+  const user = db.users.find(u => u.id === req.session.userId);
+  const idx  = db.listings.findIndex(l => l.id === req.params.id && (l.devId === req.session.userId || user.role === 'admin'));
+  if (idx === -1) return res.status(404).json({ error: 'Listing not found or not yours.' });
+  if (!db.listings[idx].stages || !db.listings[idx].stages.length) {
+    db.listings[idx].stages = makeStages();
+    writeDB(db);
+  }
+  res.json({ ok: true, stages: db.listings[idx].stages });
+});
+
+app.put('/api/listings/:id/stages/:stageId/assign', requireAuth, requireDev, (req, res) => {
+  const db   = readDB();
+  const user = db.users.find(u => u.id === req.session.userId);
+  const lIdx = db.listings.findIndex(l => l.id === req.params.id && (l.devId === req.session.userId || user.role === 'admin'));
+  if (lIdx === -1) return res.status(404).json({ error: 'Listing not found or not yours.' });
+  const stages = db.listings[lIdx].stages || [];
+  const sIdx = stages.findIndex(s => s.id === req.params.stageId);
+  if (sIdx === -1) return res.status(404).json({ error: 'Stage not found.' });
+
+  const { subcontractorEmail, dueDate } = req.body;
+  const sub = db.users.find(u => u.email === (subcontractorEmail || '').toLowerCase().trim() && u.role === 'subcontractor');
+  if (!sub) return res.status(400).json({ error: 'No subcontractor account found with that email.' });
+
+  stages[sIdx].subcontractorId    = sub.id;
+  stages[sIdx].subcontractorEmail = sub.email;
+  stages[sIdx].subcontractorName  = `${sub.fname} ${sub.lname}`.trim();
+  stages[sIdx].dueDate            = dueDate || stages[sIdx].dueDate;
+  stages[sIdx].status             = 'assigned';
+  writeDB(db);
+
+  sendEmail(sub.email, `You've been assigned to a stage — ${db.listings[lIdx].name}`, `
+    <p style="color:#888">You've been assigned to <strong style="color:#c9a84c">${stages[sIdx].name}</strong> on <strong style="color:#c9a84c">${db.listings[lIdx].name}</strong>.</p>
+    ${dueDate ? `<p style="color:#888">Due: ${new Date(dueDate).toLocaleDateString('en-AU')}</p>` : ''}
+    <a href="https://propdevdna.com.au" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">View on Platform →</a>
+  `);
+
+  res.json({ ok: true, stage: stages[sIdx] });
+});
+
+app.post('/api/listings/:id/stages/:stageId/score', requireAuth, requireDev, (req, res) => {
+  const db   = readDB();
+  const user = db.users.find(u => u.id === req.session.userId);
+  const lIdx = db.listings.findIndex(l => l.id === req.params.id && (l.devId === req.session.userId || user.role === 'admin'));
+  if (lIdx === -1) return res.status(404).json({ error: 'Listing not found or not yours.' });
+  const stages = db.listings[lIdx].stages || [];
+  const sIdx = stages.findIndex(s => s.id === req.params.stageId);
+  if (sIdx === -1) return res.status(404).json({ error: 'Stage not found.' });
+  if (!stages[sIdx].subcontractorId) return res.status(400).json({ error: 'Assign a subcontractor before scoring this stage.' });
+
+  const { values, notes } = req.body;
+  const overall = computeOverall(values || {});
+  if (overall === null) return res.status(400).json({ error: 'At least one benchmark score is required.' });
+
+  stages[sIdx].score = { values, notes: notes || '', overall, ratedAt: new Date().toISOString(), ratedBy: user.id };
+  stages[sIdx].status = 'scored';
+  writeDB(db);
+
+  const sub = db.users.find(u => u.id === stages[sIdx].subcontractorId);
+  if (sub) {
+    sendEmail(sub.email, `Your stage has been scored — ${stages[sIdx].name}`, `
+      <p style="color:#888">Your work on <strong style="color:#c9a84c">${stages[sIdx].name}</strong> (${db.listings[lIdx].name}) has been scored: <strong style="color:#c9a84c">${overall}/5</strong>.</p>
+      ${notes ? `<p style="color:#888">Notes: ${notes}</p>` : ''}
+    `);
+  }
+
+  res.json({ ok: true, stage: stages[sIdx] });
+});
+
+// Subcontractor's own assigned stages, across every listing
+app.get('/api/my/stages', requireAuth, (req, res) => {
+  const db = readDB();
+  const user = db.users.find(u => u.id === req.session.userId);
+  if (!user || user.role !== 'subcontractor') return res.status(403).json({ error: 'Subcontractor account required.' });
+
+  const mine = [];
+  db.listings.forEach(l => (l.stages || []).forEach(s => {
+    if (s.subcontractorId === user.id) mine.push({ ...s, listingId: l.id, listingName: l.name });
+  }));
+  const scored = mine.filter(s => s.score);
+  const avgScore = scored.length ? Math.round((scored.reduce((a, s) => a + s.score.overall, 0) / scored.length) * 10) / 10 : null;
+  res.json({ stages: mine, avgScore, scoredCount: scored.length });
+});
+
+// Directory of subcontractors (for developer assignment lookups)
+app.get('/api/subcontractors', requireAuth, requireDev, (req, res) => {
+  const db = readDB();
+  const subs = db.users.filter(u => u.role === 'subcontractor').map(u => {
+    const scores = [];
+    db.listings.forEach(l => (l.stages || []).forEach(s => { if (s.subcontractorId === u.id && s.score) scores.push(s.score.overall); }));
+    const avgScore = scores.length ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10 : null;
+    return { id: u.id, email: u.email, name: `${u.fname} ${u.lname}`.trim(), trade: u.trade || '', avgScore, scoredCount: scores.length };
+  });
+  res.json(subs);
 });
 
 // ── Subscriptions ─────────────────────────────────
