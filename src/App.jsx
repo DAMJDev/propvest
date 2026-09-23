@@ -523,9 +523,9 @@ function EOIModal({ listing, onClose, toast, user }) {
 }
 
 // ─── AUTH MODAL ──────────────────────────────────────────────────
-function AuthModal({ onClose, onLogin }) {
-  const [mode, setMode] = useState('login');
-  const [f, setF] = useState({ email: '', password: '', fname: '', lname: '', role: 'investor', trade: '' });
+function AuthModal({ onClose, onLogin, defaultRole }) {
+  const [mode, setMode] = useState(defaultRole ? 'register' : 'login');
+  const [f, setF] = useState({ email: '', password: '', fname: '', lname: '', role: defaultRole || 'investor', trade: '' });
   const [error, setError] = useState('');
   const set = (k, v) => setF(p => ({ ...p, [k]: v }));
 
@@ -997,6 +997,8 @@ export default function App() {
   const [loadingListings, setLoadingListings] = useState(false);
   const [sel, setSel] = useState(null);
   const [showAuth, setShowAuth] = useState(false);
+  const [authDefaultRole, setAuthDefaultRole] = useState(null);
+  const openAuth = (role) => { setAuthDefaultRole(role); setShowAuth(true); };
   const [showComp, setShowComp] = useState(false);
   const [showEOI, setShowEOI] = useState(false);
   const [toast, setToast] = useState(null);
@@ -1032,7 +1034,7 @@ export default function App() {
 
   // Dashboard data: developer's own listings, or a subcontractor's assigned stages
   useEffect(() => {
-    if (page !== 'dashboard' || !user) return;
+    if ((page !== 'dashboard' && page !== 'stages') || !user) return;
     if (user.role === 'developer' || user.role === 'admin') {
       API.get('/api/listings').then(res => {
         if (Array.isArray(res)) setDevListings(res.filter(l => l.devId === user.id));
@@ -1158,6 +1160,7 @@ export default function App() {
         <button className="nl" onClick={() => go('pricing')}>Pricing</button>
         <button className="nl" onClick={() => go('compliance')}>Compliance</button>
         <button className="nl" onClick={() => go('developers')}>Track Record</button>
+        <button className="nl" onClick={() => go('stages')}>Stage Scoring</button>
         <button className="nl" onClick={() => go('about')}>About</button>
         {showInstall && !appInstalled && (
           <button onClick={handleInstall} style={{ background:'rgba(201,168,76,0.1)', border:'1px solid rgba(201,168,76,0.3)', color:'var(--gold)', fontSize:9, letterSpacing:'1.5px', textTransform:'uppercase', padding:'6px 12px', cursor:'pointer', fontFamily:"'DM Sans',sans-serif", marginLeft:8 }}>
@@ -1604,8 +1607,65 @@ export default function App() {
         </sec>
       )}
 
+      {/* ── STAGE SCORING — explainer for logged-out visitors & investors ── */}
+      {page === 'stages' && (!user || user.role === 'investor') && (
+        <div>
+          <div style={{ background:'var(--ink)', minHeight:'46vh', display:'flex', alignItems:'flex-end', padding:'80px 56px 52px', position:'relative', overflow:'hidden' }}>
+            <img src="https://images.unsplash.com/photo-1541976590-713941681591?w=1400&q=85&fit=crop&auto=format" loading="lazy" alt="Construction site" style={{ position:'absolute', inset:0, width:'100%', height:'100%', objectFit:'cover', opacity:0.18 }} />
+            <div style={{ position:'absolute', inset:0, background:'linear-gradient(to right, rgba(13,13,13,0.97) 0%, rgba(13,13,13,0.6) 60%, rgba(13,13,13,0.3) 100%)' }} />
+            <div style={{ position:'relative', zIndex:2, maxWidth:720 }}>
+              <div className="slbl" style={{ color:'rgba(201,168,76,0.6)', marginBottom:16 }}>For Builders · For Subcontractors</div>
+              <h1 style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:'clamp(32px,5vw,58px)', fontWeight:600, color:'#fff', lineHeight:1.05, marginBottom:20, letterSpacing:'-0.5px' }}>
+                Every Stage.<br /><em style={{ color:'var(--gold)' }}>Scored On The Record.</em>
+              </h1>
+              <p style={{ fontSize:15, color:'rgba(245,242,236,0.6)', maxWidth:560, lineHeight:1.85, marginBottom:32 }}>
+                Builders assign subcontractors to each standard construction stage. Once a stage is delivered, it's scored against four fixed benchmarks — on-time delivery, quality of workmanship, budget adherence, and safety &amp; compliance. Scores build a verified, portable track record for every trade on the platform.
+              </p>
+              <div style={{ display:'flex', gap:16, flexWrap:'wrap' }}>
+                <button className="btn btn-g" onClick={() => openAuth('developer')}>I'm a Builder — Get Started →</button>
+                <button className="btn btn-o" onClick={() => openAuth('subcontractor')}>I'm a Subcontractor — Get Started →</button>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ background:'var(--paper)', padding:'56px', maxWidth:1100, margin:'0 auto' }}>
+            <div className="slbl" style={{ color:'rgba(201,168,76,0.7)', marginBottom:16 }}>The Six Standard Stages</div>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(200px, 1fr))', gap:1, background:'rgba(0,0,0,0.06)', marginBottom:48 }}>
+              {['Site Establishment & Demolition','Slab / Foundations','Frame','Lock-up','Fit-Out & Fixing','Practical Completion & Handover'].map((s,i) => (
+                <div key={s} style={{ background:'#fff', padding:'20px 18px' }}>
+                  <div style={{ fontSize:10, color:'var(--gold)', letterSpacing:'1.5px', marginBottom:6 }}>STAGE {i+1}</div>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:16 }}>{s}</div>
+                </div>
+              ))}
+            </div>
+
+            <div className="slbl" style={{ color:'rgba(201,168,76,0.7)', marginBottom:16 }}>The Four Fixed Benchmarks</div>
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(auto-fit, minmax(220px, 1fr))', gap:24 }}>
+              {[
+                ['⏱','On-Time Delivery','Was the stage completed by the agreed date?'],
+                ['🏗','Quality of Workmanship','Did the work meet trade standards on inspection?'],
+                ['💰','Budget Adherence','Were there unapproved cost variations?'],
+                ['🦺','Safety & Compliance','Were WHS and approval requirements met?'],
+              ].map(([icon,title,desc]) => (
+                <div key={title}>
+                  <div style={{ fontSize:22, marginBottom:8 }}>{icon}</div>
+                  <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:18, marginBottom:4 }}>{title}</div>
+                  <div style={{ fontSize:12, color:'var(--muted)', lineHeight:1.6 }}>{desc}</div>
+                </div>
+              ))}
+            </div>
+
+            {user && user.role === 'investor' && (
+              <div style={{ marginTop:48, padding:'16px 20px', background:'rgba(201,168,76,0.06)', border:'1px solid rgba(201,168,76,0.2)', fontSize:12, color:'#444', lineHeight:1.7 }}>
+                This tool is for builders and registered subcontractors. As an investor, stage scores feed into each project's public track record — visit <button className="nl" style={{ display:'inline', color:'var(--gold)' }} onClick={() => go('developers')}>Track Record</button> to see verified results.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* ── DEVELOPER DASHBOARD — stages & subcontractor scoring ── */}
-      {page === 'dashboard' && user && (user.role === 'developer' || user.role === 'admin') && (
+      {(page === 'dashboard' || page === 'stages') && user && (user.role === 'developer' || user.role === 'admin') && (
         <sec style={{ paddingTop: 80 }}>
           <div style={{ marginBottom: 28 }}>
             <div className="slbl">Developer Dashboard</div>
@@ -1644,7 +1704,7 @@ export default function App() {
       )}
 
       {/* ── SUBCONTRACTOR DASHBOARD — assigned stages & score history ── */}
-      {page === 'dashboard' && user && user.role === 'subcontractor' && (
+      {(page === 'dashboard' || page === 'stages') && user && user.role === 'subcontractor' && (
         <sec style={{ paddingTop: 80 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
             <div>
@@ -2287,7 +2347,7 @@ export default function App() {
         </div>
       </footer>
 
-      {showAuth && <AuthModal onClose={() => setShowAuth(false)} onLogin={u => { setUser(u); showT(`Welcome, ${u.fname || u.email} 👋`); go('dashboard'); }} />}
+      {showAuth && <AuthModal defaultRole={authDefaultRole} onClose={() => { setShowAuth(false); setAuthDefaultRole(null); }} onLogin={u => { setUser(u); setAuthDefaultRole(null); showT(`Welcome, ${u.fname || u.email} 👋`); go(u.role === 'developer' || u.role === 'subcontractor' ? 'stages' : 'dashboard'); }} />}
       {showComp && <CompModal listing={sel} onAccept={() => { setShowComp(false); setShowEOI(true); }} onClose={() => setShowComp(false)} />}
       {showEOI && sel && <EOIModal listing={sel} onClose={() => setShowEOI(false)} toast={showT} user={user} />}
       {toast && <div className="toast">{toast}</div>}
