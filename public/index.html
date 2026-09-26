@@ -99,7 +99,7 @@
       ]
     }
     </script>
-    <script type="module" crossorigin src="/assets/index-DSLW9OHi.js"></script>
+    <script type="module" crossorigin src="/assets/index-CSDOL9Jd.js"></script>
   </head>
   <body>
     <div id="root"></div>
@@ -154,7 +154,7 @@
       // Read ?page= param on launch (from manifest shortcuts)
       const urlParams = new URLSearchParams(window.location.search);
       const startPage = urlParams.get('page');
-      window.__pddParams = { token: urlParams.get('token'), id: urlParams.get('id') };
+      window.__pddParams = { token: urlParams.get('token'), id: urlParams.get('id'), action: urlParams.get('action') };
       if (startPage) {
         window.__pddStartPage = startPage;
         // Clean URL without reloading

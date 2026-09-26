@@ -2,8 +2,8 @@
 // Version: 1.0.0
 // Handles: offline caching, install prompt, background sync
 
-const STATIC_CACHE = 'propdevdna-static-v1';
-const API_CACHE = 'propdevdna-api-v1';
+const STATIC_CACHE = 'propdevdna-static-v2';
+const API_CACHE = 'propdevdna-api-v2';   // no longer used: API responses are never cached (they can contain personal data)
 
 // Assets to cache on install — critical for offline shell
 const STATIC_ASSETS = [
@@ -31,7 +31,7 @@ self.addEventListener('activate', event => {
     caches.keys().then(keys =>
       Promise.all(
         keys
-          .filter(k => k !== STATIC_CACHE && k !== API_CACHE)
+          .filter(k => k !== STATIC_CACHE)
           .map(k => caches.delete(k))
       )
     ).then(() => self.clients.claim())
@@ -43,9 +43,9 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // API requests — network first, cache fallback
+  // API requests — always the network, never cached (responses can contain personal data)
   if (url.pathname.startsWith('/api/')) {
-    event.respondWith(networkFirst(request, API_CACHE));
+    event.respondWith(fetch(request).catch(() => new Response(JSON.stringify({ error: 'You appear to be offline.' }), { status: 503, headers: { 'Content-Type': 'application/json' } })));
     return;
   }
 
@@ -61,9 +61,9 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // App shell — stale while revalidate
+  // App shell — network first so a new release shows immediately; cached copy only when offline
   if (url.pathname === '/' || url.pathname === '/index.html') {
-    event.respondWith(staleWhileRevalidate(request, STATIC_CACHE));
+    event.respondWith(networkFirst(request, STATIC_CACHE));
     return;
   }
 

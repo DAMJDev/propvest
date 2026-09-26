@@ -15,9 +15,10 @@ const nodemailer = require('nodemailer');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
-const DB_FILE    = path.join(__dirname, 'data', 'db.json');
-const UPLOAD_DIR = path.join(__dirname, 'data', 'uploads');
-const BACKUP_DIR = path.join(__dirname, 'data', 'backups');
+const DATA_DIR   = process.env.DATA_DIR || path.join(__dirname, 'data');
+const DB_FILE    = path.join(DATA_DIR, 'db.json');
+const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
+const BACKUP_DIR = path.join(DATA_DIR, 'backups');
 [UPLOAD_DIR, BACKUP_DIR].forEach(d => { if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true }); });
 
 // ── Admin credentials (override via env vars) ─────
@@ -329,12 +330,67 @@ function computeRisk(l, all) {
   return { composite, band, dimensions: dims, basis: 'Indicative score computed from listing data. General information only — not financial product advice.' };
 }
 
+// Deal figures: a locked FEASO is authoritative; older seeded listings fall back to their financials table.
+const finRow = (l, re) => ((l.financials || []).find(r => re.test(r[0])) || [])[1];
+function dealFigures(l) {
+  const f = l.feaso && l.feaso.computed ? l.feaso.computed : null;
+  const i = l.feaso && l.feaso.inputs ? l.feaso.inputs : null;
+  if (f && i) {
+    return { tdc: f.tdc, grv: i.grv, construction: i.constructionCost, marginOnCost: f.marginOnCost, sellingCosts: f.sellingCosts, source: 'feaso' };
+  }
+  const tdc = parseNum(finRow(l, /total dev/i));
+  const grv = parseNum(finRow(l, /gross realisable/i));
+  const construction = parseNum(finRow(l, /^construction/i));
+  const sell = parseNum(finRow(l, /agent commission/i));
+  const margin = parseNum(finRow(l, /profit margin on cost/i));
+  return { tdc, grv, construction, marginOnCost: margin, sellingCosts: sell != null ? Math.abs(sell) : null, source: 'listing' };
+}
+
+// Investor verification tiers: 1 registered, 2 wholesale verified, 3 funds verified, 4 PDD endorsed.
+const TIER_RANK = { registered: 1, verified: 2, funds: 3, prequalified: 4 };
+function investorTier(u) {
+  if (!u || u.role !== 'investor') return null;
+  const now = new Date();
+  const wholesale = u.wholesaleStatus === 'verified' && (!u.wholesaleExpiresAt || new Date(u.wholesaleExpiresAt) > now);
+  const funds = u.fundsStatus === 'verified' && (!u.fundsExpiresAt || new Date(u.fundsExpiresAt) > now);
+  if (wholesale && funds && u.endorsed) return 'prequalified';
+  if (wholesale && funds) return 'funds';
+  if (wholesale) return 'verified';
+  return 'registered';
+}
+const tierAtLeast = (u, name) => (TIER_RANK[investorTier(u)] || 0) >= TIER_RANK[name];
+
+// Contractor compliance: licence and insurance must both be admin-verified and unexpired.
+function docStatus(entry, expiry) {
+  if (!entry) return 'missing';
+  if (entry.status === 'verified') return (expiry && new Date(expiry) < new Date()) ? 'expired' : 'verified';
+  return entry.status;
+}
+function contractorCompliance(u) {
+  const c = u && u.contractor;
+  if (!c) return { licence: 'missing', insurance: 'missing', compliant: false };
+  const licence = docStatus(c.verification && c.verification.licence, c.licenceExpiry);
+  const insurance = docStatus(c.verification && c.verification.insurance, c.insuranceExpiry);
+  return { licence, insurance, compliant: licence === 'verified' && insurance === 'verified' };
+}
+
 function publicListing(l, all) {
-  const { stages, ...rest } = l;
+  const { stages, feaso, actuals, valuation, drawdowns, ...rest } = l;
   const st = stages || [];
   const scored = st.filter(s => s.score);
+  const fig = dealFigures(l);
+  const lastActual = (actuals || [])[(actuals || []).length - 1] || null;
   return {
     ...rest,
+    feasoStatus: feaso ? feaso.status : 'none',
+    feasoMarginOnCost: feaso && feaso.marginOnCost != null ? feaso.marginOnCost : null,
+    valuationRequired: fig.grv != null && fig.grv > 5000000,
+    valuation: valuation && valuation.status === 'approved'
+      ? { valuerName: valuation.valuerName, valuerRegistration: valuation.valuerRegistration, valuationDate: valuation.valuationDate, valueAmount: valuation.valueAmount, approvedAt: valuation.approvedAt }
+      : null,
+    valuationStatus: valuation ? valuation.status : 'none',
+    actualsLatest: lastActual ? (({ qsFile, by, ...safe }) => ({ ...safe, hasQsFile: !!qsFile }))(lastActual) : null,
+    drawdownCount: (drawdowns || []).length,
     risk: computeRisk(l, all),
     stageSummary: st.length ? {
       total: st.length,
@@ -342,6 +398,28 @@ function publicListing(l, all) {
       avgScore: scored.length ? round1(scored.reduce((a, s) => a + s.score.overall, 0) / scored.length) : null
     } : null
   };
+}
+
+// Demo data only: fictitious licence and policy numbers, pre-marked as verified so the demo flow can be shown.
+function demoContractor() {
+  const now = new Date().toISOString(), year = new Date(Date.now() + 365 * 86400000).toISOString();
+  return {
+    demo: true, publicId: 'tr-demo0001', businessName: 'Demo Concrete Pty Ltd', abn: '00000000000', trade: 'Concrete & Structural', phone: '',
+    licenceNumber: 'DEMO-000000', licenceClass: 'Demo class', licenceState: 'NSW', licenceExpiry: year,
+    insurerName: 'Demo Insurer', policyNumber: 'DEMO-POLICY', insuranceExpiry: year, publicLiability: '$20,000,000',
+    codeAccepted: true, codeAcceptedAt: now, listedInDirectory: true, licenceFile: null, insuranceFile: null,
+    verification: { licence: { status: 'verified', at: now, by: 'seed-demo', notes: 'Demo data' }, insurance: { status: 'verified', at: now, by: 'seed-demo', notes: 'Demo data' } },
+    alerts: {}, updatedAt: now
+  };
+}
+
+// Existing databases created before a feature existed get its demo data added once. Real accounts are never touched.
+function migrateDemoData() {
+  const db = readDB();
+  let changed = false;
+  const sub = db.users.find(u => u.id === 'u-demo-sub');
+  if (sub && !sub.contractor) { sub.contractor = demoContractor(); changed = true; }
+  if (changed) { writeDB(db); console.log('[MIGRATE] Added demo contractor profile.'); }
 }
 
 function seedDB() {
@@ -372,7 +450,8 @@ function seedDB() {
     users: [
       { id:'u-demo-inv', email:'investor@demo.com', password: hashPw('demo123'), fname:'Alex', lname:'Demo', role:'investor', joined: new Date().toISOString() },
       { id:'u-demo-dev', email:'developer@demo.com', password: hashPw('demo123'), fname:'Sam', lname:'Demo', role:'developer', joined: new Date().toISOString() },
-      { id:'u-demo-sub', email:'subcontractor@demo.com', password: hashPw('demo123'), fname:'Chris', lname:'Demo', role:'subcontractor', trade:'Concrete & Structural', joined: new Date().toISOString() },
+      { id:'u-demo-sub', email:'subcontractor@demo.com', password: hashPw('demo123'), fname:'Chris', lname:'Demo', role:'subcontractor', trade:'Concrete & Structural', joined: new Date().toISOString(),
+        contractor: demoContractor() },
       { id:'u-admin-001', email: ADMIN_EMAIL, password: hashPw(ADMIN_PASSWORD), fname:'Anthony', lname:'Admin', role:'admin', joined: new Date().toISOString() }
     ],
     listings,
@@ -551,7 +630,7 @@ app.post('/api/auth/login', loginLimiter, (req, res) => {
   req.session.userId = user.id;
   const { password: _, ...safeUser } = user;
   const activePlans = getActiveSubPlans(db, user.id);
-  res.json({ ok: true, user: { ...safeUser, activeSubscriptions: activePlans } });
+  res.json({ ok: true, user: { ...safeUser, tier: investorTier(user), activeSubscriptions: activePlans } });
 });
 
 app.post('/api/auth/logout', (req, res) => {
@@ -566,7 +645,7 @@ app.get('/api/auth/me', (req, res) => {
   if (!user) return res.json({ user: null });
   const { password: _, ...safeUser } = user;
   const activePlans = getActiveSubPlans(db, user.id);
-  res.json({ user: { ...safeUser, activeSubscriptions: activePlans } });
+  res.json({ user: { ...safeUser, tier: investorTier(user), activeSubscriptions: activePlans } });
 });
 
 // ── Listings ──────────────────────────────────────
@@ -600,28 +679,47 @@ app.get('/api/listings/:id', (req, res) => {
   res.json(publicListing(listing, db.listings));
 });
 
+// Only these fields may be set by a developer. Status, ownership, FEASO, stages,
+// valuation and funding progress are controlled by the platform, never the client.
+const PROJECT_FIELDS = ['name', 'loc', 'type', 'category', 'structure', 'hold', 'raise', 'minInvest', 'overview', 'irr', 'profit', 'trusteeEmail'];
+function pickProject(body) {
+  const out = {};
+  PROJECT_FIELDS.forEach(k => {
+    if (body[k] === undefined || body[k] === null) return;
+    out[k] = typeof body[k] === 'string' ? body[k].replace(/[<>]/g, '').trim().slice(0, 4000) : body[k];
+  });
+  return out;
+}
+
 app.post('/api/listings', requireAuth, requireDev, (req, res) => {
   const db = readDB();
+  const user = db.users.find(u => u.id === req.session.userId);
+  const fields = pickProject(req.body);
+  if (!fields.name) return res.status(400).json({ error: 'Project name is required.' });
   const listing = {
-    ...req.body,
+    ...fields,
     id:        'lst-' + Date.now(),
     devId:     req.session.userId,
+    developer: { name: ((user.fname || '') + ' ' + (user.lname || '')).trim(), completed: 0, badges: [] },
     fundedPct: 0,
     status:    'draft',              // starts as draft — goes live after IM approval
     createdAt: new Date().toISOString()
   };
   db.listings.unshift(listing);
   writeDB(db);
-  res.json({ ok: true, listing });
+  res.json({ ok: true, listing: publicListing(listing, db.listings) });
 });
 
 app.put('/api/listings/:id', requireAuth, requireDev, (req, res) => {
   const db = readDB();
   const idx = db.listings.findIndex(l => l.id === req.params.id && l.devId === req.session.userId);
   if (idx === -1) return res.status(404).json({ error: 'Listing not found or not yours.' });
-  db.listings[idx] = { ...db.listings[idx], ...req.body, id: req.params.id };
+  if (['active', 'pending_review'].includes(db.listings[idx].status)) {
+    return res.status(400).json({ error: 'A live listing or one under review cannot be edited. Contact the platform to request changes.' });
+  }
+  db.listings[idx] = { ...db.listings[idx], ...pickProject(req.body), id: req.params.id };
   writeDB(db);
-  res.json({ ok: true, listing: db.listings[idx] });
+  res.json({ ok: true, listing: publicListing(db.listings[idx], db.listings) });
 });
 
 app.delete('/api/listings/:id', requireAuth, requireDev, (req, res) => {
@@ -633,64 +731,8 @@ app.delete('/api/listings/:id', requireAuth, requireDev, (req, res) => {
   res.json({ ok: true });
 });
 
-// ── Interests / Leads ─────────────────────────────
-app.get('/api/interests', requireAuth, (req, res) => {
-  const db   = readDB();
-  const user = db.users.find(u => u.id === req.session.userId);
-  let interests = db.interests;
-
-  if (user.role === 'developer') {
-    const myIds = new Set(db.listings.filter(l => l.devId === user.id).map(l => l.id));
-    interests = interests.filter(i => myIds.has(i.listingId));
-  } else if (user.role !== 'admin') {
-    interests = interests.filter(i => i.userId === user.id);
-  }
-  res.json(interests);
-});
-
-app.post('/api/interests', (req, res) => {
-  const db = readDB();
-  const { listingId, fname, lname, email, phone, amount, comments, needsBroker } = req.body;
-  if (!listingId || !fname || !email) return res.status(400).json({ error: 'Missing required fields.' });
-
-  const listing = db.listings.find(l => l.id === listingId);
-  const refCode = 'REF-' + new Date().getFullYear() + '-' + (listingId || 'GEN').toUpperCase().slice(0, 3) + '-' + Math.floor(Math.random() * 9000 + 1000);
-
-  const interest = {
-    id: 'int-' + Date.now(),
-    listingId, listingName: listing?.name || '—',
-    fname, lname, email, phone, amount, comments,
-    needsBroker: !!needsBroker,
-    refCode,
-    userId:    req.session.userId || null,
-    createdAt: new Date().toISOString()
-  };
-  db.interests.push(interest);
-  writeDB(db);
-
-  // Notify developer of new lead
-  if (listing && listing.devId !== 'system') {
-    const dev = db.users.find(u => u.id === listing.devId);
-    if (dev) {
-      sendEmail(dev.email, `New investor enquiry — ${listing.name}`, `
-        <p style="color:#888">You have a new investor enquiry on <strong style="color:#c9a84c">${listing.name}</strong>.</p>
-        <p style="color:#888"><strong style="color:#e8e2d5">Name:</strong> ${fname} ${lname || ''}<br>
-        <strong style="color:#e8e2d5">Email:</strong> ${email}<br>
-        <strong style="color:#e8e2d5">Phone:</strong> ${phone || 'Not provided'}<br>
-        <strong style="color:#e8e2d5">Proposed amount:</strong> ${amount || 'Not specified'}<br>
-        <strong style="color:#e8e2d5">Ref:</strong> ${refCode}</p>
-        <a href="${BASE_URL}" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">View in Portal →</a>
-      `);
-    }
-  }
-
-  // Notify admin of new interest
-  sendEmail(ADMIN_EMAIL, `New investor interest: ${fname} → ${listing?.name || listingId}`, `
-    <p style="color:#888">Investor <strong style="color:#e8e2d5">${fname} ${lname || ''}</strong> (${email}) has expressed interest in <strong style="color:#c9a84c">${listing?.name || listingId}</strong>.<br>Amount: ${amount || 'unspecified'} · Ref: ${refCode}</p>
-  `);
-
-  res.json({ ok: true, interest });
-});
+// ── Interests (48-hour cooling-off), FEASO, valuation, actuals, tiers,
+//    contractors, drawdowns and directories live in ./features/* ──
 
 // ── Stats ─────────────────────────────────────────
 app.get('/api/stats', (req, res) => {
@@ -700,23 +742,6 @@ app.get('/api/stats', (req, res) => {
     investors: db.users.filter(u => u.role === 'investor').length,
     interests: db.interests.length
   });
-});
-
-// ── FEASO ─────────────────────────────────────────
-app.get('/api/listings/:id/feaso', (req, res) => {
-  const db = readDB();
-  const listing = db.listings.find(l => l.id === req.params.id);
-  if (!listing) return res.status(404).json({ error: 'Listing not found.' });
-  res.json(listing.feaso || null);
-});
-
-app.post('/api/listings/:id/feaso', requireAuth, requireDev, (req, res) => {
-  const db  = readDB();
-  const idx = db.listings.findIndex(l => l.id === req.params.id && l.devId === req.session.userId);
-  if (idx === -1) return res.status(404).json({ error: 'Listing not found or not yours.' });
-  db.listings[idx].feaso = { ...req.body, updatedAt: new Date().toISOString() };
-  writeDB(db);
-  res.json({ ok: true, feaso: db.listings[idx].feaso });
 });
 
 // ── Project Stages & Subcontractor Scoring ────────
@@ -760,6 +785,7 @@ app.put('/api/listings/:id/stages/:stageId/assign', requireAuth, requireDev, (re
   stages[sIdx].subcontractorName  = `${sub.fname} ${sub.lname}`.trim();
   stages[sIdx].dueDate            = dueDate || stages[sIdx].dueDate;
   stages[sIdx].status             = 'assigned';
+  stages[sIdx].complianceAtAssign = { ...contractorCompliance(sub), at: new Date().toISOString() };
   writeDB(db);
 
   sendEmail(sub.email, `You've been assigned to a stage — ${db.listings[lIdx].name}`, `
@@ -822,7 +848,7 @@ app.get('/api/subcontractors', requireAuth, requireDev, (req, res) => {
     const scores = [];
     db.listings.forEach(l => (l.stages || []).forEach(s => { if (s.subcontractorId === u.id && s.score) scores.push(s.score.overall); }));
     const avgScore = scores.length ? Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 10) / 10 : null;
-    return { id: u.id, email: u.email, name: `${u.fname} ${u.lname}`.trim(), trade: u.trade || '', avgScore, scoredCount: scores.length };
+    return { id: u.id, email: u.email, name: `${u.fname} ${u.lname}`.trim(), trade: (u.contractor && u.contractor.trade) || u.trade || '', avgScore, scoredCount: scores.length, compliance: contractorCompliance(u) };
   });
   res.json(subs);
 });
@@ -921,6 +947,11 @@ app.post('/api/listings/:id/im-review', requireAuth, requireDev, (req, res) => {
   const listing = db.listings.find(l => l.id === req.params.id);
   if (!listing) return res.status(404).json({ error: 'Listing not found.' });
   const user    = db.users.find(u => u.id === req.session.userId);
+  if (listing.devId !== req.session.userId && user.role !== 'admin') return res.status(403).json({ error: 'Not your listing.' });
+  // Feasibility gate: a locked FEASO with at least the platform minimum margin is required before review.
+  if (!listing.feaso || listing.feaso.status !== 'locked') {
+    return res.status(400).json({ error: 'Complete and lock your FEASO before submitting for review.', code: 'feaso_required' });
+  }
   if (!db.imReviews) db.imReviews = [];
 
   const { devResponse } = req.body;
@@ -1567,7 +1598,9 @@ app.get('/api/regulator/overview', requireAuth, requireRegulator, (req, res) => 
       const r = computeRisk(l, db.listings);
       const rev = (db.imReviews || []).filter(x => x.listingId === l.id).slice(-1)[0];
       const st = l.stages || [];
-      return { id: l.id, name: l.name, status: l.status, feasoOnFile: !!l.feaso, riskComposite: r.composite, riskBand: r.band,
+      return { id: l.id, name: l.name, status: l.status, feasoOnFile: !!(l.feaso && l.feaso.status === 'locked'), riskComposite: r.composite, riskBand: r.band,
+               valuationStatus: l.valuation ? l.valuation.status : (dealFigures(l).grv > 5000000 ? 'required, not submitted' : 'not required'),
+               actualsReports: (l.actuals || []).length, varianceAlerts: by(l.actuals || [], a => a.alert), drawdowns: (l.drawdowns || []).length,
                imReviewStatus: rev ? rev.status : 'none', stages: st.length, stagesScored: by(st, s => s.score), certificatesIssued: by(st, s => s.certificate) };
     }),
     contractorScoring: {
@@ -1575,17 +1608,44 @@ app.get('/api/regulator/overview', requireAuth, requireRegulator, (req, res) => 
       averageScore: scored.length ? round1(scored.reduce((a, s) => a + s.score.overall, 0) / scored.length) : null,
       milestoneCertificates: by(stagesAll, s => s.certificate)
     },
+    tiers: {
+      registered: by(investors, u => investorTier(u) === 'registered'), verified: by(investors, u => investorTier(u) === 'verified'),
+      funds: by(investors, u => investorTier(u) === 'funds'), prequalified: by(investors, u => investorTier(u) === 'prequalified'),
+      fundsProofsPending: by(db.fundsProofs || [], p => p.status === 'pending')
+    },
+    expressionsOfInterest: {
+      pending: by(db.interests || [], i => i.status === 'pending_confirmation'), confirmed: by(db.interests || [], i => i.status === 'confirmed'),
+      withdrawn: by(db.interests || [], i => i.status === 'withdrawn'), lapsed: by(db.interests || [], i => i.status === 'lapsed')
+    },
+    contractors: (() => {
+      const subs = db.users.filter(u => u.role === 'subcontractor');
+      return { registered: subs.length, withProfile: by(subs, u => u.contractor), compliant: by(subs, u => contractorCompliance(u).compliant), awaitingVerification: by(subs, u => u.contractor && ['licence', 'insurance'].some(k => u.contractor.verification && u.contractor.verification[k] && u.contractor.verification[k].status === 'pending')) };
+    })(),
+    drawdowns: (() => {
+      const all = db.listings.flatMap(l => l.drawdowns || []);
+      return { total: all.length, ready: by(all, d => d.status === 'ready'), blocked: by(all, d => d.status === 'blocked'), released: by(all, d => d.status === 'released') };
+    })(),
     controls: [
-      { name: 'Wholesale certificate review (admin)', status: 'live' },
-      { name: 'Accountant self-verification', status: 'live' },
-      { name: 'Investor education module', status: 'live' },
-      { name: 'Per-deal risk acknowledgment (timestamped, IP-logged)', status: 'live' },
-      { name: 'Six-dimension risk score', status: 'live' },
-      { name: 'Subcontractor stage scoring', status: 'live' },
-      { name: 'Milestone certificates', status: 'live' },
-      { name: 'Contractor licence and insurance verification', status: 'in development' },
-      { name: 'Drawdown gating on contractor compliance', status: 'in development' },
-      { name: 'Breach register (in platform)', status: 'in development' }
+      { name: 'Wholesale certificate review (admin approval, 2-year expiry)', status: 'live' },
+      { name: 'Accountant self-verification (five timestamped declarations)', status: 'live' },
+      { name: 'Investor education module (required before certificate)', status: 'live' },
+      { name: 'Per-deal risk, summary and waterfall acknowledgment (timestamped, IP-logged)', status: 'live' },
+      { name: '48-hour confirm-or-withdraw window on expressions of interest', status: 'live' },
+      { name: 'FEASO builder: 15% margin gate, QS certificate above $2M, versioned and locked', status: 'live' },
+      { name: 'Waterfall scenarios and plain-English deal summary', status: 'live' },
+      { name: 'Six-dimension risk score and investor risk profile', status: 'live' },
+      { name: 'Four-tier investor verification (proof of funds, endorsement)', status: 'live' },
+      { name: 'FEASO actuals vs forecast with 10% variance alerts', status: 'live' },
+      { name: 'Completion valuation gate (admin verifies valuer registration manually)', status: 'live' },
+      { name: 'Subcontractor stage scoring and milestone certificates', status: 'live' },
+      { name: 'Contractor licence and insurance register (admin verifies against state register manually)', status: 'live' },
+      { name: 'Drawdown gating (platform records the gate; it never holds or moves funds)', status: 'live' },
+      { name: 'Automated licence lookup against state registers', status: 'not built' },
+      { name: 'Breach register inside the platform', status: 'not built' }
+    ],
+    scheduledAutomations: [
+      'Database backup every 6 hours', 'Lapse unconfirmed expressions of interest after 48 hours (hourly)', 'Licence and insurance expiry alerts, 30 days out and on expiry (daily)',
+      'Wholesale certificate expiry check on access'
     ]
   });
 });
@@ -1658,8 +1718,10 @@ app.post('/api/risk-declaration', requireAuth, (req, res) => {
   const user = db.users.find(u => u.id === req.session.userId);
   if (!user) return res.status(404).json({ error: 'User not found.' });
 
-  const { listingId, listingName, referringPartnerCode, allChecksConfirmed } = req.body;
+  const { listingId, listingName, referringPartnerCode, allChecksConfirmed, waterfallAcknowledged, summaryAcknowledged } = req.body;
   if (!allChecksConfirmed) return res.status(400).json({ error: 'All risk confirmations required.' });
+  if (!summaryAcknowledged) return res.status(400).json({ error: 'Please read the plain-English deal summary first.' });
+  if (!waterfallAcknowledged) return res.status(400).json({ error: 'Please acknowledge the waterfall scenarios first.' });
 
   let referringPartner = null;
   if (referringPartnerCode) {
@@ -1683,6 +1745,8 @@ app.post('/api/risk-declaration', requireAuth, (req, res) => {
     referringPartnerFirm:  referringPartner?.firm || null,
     referringPartnerRole:  referringPartner?.role || null,
     allChecksConfirmed:    true,
+    summaryAcknowledged:   true,
+    waterfallAcknowledged: true,
     ipAddress:             req.ip,
     declaredAt:            new Date().toISOString()
   };
@@ -1709,8 +1773,21 @@ app.get('/api/admin/users', requireAuth, requireAdmin, (req, res) => {
 // ── Health check ──────────────────────────────────
 app.get('/api/health', (req, res) => res.json({ ok: true, version: '2.0.0', ts: new Date().toISOString() }));
 
+// ── Feature modules (cooling-off EOIs, FEASO, valuation, actuals, tiers,
+//    contractors, drawdowns, directories) ──
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+require('./features')(app, {
+  readDB, writeDB, requireAuth, requireDev, requireAdmin, requireRegulator, sendEmail, esc,
+  BASE_URL, ADMIN_EMAIL, UPLOAD_DIR, DATA_DIR, DB_FILE, BACKUP_DIR,
+  multer, rateLimit, crypto, fs, path,
+  parseNum, round1, dealFigures, computeRisk, publicListing, finRow,
+  contractorCompliance, docStatus, investorTier, tierAtLeast, TIER_RANK,
+  smtpConfigured: () => !!mailer
+});
+
 // ── SPA fallback — serve React index.html for all non-API routes ──
 app.get('*', (req, res) => {
+  if (req.path.startsWith('/api/')) return res.status(404).json({ error: 'Not found.' });
   const indexPath = path.join(__dirname, 'public', 'index.html');
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
@@ -1721,6 +1798,7 @@ app.get('*', (req, res) => {
 
 // ── Start ─────────────────────────────────────────
 readDB();   // Ensure DB exists on startup
+migrateDemoData();
 backupDB(); // Take initial backup
 
 app.listen(PORT, () => {

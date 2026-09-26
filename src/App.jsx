@@ -1,14 +1,7 @@
 import { useState, useEffect } from "react";
-
-// ─── API LAYER ────────────────────────────────────────────────────
-const API = {
-  get: (url) => fetch(url, { credentials: 'include' }).then(r => r.json()),
-  post: (url, data) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(data) }).then(r => r.json()),
-  put: (url, data) => fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(data) }).then(r => r.json()),
-  upload: (url, formData) => fetch(url, { method: 'POST', credentials: 'include', body: formData }).then(r => r.json()),
-};
-
-const lightFi = { color: '#111', background: '#fafafa', borderColor: 'rgba(0,0,0,0.15)' };
+import { API, lightFi } from "./shared.js";
+import { EoiPage, MyEois, WaterfallPanel, SummaryPanel, SummaryModal, FeasoReadPanel, ActualsPanel, FundsStep, TradesmenPage, BuyersAgentsPage, RegistryPage } from "./FeaturesInvestor.jsx";
+import { NewProjectForm, DevWorkspace, ContractorProfile, AdminConsole } from "./FeaturesDeveloper.jsx";
 
 // ─── INVESTOR VERIFICATION TIERS ─────────────────────────────────
 const TIERS = {
@@ -407,12 +400,25 @@ function EOIModal({ listing, onClose, toast, user }) {
   const [step, setStep] = useState(1);
   const [f, setF] = useState({ fn: user?.fname || '', ln: user?.lname || '', email: user?.email || '', phone: '', state: '', amount: '', fund: '', adv: '' });
   const [done, setDone] = useState(false);
+  const [err, setErr] = useState('');
+  const [busy, setBusy] = useState(false);
   const set = (k, v) => setF(p => ({ ...p, [k]: v }));
+  const amountNum = parseMoney(f.amount);
 
   const submit = async () => {
-    await API.post('/api/interests', { listingId: listing.id, ...f });
+    setErr('');
+    if (!amountNum) { setErr('Enter the amount you are considering.'); return; }
+    if (listing.minInvest && amountNum < listing.minInvest) { setErr(`The minimum investment is $${listing.minInvest.toLocaleString('en-AU')}.`); return; }
+    setBusy(true);
+    const r = await API.post('/api/interests', {
+      listingId: listing.id, fname: f.fn, lname: f.ln, email: f.email, phone: f.phone,
+      amount: `$${amountNum.toLocaleString('en-AU')}`, comments: `Funding: ${f.fund || 'not stated'}${f.state ? ` · State: ${f.state}` : ''}`,
+      needsBroker: f.fund === 'Finance Required'
+    });
+    setBusy(false);
+    if (r.error) { setErr(r.error); return; }
     setDone(true);
-    toast('Interest submitted ✓');
+    toast('Check your email to confirm within 48 hours.');
   };
 
   if (done) return (
@@ -424,9 +430,9 @@ function EOIModal({ listing, onClose, toast, user }) {
         <div style={{ background: 'rgba(201,168,76,0.08)', border: '1px solid rgba(201,168,76,0.2)', padding: '16px 20px', marginBottom: 16, textAlign: 'left' }}>
           <div style={{ fontSize: 12, fontWeight: 500, color: 'var(--ink)', marginBottom: 8 }}>Your expression of interest has been received.</div>
           <div style={{ fontSize: 11, color: 'var(--muted)', lineHeight: 1.7 }}>
-            This is <strong>not a binding commitment</strong>. You have <strong>48 hours</strong> to confirm or withdraw.<br/>
-            We will send a confirmation email to <strong>{f.email}</strong> with a confirm and withdraw link.<br/>
-            If you do not confirm within 48 hours your expression of interest will be automatically withdrawn.
+            This is <strong>not a binding commitment</strong>, and <strong>nothing has been sent to the developer yet</strong>. You have <strong>48 hours</strong> to confirm or withdraw.<br/>
+            We have emailed <strong>{f.email}</strong> a confirm and withdraw link. You can also do it from My Account.<br/>
+            If you do not confirm within 48 hours your expression of interest lapses automatically.
           </div>
         </div>
         <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 20, lineHeight: 1.6 }}>
@@ -462,10 +468,9 @@ function EOIModal({ listing, onClose, toast, user }) {
           <button className="btn btn-g" style={{ width: '100%', marginTop: 4 }} onClick={() => f.fn && f.email ? setStep(2) : null}>Continue →</button>
         </>}
         {step === 2 && <>
-          <div className="fg"><label className="fl">Investment Amount</label>
-            {['$250K–$500K', '$500K–$1M', '$1M–$2.5M', '$2.5M+', 'Still assessing'].map(a => (
-              <div key={a} className={`eoiopt ${f.amount === a ? 'sel' : ''}`} onClick={() => set('amount', a)}><div className="eoiopt-t">{a}</div></div>
-            ))}
+          <div className="fg"><label className="fl">Amount you are considering{listing.minInvest ? ` (minimum $${listing.minInvest.toLocaleString('en-AU')})` : ''}</label>
+            <input className="fi" inputMode="decimal" placeholder="$250,000" value={f.amount} onChange={e => set('amount', e.target.value)} />
+            <div style={{ fontSize: 10, color: 'rgba(245,242,236,0.4)', marginTop: 6 }}>An indication only. It does not commit you to invest.</div>
           </div>
           <div className="fg"><label className="fl">Funding Source</label>
             {[['Cash / Existing Funds', 'Ready to deploy'], ['SMSF', 'Super fund — additional checklist applies'], ['Trust / Company', 'Via entity'], ['Finance Required', 'Need to arrange']].map(([v, s]) => (
@@ -512,12 +517,13 @@ function EOIModal({ listing, onClose, toast, user }) {
             ))}
           </div>
           <div style={{ background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.15)', padding: '12px 14px', marginBottom: 14, fontSize: 11, color: 'var(--muted)', lineHeight: 1.65 }}>
-            ⏳ <strong style={{ color: 'var(--ink)' }}>48-hour cooling-off window applies.</strong> Submitting this form is not a binding commitment. You will receive an email to confirm or withdraw within 48 hours.
+            ⏳ <strong style={{ color: 'var(--ink)' }}>48-hour confirm-or-withdraw window applies.</strong> Submitting this form is not a binding commitment and is not passed to the developer. We will email you a link to confirm or withdraw within 48 hours; if you do nothing it lapses.
           </div>
           <p style={{ fontSize: 10, color: 'var(--muted)', marginBottom: 12 }}>By submitting I consent to Prop Dev DNA contacting me regarding this opportunity. Wholesale investors only · s.761G Corporations Act 2001.</p>
+          {err && <div style={{ color: '#e74c3c', fontSize: 11, marginBottom: 10 }}>{err}</div>}
           <div className="matns">
             <button className="btn btn-o" onClick={() => setStep(2)}>Back</button>
-            <button className="btn btn-g" style={{ flex: 1 }} onClick={submit}>Submit Expression of Interest →</button>
+            <button className="btn btn-g" style={{ flex: 1 }} disabled={busy} onClick={submit}>{busy ? 'Submitting…' : 'Submit Expression of Interest →'}</button>
           </div>
         </>}
       </div>
@@ -645,6 +651,9 @@ function StageRow({ stage, isDev, onAssign, onScore, onCertify }) {
         <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 8 }}>
           Subcontractor: <strong>{stage.subcontractorName}</strong>
           {stage.dueDate ? ` · Due ${new Date(stage.dueDate).toLocaleDateString('en-AU')}` : ''}
+          {isDev && stage.complianceAtAssign && (stage.complianceAtAssign.compliant
+            ? <span style={{ color: '#27ae60' }}> · licence and insurance verified at assignment</span>
+            : <span style={{ color: '#E67E22' }}> · at assignment: licence {stage.complianceAtAssign.licence}, insurance {stage.complianceAtAssign.insurance} (drawdown will be blocked until both are verified)</span>)}
         </div>
       )}
 
@@ -726,7 +735,7 @@ function WStep({ n, title, done, children }) {
   );
 }
 
-function WholesalePanel({ user, showT, go, onProfile }) {
+function WholesalePanel({ user, showT, go, onProfile, refreshUser }) {
   const [st, setSt] = useState(null);
   const [f, setF] = useState({ investorName: `${user.fname || ''} ${user.lname || ''}`.trim(), investorDOB: '', investorAddress: '', acctName: '', acctFirm: '', acctEmail: '', acctPhone: '', acctMembership: 'CPA Australia', acctMembershipNumber: '', certBasis: 'net_assets', approxNetAssets: '', investorDeclared: false });
   const [file, setFile] = useState(null);
@@ -815,7 +824,11 @@ function WholesalePanel({ user, showT, go, onProfile }) {
         )}
       </Step>
 
-      <Step n={3} title="Your risk profile" done={!!user.riskProfile}>
+      <Step n={3} title="Proof of funds (Tier 3 — Capital Ready)" done={user.tier === 'funds' || user.tier === 'prequalified'}>
+        <FundsStep user={user} showT={showT} onUser={refreshUser} />
+      </Step>
+
+      <Step n={4} title="Your risk profile" done={!!user.riskProfile}>
         <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 8 }}>Listings scored above your comfort level are flagged "outside your risk profile". General information only.</div>
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {['conservative', 'balanced', 'growth', 'aggressive'].map(p => (
@@ -1056,6 +1069,19 @@ function RegulatorPage({ user, showT }) {
       </div>
 
       <div style={box}>
+        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, marginBottom: 12 }}>Investor tiers, interest, contractors and drawdowns</div>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          {stat(d.tiers.registered, 'Tier 1 registered')}{stat(d.tiers.verified, 'Tier 2 wholesale')}{stat(d.tiers.funds, 'Tier 3 funds')}{stat(d.tiers.prequalified, 'Tier 4 endorsed')}{stat(d.tiers.fundsProofsPending, 'Funds proofs pending')}
+        </div>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 18 }}>
+          {stat(d.expressionsOfInterest.pending, 'EOIs awaiting confirmation')}{stat(d.expressionsOfInterest.confirmed, 'EOIs confirmed')}{stat(d.expressionsOfInterest.withdrawn, 'Withdrawn')}{stat(d.expressionsOfInterest.lapsed, 'Lapsed')}
+        </div>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 18 }}>
+          {stat(d.contractors.registered, 'Subcontractors')}{stat(d.contractors.compliant, 'Fully compliant')}{stat(d.contractors.awaitingVerification, 'Awaiting verification')}{stat(d.drawdowns.total, 'Drawdown requests')}{stat(d.drawdowns.ready, 'Ready')}{stat(d.drawdowns.blocked, 'Blocked')}{stat(d.drawdowns.released, 'Released')}
+        </div>
+      </div>
+
+      <div style={box}>
         <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, marginBottom: 12 }}>Control coverage</div>
         {d.controls.map(c => (
           <div key={c.name} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '8px 0', borderTop: '1px solid rgba(0,0,0,0.06)', fontSize: 12 }}>
@@ -1063,6 +1089,11 @@ function RegulatorPage({ user, showT }) {
             <span style={{ fontSize: 9, letterSpacing: '1px', textTransform: 'uppercase', color: c.status === 'live' ? '#27ae60' : '#E67E22', border: `1px solid ${c.status === 'live' ? '#27ae60' : '#E67E22'}`, padding: '2px 8px', borderRadius: 10, whiteSpace: 'nowrap' }}>{c.status}</span>
           </div>
         ))}
+      </div>
+
+      <div style={box}>
+        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, marginBottom: 12 }}>Scheduled automations</div>
+        <ul style={{ margin: '0 0 0 18px', fontSize: 12, lineHeight: 1.9 }}>{d.scheduledAutomations.map(a => <li key={a}>{a}</li>)}</ul>
       </div>
 
       {user.role === 'admin' && (
@@ -1082,7 +1113,7 @@ function RegulatorPage({ user, showT }) {
 }
 
 // ─── LISTING DETAIL ──────────────────────────────────────────────
-function Detail({ l, onBack, onInvest }) {
+function Detail({ l, onBack, onInvest, user, go }) {
   const bgs = { NSW: "linear-gradient(160deg,#2A3A2E,#1a2a1e)", VIC: "linear-gradient(160deg,#1e2a3a,#0d1a2e)", QLD: "linear-gradient(160deg,#3a2a1a,#2a1a0d)" };
   return (
     <div>
@@ -1105,7 +1136,10 @@ function Detail({ l, onBack, onInvest }) {
             <h2>Project Overview</h2>
             <p>{l.desc || l.description}</p>
           </div>
+          <SummaryPanel listingId={l.id} />
           <RiskPanel risk={l.risk} />
+          <WaterfallPanel listingId={l.id} />
+          <FeasoReadPanel listing={l} user={user} go={go} />
           {l.stageSummary && (
             <div className="dsec" style={{ marginTop: 28 }}>
               <h2>Contractor Performance</h2>
@@ -1126,39 +1160,14 @@ function Detail({ l, onBack, onInvest }) {
           <div className="sc">
             <h3>Register Interest</h3>
             <p>Receive the full IM and access the due diligence data room.</p>
-            {[['Min. Investment', `$${((l.minInvest || 50000) / 1000).toFixed(0)},000`], ['Total Raise', l.raise ? `$${(l.raise / 1e6).toFixed(1)}M` : '—'], ['Structure', l.structure || '—'], ['Distributions', 'Monthly']].map(([lb, v]) => (
+            {[['Min. Investment', `$${((l.minInvest || 50000) / 1000).toFixed(0)},000`], ['Total Raise', l.raise ? `$${(l.raise / 1e6).toFixed(1)}M` : '—'], ['Structure', l.structure || '—'], ['Distributions', 'As set out in the IM']].map(([lb, v]) => (
               <div className="si" key={lb}><span className="sil">{lb}</span><span className="siv">{v}</span></div>
             ))}
             {l.raise && <PBar raised={l.raised || 0} target={l.raise} />}
             <button className="btn btn-g" style={{ width: '100%', marginTop: 20 }} onClick={onInvest}>Express Interest →</button>
             <div className="sdis">Wholesale investors only · Capital at risk · s.761G Corporations Act 2001</div>
 
-            {/* FEASO Actuals vs Forecast — shown once construction commenced */}
-            {(l.status === 'active' || l.status === 'construction') ? (
-              <div style={{ marginTop: 24, borderTop: '1px solid rgba(0,0,0,0.08)', paddingTop: 20 }}>
-                <div style={{ fontSize: 10, letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 12 }}>FEASO — Live Actuals vs Forecast</div>
-                {[
-                  ['Construction Cost', l.forecastCost || '—', l.actualCost || 'In progress', l.costVariance],
-                  ['Average Sale Price', l.forecastSalePrice || '—', l.actualSalePrice || 'In progress', l.priceVariance],
-                  ['Completion Date', l.forecastCompletion || '—', l.actualCompletion || 'In progress', l.timeVariance],
-                  ['Gross Margin', l.forecastMargin || '—', l.actualMargin || 'In progress', l.marginVariance],
-                ].map(([label, forecast, actual, variance]) => {
-                  const varNum = parseFloat(variance);
-                  const varColor = !variance ? 'var(--muted)' : varNum > 10 ? '#C0392B' : varNum > 5 ? '#E67E22' : '#27AE60';
-                  return (
-                    <div key={label} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 0', borderBottom: '1px solid rgba(0,0,0,0.05)', fontSize: 11 }}>
-                      <span style={{ color: 'var(--muted)', flex: 1 }}>{label}</span>
-                      <span style={{ color: 'var(--muted)', flex: 1, textAlign: 'center' }}>Forecast: {forecast}</span>
-                      <span style={{ color: 'var(--ink)', fontWeight: 500, flex: 1, textAlign: 'center' }}>Actual: {actual}</span>
-                      {variance && <span style={{ color: varColor, fontWeight: 600, fontSize: 10 }}>{varNum > 0 ? '+' : ''}{variance}%</span>}
-                    </div>
-                  );
-                })}
-                <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 10, fontStyle: 'italic' }}>
-                  Updated from QS progress reports. Last updated: {l.actualsUpdated ? new Date(l.actualsUpdated).toLocaleDateString('en-AU') : 'Pending first QS report'}.
-                </div>
-              </div>
-            ) : null}
+            <ActualsPanel listing={l} user={user} />
           </div>
         </div>
       </div>
@@ -1191,7 +1200,16 @@ function AdminPortal({ toast }) {
     setLoading(false);
   };
 
-  const approveCert = async id => { await API.post(`/api/admin/wholesale-certs/${id}/approve`, {}); toast('✅ Certificate approved'); load(); };
+  const approveCert = async id => {
+    const url = `/api/admin/wholesale-certs/${id}/approve`;
+    let r = await API.post(url, {});
+    if (r.code === 'accountant_pending') {
+      if (!window.confirm(`${r.error}\n\nApprove anyway (override)? This is recorded.`)) return;
+      r = await API.post(url, { override: true });
+    }
+    if (r.error) { toast(r.error); return; }
+    toast('✅ Certificate approved'); load();
+  };
   const rejectCert  = async (id, notes) => { await API.post(`/api/admin/wholesale-certs/${id}/reject`, { notes }); toast('Certificate rejected'); setRejectNote({ id: null, text: '' }); load(); };
   const approveSub  = async id => { await API.post(`/api/admin/subscriptions/${id}/approve`, {}); toast('✅ Subscription activated'); load(); };
   const rejectSub   = async id => { await API.post(`/api/admin/subscriptions/${id}/reject`, {}); toast('Subscription rejected'); load(); };
@@ -1203,7 +1221,7 @@ function AdminPortal({ toast }) {
     return <span style={{ background: bg, color, fontSize: 10, padding: '3px 9px', fontWeight: 500 }}>{s?.replace(/_/g, ' ')}</span>;
   };
 
-  const TABS = [['certs', '📄 Wholesale Certs'], ['subs', '💳 Subscriptions'], ['reviews', '📋 IM Reviews'], ['leads', '📊 Leads'], ['users', '👥 Users'], ['actuals', '📊 FEASO Actuals'], ['valuations', '🏛 Completion Valuations']];
+  const TABS = [['certs', '📄 Wholesale Certs'], ['subs', '💳 Subscriptions'], ['reviews', '📋 IM Reviews'], ['leads', '📊 Leads'], ['users', '👥 Users'], ['console', '🛡 Controls & Verification']];
 
   return (
     <sec style={{ paddingTop: 80 }}>
@@ -1351,62 +1369,8 @@ function AdminPortal({ toast }) {
           ))}
         </div>
       )}
-      {/* ── FEASO ACTUALS ── */}
-      {!loading && tab === 'actuals' && (
-        <div>
-          <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 20 }}>Update actual construction costs, sale prices, and timelines from QS progress reports. Investors see these updates in their deal dashboard.</div>
-          <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 24 }}>
-            <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, fontWeight: 600, marginBottom: 16 }}>Update FEASO Actuals — Active Deal</div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
-              {[['actualCost','Actual Construction Cost (e.g. $3.2M)'],['actualSalePrice','Actual Avg Sale Price (e.g. $485,000)'],['actualMargin','Actual Margin on Cost (e.g. 21.4%)'],['actualCompletion','Actual/Expected Completion (e.g. Q3 2026)'],['costVariance','Cost Variance % (e.g. +3.2)'],['priceVariance','Price Variance % (e.g. -1.8)'],['timeVariance','Timeline Variance % (e.g. +8.0)'],['marginVariance','Margin Variance % (e.g. -2.1)']].map(([k,l]) => (
-                <div className="fg" key={k}>
-                  <label className="fl">{l}</label>
-                  <input className="fi" placeholder={l} />
-                </div>
-              ))}
-            </div>
-            <div className="fg" style={{ marginTop: 4 }}>
-              <label className="fl">QS Report Reference</label>
-              <input className="fi" placeholder="e.g. QS-Progress-Report-2-June2026.pdf" />
-            </div>
-            <button className="btn btn-g" style={{ marginTop: 8 }}>Save Actuals — Investors Notified</button>
-            <div style={{ marginTop: 10, fontSize: 10, color: 'var(--muted)' }}>Saving actuals sends an automated update notification to all investors in this deal.</div>
-          </div>
-        </div>
-      )}
-
-      {/* ── COMPLETION VALUATIONS ── */}
-      {!loading && tab === 'valuations' && (
-        <div>
-          <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 20 }}>For deals above $5M GRV — upload independent registered valuer completion report before waterfall distribution is approved.</div>
-          <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 24 }}>
-            <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, fontWeight: 600, marginBottom: 4 }}>Completion Valuation Gate</div>
-            <p style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 20 }}>The independent valuation must be uploaded and admin-approved before the trustee can release any waterfall distribution to investors.</p>
-            <div style={{ background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.2)', padding: '14px 16px', marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--ink)', marginBottom: 6 }}>Valuation Requirements</div>
-              {['Registered valuer — must be registered with the Australian Property Institute (API)','Desktop or full valuation — as determined by deal size and trustee requirements','Valuation date — within 30 days of practical completion','Valuation basis — market value of completed units/lots','Report format — PDF, signed by the registered valuer'].map((r,i) => (
-                <div key={i} style={{ fontSize: 11, color: 'var(--muted)', display: 'flex', gap: 8, marginBottom: 4 }}>
-                  <span style={{ color: 'var(--gold)' }}>→</span><span>{r}</span>
-                </div>
-              ))}
-            </div>
-            <div className="fg"><label className="fl">Valuation Report (PDF)</label>
-              <input type="file" className="fi" accept=".pdf" style={{ paddingTop: 8 }} />
-            </div>
-            <div className="fg"><label className="fl">Registered Valuer Name and API Number</label>
-              <input className="fi" placeholder="e.g. John Smith AAPI — API12345678" />
-            </div>
-            <div className="fg"><label className="fl">Valuation Date</label>
-              <input className="fi" type="date" />
-            </div>
-            <div className="fg"><label className="fl">Gross Realisable Value — Valuer's Assessment</label>
-              <input className="fi" placeholder="e.g. $11,400,000" />
-            </div>
-            <button className="btn btn-g" style={{ marginTop: 8 }}>Upload Valuation — Unlock Distribution Review</button>
-            <div style={{ marginTop: 10, fontSize: 10, color: 'var(--muted)', lineHeight: 1.6 }}>Uploading the valuation makes it visible to all investors in this deal. The waterfall distribution cannot be released until this valuation is uploaded and approved.</div>
-          </div>
-        </div>
-      )}
+      {/* ── CONSOLE: tiers, proof of funds, contractors, valuations, drawdowns, partners, enquiries, system ── */}
+      {!loading && tab === 'console' && <AdminConsole showT={toast} />}
 
     </sec>
   );
@@ -1435,10 +1399,13 @@ export default function App() {
   const [stageListingId, setStageListingId] = useState(null);
   const [stages, setStages] = useState([]);
   const [myStages, setMyStages] = useState(null);
+  const [showNewProject, setShowNewProject] = useState(false);
+  const reloadDevListings = () => API.get('/api/listings').then(res => { if (Array.isArray(res) && user) setDevListings(res.filter(l => l.devId === user.id)); });
 
   const showT = msg => { setToast(msg); setTimeout(() => setToast(null), 3500); };
   const go = pg => { setPage(pg); window.scrollTo && window.scrollTo(0, 0); };
-  const invest = () => { if (!user) { setShowAuth(true); return; } setShowComp(true); };
+  const [showSummary, setShowSummary] = useState(false);
+  const invest = () => { if (!user) { setShowAuth(true); return; } if (user.role !== 'investor') { showT('Expressions of interest are for investor accounts.'); return; } setShowSummary(true); };
   const setP = (k, v) => setPf(p => ({ ...p, [k]: v }));
 
   // Load current user session
@@ -1462,6 +1429,8 @@ export default function App() {
   // Dashboard data: developer's own listings, or a subcontractor's assigned stages
   useEffect(() => {
     if ((page !== 'dashboard' && page !== 'stages') || !user) return;
+    // Keep the verification tier fresh (an admin may have approved something since login).
+    API.get('/api/auth/me').then(r => { if (r && r.user && r.user.tier !== user.tier) setUser(u => (u ? { ...u, ...r.user } : u)); });
     if (user.role === 'developer' || user.role === 'admin') {
       API.get('/api/listings').then(res => {
         if (Array.isArray(res)) setDevListings(res.filter(l => l.devId === user.id));
@@ -1968,7 +1937,7 @@ export default function App() {
       )}
 
       {/* ── DETAIL ── */}
-      {page === 'detail' && sel && <Detail l={sel} onBack={() => go('listings')} onInvest={invest} />}
+      {page === 'detail' && sel && <Detail l={sel} onBack={() => go('listings')} onInvest={invest} user={user} go={go} />}
 
       {/* ── INVESTOR TIERS ── */}
       {page === 'tiers' && (
@@ -2021,7 +1990,7 @@ export default function App() {
             <div>
               <div className="slbl">Investor Dashboard</div>
               <div className="stitle" style={{ marginBottom: 4 }}>Welcome back, {user.fname || user.email}</div>
-              <TierBadge tier={user.wholesaleStatus === 'verified' ? 'verified' : 'registered'} size="lg" />
+              <TierBadge tier={user.tier || 'registered'} size="lg" />
             </div>
             <button className="btn btn-d btn-sm" onClick={() => go('listings')}>Browse Opportunities →</button>
           </div>
@@ -2039,7 +2008,8 @@ export default function App() {
               💡 To unlock full IM access, complete the steps below: the education module, then your <strong>s.761G wholesale investor certificate</strong>.
             </div>
           </div>
-          <WholesalePanel user={user} showT={showT} go={go} onProfile={v => setUser(u => ({ ...u, riskProfile: v }))} />
+          <WholesalePanel user={user} showT={showT} go={go} onProfile={v => setUser(u => ({ ...u, riskProfile: v }))} refreshUser={() => API.get('/api/auth/me').then(r => r && r.user && setUser(r.user))} />
+          <MyEois showT={showT} />
         </sec>
       )}
 
@@ -2112,15 +2082,23 @@ export default function App() {
       {/* ── DEVELOPER DASHBOARD — stages & subcontractor scoring ── */}
       {(page === 'dashboard' || page === 'stages') && user && (user.role === 'developer' || user.role === 'admin') && (
         <sec style={{ paddingTop: 80 }}>
-          <div style={{ marginBottom: 28 }}>
-            <div className="slbl">Developer Dashboard</div>
-            <div className="stitle" style={{ marginBottom: 4 }}>Welcome back, {user.fname || user.email}</div>
-            <p className="ssub" style={{ margin: 0 }}>Assign subcontractors to each project stage, then score their work against agreed benchmarks once complete.</p>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 28, flexWrap: 'wrap', gap: 12 }}>
+            <div>
+              <div className="slbl">Developer Dashboard</div>
+              <div className="stitle" style={{ marginBottom: 4 }}>Welcome back, {user.fname || user.email}</div>
+              <p className="ssub" style={{ margin: 0 }}>Build your FEASO, submit for review, then run each project: contractors and scoring, actuals, valuation, capital certainty and drawdowns.</p>
+            </div>
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <button className="btn btn-g btn-sm" onClick={() => setShowNewProject(v => !v)}>{showNewProject ? 'Close' : '+ New project'}</button>
+              <button className="btn btn-o btn-sm" style={{ color: 'var(--muted)', borderColor: 'rgba(0,0,0,0.2)' }} onClick={() => go('tradesmen')}>Find tradespeople →</button>
+            </div>
           </div>
 
-          {devListings.length === 0 && (
+          {showNewProject && <NewProjectForm showT={showT} onCancel={() => setShowNewProject(false)} onCreated={l => { setShowNewProject(false); reloadDevListings(); initStages(l.id); }} />}
+
+          {devListings.length === 0 && !showNewProject && (
             <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 24, textAlign: 'center', color: 'var(--muted)', fontSize: 13 }}>
-              You don't have any listings yet. Submit a project via the <button className="nl" style={{ display: 'inline', color: 'var(--gold)' }} onClick={() => go('portal')}>Developers</button> page.
+              You don't have any projects yet. Click <strong>+ New project</strong> to start.
             </div>
           )}
 
@@ -2128,20 +2106,21 @@ export default function App() {
             <div key={l.id} style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', marginBottom: 16 }}>
               <div style={{ padding: '18px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10, borderBottom: stageListingId === l.id ? '1px solid rgba(0,0,0,0.06)' : 'none' }}>
                 <div>
-                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 19 }}>{l.name}</div>
-                  <div style={{ fontSize: 11, color: 'var(--muted)' }}>{l.loc}</div>
+                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 19 }}>{l.name} <span style={{ fontSize: 9, letterSpacing: '1px', textTransform: 'uppercase', color: l.status === 'active' ? '#27ae60' : '#E67E22', border: `1px solid ${l.status === 'active' ? '#27ae60' : '#E67E22'}`, padding: '2px 8px', borderRadius: 10, verticalAlign: 'middle' }}>{String(l.status).replace('_', ' ')}</span></div>
+                  <div style={{ fontSize: 11, color: 'var(--muted)' }}>{l.loc} · FEASO {l.feasoStatus === 'locked' ? 'locked' : l.feasoStatus === 'none' ? 'not started' : l.feasoStatus}</div>
                 </div>
                 {stageListingId === l.id
-                  ? <button className="btn btn-o btn-sm" onClick={() => setStageListingId(null)}>Hide Stages</button>
-                  : <button className="btn btn-d btn-sm" onClick={() => initStages(l.id)}>Manage Stages & Scoring →</button>
+                  ? <button className="btn btn-o btn-sm" style={{ color: 'var(--muted)', borderColor: 'rgba(0,0,0,0.2)' }} onClick={() => setStageListingId(null)}>Close workspace</button>
+                  : <button className="btn btn-d btn-sm" onClick={() => initStages(l.id)}>Open workspace →</button>
                 }
               </div>
               {stageListingId === l.id && (
-                <div style={{ padding: 20 }}>
-                  {stages.slice().sort((a, b) => a.order - b.order).map(s => (
+                <DevWorkspace
+                  listing={l} showT={showT} stages={stages} onChanged={reloadDevListings}
+                  stagesNode={<>{stages.slice().sort((a, b) => a.order - b.order).map(s => (
                     <StageRow key={s.id} stage={s} isDev onAssign={assignStage} onScore={scoreStage} onCertify={certifyStage} />
-                  ))}
-                </div>
+                  ))}</>}
+                />
               )}
             </div>
           ))}
@@ -2164,6 +2143,8 @@ export default function App() {
               </div>
             )}
           </div>
+
+          <ContractorProfile showT={showT} />
 
           {!myStages || myStages.stages.length === 0 ? (
             <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 24, textAlign: 'center', color: 'var(--muted)', fontSize: 13 }}>
@@ -2351,7 +2332,12 @@ export default function App() {
                   </div>
                   <div style={{ marginTop:8 }}>
                     <button className="btn btn-g" style={{ width:'100%', padding:'16px', fontSize:11, letterSpacing:'2px' }}
-                      onClick={() => pf.company && pf.name && pf.email ? setPDone(true) : showT('Please fill in required fields')}>
+                      onClick={async () => {
+                        if (!(pf.company && pf.name && pf.email)) { showT('Please fill in required fields'); return; }
+                        const r = await API.post('/api/project-enquiries', pf);
+                        if (r.error) { showT(r.error); return; }
+                        setPDone(true);
+                      }}>
                       Submit Project for Review →
                     </button>
                     <div className="snote" style={{ marginTop:12 }}>💳 Developer subscription ($299/month + GST) activated only after project review and approval. No upfront cost.</div>
@@ -2557,61 +2543,10 @@ export default function App() {
       )}
 
       {/* ── DEVELOPER REGISTRY ── */}
-      {page === 'developers' && (
-        <div>
-          <sec style={{ paddingTop: 80 }}>
-            <div className="slbl">Accountability</div>
-            <div className="stitle">Developer Track Record Registry</div>
-            <p className="ssub" style={{ marginBottom: 32 }}>
-              Every developer who has listed on Prop Dev DNA has a verified track record — public, searchable, and updated on every project completion. Australia's first standardised development finance track record registry.
-            </p>
-            <div style={{ background: 'rgba(201,168,76,0.06)', border: '1px solid rgba(201,168,76,0.15)', padding: '16px 20px', marginBottom: 32, fontSize: 13, color: 'var(--muted)', lineHeight: 1.75 }}>
-              <strong style={{ color: 'var(--ink)' }}>Why this exists:</strong> Banks have private blacklists. Brokers have network knowledge. Neither is public or standardised. Every investor on this platform deserves access to the same track record data that institutional lenders use to assess developers. This registry makes it public.
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 1, background: 'rgba(0,0,0,0.06)', marginBottom: 40 }}>
-              {[
-                ['🌱', 'Emerging', 'First project on platform — no completed track record yet', '#888'],
-                ['⭐', 'Established', '1–2 projects completed on platform — track record building', 'var(--gold)'],
-                ['⭐⭐', 'Verified', '3+ projects completed — consistent delivery record', '#27AE60'],
-                ['⭐⭐⭐', 'Elite', '5+ projects — outstanding track record on all metrics', '#C9A84C'],
-              ].map(([icon, rating, desc, color]) => (
-                <div key={rating} style={{ background: '#fff', padding: '20px 16px', textAlign: 'center' }}>
-                  <div style={{ fontSize: 24, marginBottom: 8 }}>{icon}</div>
-                  <div style={{ fontSize: 13, fontWeight: 600, color: color, marginBottom: 6 }}>{rating}</div>
-                  <div style={{ fontSize: 11, color: 'var(--muted)', lineHeight: 1.5 }}>{desc}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 16 }}>
-              Registry is updated automatically from completed project data. Developers cannot edit their own registry entries.
-            </div>
-            <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: '20px 24px', marginBottom: 12 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 16 }}>
-                <div>
-                  <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, fontWeight: 600, color: 'var(--ink)', marginBottom: 4 }}>Sample Developer Pty Ltd</div>
-                  <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 12 }}>Sydney NSW · Active since 2024 · 2 projects listed</div>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 16 }}>
-                    {[['Projects Completed', '1', ''], ['Avg. Timeline Variance', '+8%', '#E67E22'], ['Avg. Cost Variance', '+3%', '#27AE60'], ['Investor Return vs Forecast', '−2%', '#E67E22']].map(([label, val, color]) => (
-                      <div key={label}>
-                        <div style={{ fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: 4 }}>{label}</div>
-                        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 22, fontWeight: 600, color: color || 'var(--ink)' }}>{val}</div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontSize: 22, marginBottom: 4 }}>⭐</div>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--gold)' }}>Established</div>
-                  <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 4 }}>1 project completed</div>
-                </div>
-              </div>
-            </div>
-            <div style={{ padding: '16px 20px', background: 'rgba(201,168,76,0.04)', border: '1px solid rgba(201,168,76,0.1)', fontSize: 12, color: 'var(--muted)', lineHeight: 1.75 }}>
-              <strong style={{ color: 'var(--ink)' }}>Note:</strong> The Developer Track Record Registry is populated from actual project outcomes on this platform only. Past performance is not a reliable indicator of future performance. This registry is provided as a transparency tool — not financial product advice or an endorsement of any developer.
-            </div>
-          </sec>
-        </div>
-      )}
+      {page === 'developers' && <RegistryPage />}
+      {page === 'tradesmen' && <TradesmenPage user={user} openAuth={openAuth} />}
+      {page === 'buyers-agents' && <BuyersAgentsPage go={go} />}
+      {page === 'eoi' && <EoiPage token={(window.__pddParams || {}).token} action={(window.__pddParams || {}).action} />}
 
       {/* ── ABOUT ── */}
       {page === 'about' && (
@@ -2757,7 +2692,7 @@ export default function App() {
           </div>
           <div>
             <div className="fch4">Platform</div>
-            {[['listings','Opportunities'],['portal','For Developers'],['tiers','Investor Tiers'],['pricing','Pricing'],['compliance','Compliance']].map(([pg,l]) => <button key={l} className="fl2" onClick={() => go(pg)}>{l}</button>)}
+            {[['listings','Opportunities'],['portal','For Developers'],['tiers','Investor Tiers'],['pricing','Pricing'],['compliance','Compliance'],['tradesmen','Tradespeople'],['buyers-agents','Buyers Agents'],['developers','Track Record']].map(([pg,l]) => <button key={l} className="fl2" onClick={() => go(pg)}>{l}</button>)}
           </div>
           <div>
             <div className="fch4">Company</div>
@@ -2792,7 +2727,8 @@ export default function App() {
       </footer>
 
       {showAuth && <AuthModal defaultRole={authDefaultRole} onClose={() => { setShowAuth(false); setAuthDefaultRole(null); }} onLogin={u => { setUser(u); setAuthDefaultRole(null); showT(`Welcome, ${u.fname || u.email} 👋`); go(u.role === 'developer' || u.role === 'subcontractor' ? 'stages' : u.role === 'regulator' ? 'regulator' : 'dashboard'); }} />}
-      {showComp && <CompModal listing={sel} onAccept={async () => { const r = await API.post('/api/risk-declaration', { listingId: sel && sel.id, listingName: sel && (sel.name || sel.title), allChecksConfirmed: true }); if (r && r.error) { showT(r.error); return; } setShowComp(false); setShowEOI(true); }} onClose={() => setShowComp(false)} />}
+      {showSummary && sel && <SummaryModal listing={sel} onClose={() => setShowSummary(false)} onDone={() => { setShowSummary(false); setShowComp(true); }} />}
+      {showComp && <CompModal listing={sel} onAccept={async () => { const r = await API.post('/api/risk-declaration', { listingId: sel && sel.id, listingName: sel && (sel.name || sel.title), allChecksConfirmed: true, summaryAcknowledged: true, waterfallAcknowledged: true }); if (r && r.error) { showT(r.error); return; } setShowComp(false); setShowEOI(true); }} onClose={() => setShowComp(false)} />}
       {showEOI && sel && <EOIModal listing={sel} onClose={() => setShowEOI(false)} toast={showT} user={user} />}
       {toast && <div className="toast">{toast}</div>}
     </>
