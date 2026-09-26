@@ -5,7 +5,10 @@ const API = {
   get: (url) => fetch(url, { credentials: 'include' }).then(r => r.json()),
   post: (url, data) => fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(data) }).then(r => r.json()),
   put: (url, data) => fetch(url, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify(data) }).then(r => r.json()),
+  upload: (url, formData) => fetch(url, { method: 'POST', credentials: 'include', body: formData }).then(r => r.json()),
 };
+
+const lightFi = { color: '#111', background: '#fafafa', borderColor: 'rgba(0,0,0,0.15)' };
 
 // ─── INVESTOR VERIFICATION TIERS ─────────────────────────────────
 const TIERS = {
@@ -327,7 +330,7 @@ function Card({ l, onClick, user }) {
   const cardPhoto = l.photo||`https://images.unsplash.com/${cardPhotos[photoIdx]}?w=600&q=80&fit=crop&auto=format`;
   const riskMap = { conservative:['low'], balanced:['low','medium'], growth:['low','medium','high'], aggressive:['low','medium','high','very-high'] };
   const investorProfile = user?.riskProfile || 'balanced';
-  const dealRisk = l.riskLevel || 'medium';
+  const dealRisk = l.risk ? ({ Conservative: 'low', Balanced: 'medium', Growth: 'high', Speculative: 'very-high' })[l.risk.band] : (l.riskLevel || 'medium');
   const isSuitable = !user || (riskMap[investorProfile]||['low','medium']).includes(dealRisk);
   return (
     <div className="card" onClick={onClick} style={{ position:'relative' }}>
@@ -344,7 +347,7 @@ function Card({ l, onClick, user }) {
         {l.irr && <div style={{ position:'absolute', bottom:10, right:10, background:'rgba(201,168,76,0.9)', color:'#0D0D0D', fontSize:11, fontWeight:600, padding:'4px 10px' }}>{l.irr} IRR</div>}
       </div>
       <div className="cbody">
-        <div className="ctype">{l.type} · {l.state}</div>
+        <div className="ctype">{l.type} · {l.state}{l.risk ? ` · Risk: ${l.risk.band} ${l.risk.composite}/5` : ''}</div>
         <div className="cname">{l.name || l.title}</div>
         <div className="cloc">📍 {l.suburb}, {l.state}</div>
         <div className="cmets">
@@ -598,7 +601,31 @@ function ScoreBar({ label, value }) {
   );
 }
 
-function StageRow({ stage, isDev, onAssign, onScore }) {
+function CertifyForm({ stage, onCertify }) {
+  const [open, setOpen] = useState(false);
+  const [f, setF] = useState({ builderName: '', inspectorName: '', inspectorLicence: '', recipients: '', builderSigned: false, inspectorCountersigned: false });
+  const set = (k, v) => setF(p => ({ ...p, [k]: v }));
+  if (!open) return <button className="btn btn-d btn-sm" style={{ marginTop: 12 }} onClick={() => setOpen(true)}>Issue Milestone Certificate →</button>;
+  return (
+    <div style={{ marginTop: 14, paddingTop: 12, borderTop: '1px dashed rgba(0,0,0,0.12)' }}>
+      <div style={{ fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 8 }}>Milestone certificate — locked once issued</div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 8 }}>
+        <input className="fi" style={lightFi} placeholder="Builder name (signs)" value={f.builderName} onChange={e => set('builderName', e.target.value)} />
+        <input className="fi" style={lightFi} placeholder="Inspector name (countersigns)" value={f.inspectorName} onChange={e => set('inspectorName', e.target.value)} />
+        <input className="fi" style={lightFi} placeholder="Inspector licence no." value={f.inspectorLicence} onChange={e => set('inspectorLicence', e.target.value)} />
+      </div>
+      <input className="fi" style={{ ...lightFi, marginTop: 8 }} placeholder="Send to (emails, comma separated) — lender, investors, QS" value={f.recipients} onChange={e => set('recipients', e.target.value)} />
+      <label style={{ display: 'block', fontSize: 11, marginTop: 10 }}><input type="checkbox" checked={f.builderSigned} onChange={e => set('builderSigned', e.target.checked)} /> I sign as builder that this stage is complete</label>
+      <label style={{ display: 'block', fontSize: 11, marginTop: 6 }}><input type="checkbox" checked={f.inspectorCountersigned} onChange={e => set('inspectorCountersigned', e.target.checked)} /> The inspector has countersigned this stage</label>
+      <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+        <button className="btn btn-g btn-sm" onClick={() => onCertify(stage.id, { ...f, recipients: f.recipients.split(',').map(s => s.trim()).filter(Boolean) })}>Issue Certificate</button>
+        <button className="btn btn-o btn-sm" onClick={() => setOpen(false)}>Cancel</button>
+      </div>
+    </div>
+  );
+}
+
+function StageRow({ stage, isDev, onAssign, onScore, onCertify }) {
   const [assignEmail, setAssignEmail] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [scoring, setScoring] = useState(false);
@@ -655,9 +682,402 @@ function StageRow({ stage, isDev, onAssign, onScore }) {
           <div style={{ fontSize: 12, marginBottom: 8 }}>Overall: <strong style={{ color: 'var(--gold)', fontSize: 16 }}>{stage.score.overall}/5</strong></div>
           {stage.benchmarks.map(b => <ScoreBar key={b.id} label={b.label} value={stage.score.values[b.id] || 0} />)}
           {stage.score.notes && <div style={{ fontSize: 11, color: 'var(--muted)', marginTop: 8, fontStyle: 'italic' }}>"{stage.score.notes}"</div>}
+          {stage.certificate
+            ? <a href={`/?page=certificate&id=${stage.certificate.id}`} target="_blank" rel="noreferrer" style={{ display: 'inline-block', marginTop: 12, fontSize: 11, color: 'var(--gold)', border: '1px solid rgba(201,168,76,0.4)', padding: '6px 12px', textDecoration: 'none' }}>📜 Milestone certificate issued — view</a>
+            : (isDev && onCertify && <CertifyForm stage={stage} onCertify={onCertify} />)}
         </div>
       )}
     </div>
+  );
+}
+
+// ─── RISK SCORE PANEL ────────────────────────────────────────────
+function RiskPanel({ risk }) {
+  if (!risk) return null;
+  const col = s => s <= 2 ? '#27ae60' : s === 3 ? '#E67E22' : '#C0392B';
+  return (
+    <div className="dsec" style={{ marginTop: 28 }}>
+      <h2>Risk Score</h2>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 14, flexWrap: 'wrap' }}>
+        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 34, color: 'var(--gold)', lineHeight: 1 }}>{risk.composite}<span style={{ fontSize: 16 }}>/5</span></div>
+        <div style={{ fontSize: 12, fontWeight: 500 }}>{risk.band}</div>
+        <div style={{ fontSize: 10, color: 'var(--muted)' }}>1 = lower risk · 5 = higher risk</div>
+      </div>
+      {risk.dimensions.map(d => (
+        <div key={d.key} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8, flexWrap: 'wrap' }}>
+          <div style={{ fontSize: 11, width: 170, flexShrink: 0 }}>{d.label}</div>
+          <div style={{ flex: '1 1 80px', height: 6, background: 'rgba(0,0,0,0.08)' }}><div style={{ width: `${d.score / 5 * 100}%`, height: '100%', background: col(d.score) }} /></div>
+          <div style={{ fontSize: 11, fontWeight: 600, width: 16 }}>{d.score}</div>
+          <div style={{ fontSize: 10, color: 'var(--muted)', flex: '2 1 160px' }}>{d.note}</div>
+        </div>
+      ))}
+      <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 10, fontStyle: 'italic' }}>{risk.basis}</div>
+    </div>
+  );
+}
+
+// ─── INVESTOR: WHOLESALE CERTIFICATION + RISK PROFILE ────────────
+function WStep({ n, title, done, children }) {
+  return (
+    <div style={{ display: 'flex', gap: 14, padding: '14px 0', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+      <div style={{ width: 26, height: 26, borderRadius: '50%', background: done ? '#27ae60' : 'rgba(201,168,76,0.15)', color: done ? '#fff' : 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, flexShrink: 0 }}>{done ? '✓' : n}</div>
+      <div style={{ flex: 1 }}><div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 17, marginBottom: 6 }}>{title}</div>{children}</div>
+    </div>
+  );
+}
+
+function WholesalePanel({ user, showT, go, onProfile }) {
+  const [st, setSt] = useState(null);
+  const [f, setF] = useState({ investorName: `${user.fname || ''} ${user.lname || ''}`.trim(), investorDOB: '', investorAddress: '', acctName: '', acctFirm: '', acctEmail: '', acctPhone: '', acctMembership: 'CPA Australia', acctMembershipNumber: '', certBasis: 'net_assets', approxNetAssets: '', investorDeclared: false });
+  const [file, setFile] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const set = (k, v) => setF(p => ({ ...p, [k]: v }));
+  const load = () => API.get('/api/wholesale-cert/status').then(r => { if (!r.error) setSt(r); });
+  useEffect(() => { load(); }, []);
+
+  const submit = async () => {
+    setErr('');
+    if (!file) { setErr("Attach the signed Qualified Accountant's Certificate (PDF, JPG or PNG)."); return; }
+    if (!f.investorDeclared) { setErr('Please tick the declaration.'); return; }
+    const fd = new FormData();
+    Object.entries(f).forEach(([k, v]) => fd.append(k, v));
+    fd.append('certFile', file);
+    setBusy(true);
+    const r = await API.upload('/api/wholesale-cert', fd);
+    setBusy(false);
+    if (r.error) { setErr(r.error); return; }
+    showT('Certificate submitted. Your accountant has been emailed a verification link.');
+    load();
+  };
+
+  const setProfile = async v => {
+    const r = await API.post('/api/profile/risk-profile', { riskProfile: v });
+    if (r.error) { showT(r.error); return; }
+    onProfile(v);
+    showT('Risk profile saved.');
+  };
+
+  if (!st) return null;
+  const cert = st.cert;
+  const active = cert && ['pending', 'verified'].includes(cert.status);
+  const av = cert && cert.accountantVerification;
+  const eduDone = !!st.educationCompletedAt;
+  const Step = WStep;
+  return (
+    <div style={{ background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 24, marginTop: 20 }}>
+      <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 20, marginBottom: 4 }}>Wholesale Investor Verification</div>
+      <div style={{ fontSize: 11, color: 'var(--muted)', marginBottom: 6 }}>Required by s.761G of the Corporations Act before you can access full Information Memorandums.</div>
+
+      <Step n={1} title="Investor education module" done={eduDone}>
+        {eduDone
+          ? <div style={{ fontSize: 12, color: 'var(--muted)' }}>Completed {new Date(st.educationCompletedAt).toLocaleDateString('en-AU')}.</div>
+          : <><div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 8 }}>Five short lessons (about five minutes) on development finance, the waterfall, capital at risk and illiquidity. Required before you submit a certificate.</div>
+            <button className="btn btn-g btn-sm" onClick={() => go('education')}>Start the module →</button></>}
+      </Step>
+
+      <Step n={2} title="Accountant's certificate" done={!!active && cert.status === 'verified'}>
+        {active ? (
+          <div style={{ fontSize: 12, lineHeight: 1.8 }}>
+            <div>Status: <strong>{cert.status === 'verified' ? 'Approved' : 'Under review'}</strong>{cert.status === 'verified' && cert.expiresAt ? ` — valid until ${new Date(cert.expiresAt).toLocaleDateString('en-AU')}` : ''}</div>
+            {av && <div>Accountant self-verification: <strong>{av.status === 'verified' ? `Completed ${new Date(av.verifiedAt).toLocaleDateString('en-AU')}` : 'Awaiting your accountant'}</strong></div>}
+          </div>
+        ) : !eduDone ? (
+          <div style={{ fontSize: 12, color: 'var(--muted)' }}>Complete step 1 first.</div>
+        ) : (
+          <div>
+            {cert && cert.status === 'rejected' && <div style={{ fontSize: 12, color: '#C0392B', marginBottom: 10 }}>Your last certificate was not approved{cert.adminNotes ? `: ${cert.adminNotes}` : '.'} Please resubmit.</div>}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(190px, 1fr))', gap: 8 }}>
+              <input className="fi" style={lightFi} placeholder="Your full name" value={f.investorName} onChange={e => set('investorName', e.target.value)} />
+              <input className="fi" style={lightFi} type="date" title="Date of birth" value={f.investorDOB} onChange={e => set('investorDOB', e.target.value)} />
+              <input className="fi" style={lightFi} placeholder="Your address" value={f.investorAddress} onChange={e => set('investorAddress', e.target.value)} />
+              <input className="fi" style={lightFi} placeholder="Accountant's full name" value={f.acctName} onChange={e => set('acctName', e.target.value)} />
+              <input className="fi" style={lightFi} placeholder="Accountant's firm" value={f.acctFirm} onChange={e => set('acctFirm', e.target.value)} />
+              <input className="fi" style={lightFi} type="email" placeholder="Accountant's email (we send a verification link)" value={f.acctEmail} onChange={e => set('acctEmail', e.target.value)} />
+              <input className="fi" style={lightFi} placeholder="Accountant's phone" value={f.acctPhone} onChange={e => set('acctPhone', e.target.value)} />
+              <select className="fi" style={lightFi} value={f.acctMembership} onChange={e => set('acctMembership', e.target.value)}>
+                {['CPA Australia', 'CA ANZ', 'IPA'].map(o => <option key={o}>{o}</option>)}
+              </select>
+              <input className="fi" style={lightFi} placeholder="Membership number" value={f.acctMembershipNumber} onChange={e => set('acctMembershipNumber', e.target.value)} />
+              <select className="fi" style={lightFi} value={f.certBasis} onChange={e => set('certBasis', e.target.value)}>
+                <option value="net_assets">Net assets of at least $2.5M</option>
+                <option value="gross_income">Gross income of at least $250k for two years</option>
+              </select>
+            </div>
+            <div style={{ marginTop: 10 }}>
+              <label style={{ fontSize: 11, color: 'var(--muted)', display: 'block', marginBottom: 4 }}>Signed certificate (PDF, JPG or PNG)</label>
+              <input type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={e => setFile(e.target.files[0] || null)} />
+            </div>
+            <label style={{ display: 'block', fontSize: 11, marginTop: 10, lineHeight: 1.6 }}><input type="checkbox" checked={f.investorDeclared} onChange={e => set('investorDeclared', e.target.checked)} /> I declare the information above is true and I am a wholesale client under s.761G.</label>
+            {err && <div style={{ color: '#C0392B', fontSize: 11, marginTop: 8 }}>{err}</div>}
+            <button className="btn btn-g btn-sm" style={{ marginTop: 12 }} disabled={busy} onClick={submit}>{busy ? 'Submitting…' : 'Submit certificate →'}</button>
+          </div>
+        )}
+      </Step>
+
+      <Step n={3} title="Your risk profile" done={!!user.riskProfile}>
+        <div style={{ fontSize: 12, color: 'var(--muted)', marginBottom: 8 }}>Listings scored above your comfort level are flagged "outside your risk profile". General information only.</div>
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {['conservative', 'balanced', 'growth', 'aggressive'].map(p => (
+            <button key={p} className={`btn btn-sm ${(user.riskProfile || 'balanced') === p ? 'btn-g' : 'btn-o'}`} style={(user.riskProfile || 'balanced') === p ? {} : { color: 'var(--muted)', borderColor: 'rgba(0,0,0,0.15)' }} onClick={() => setProfile(p)}>{p}</button>
+          ))}
+        </div>
+      </Step>
+    </div>
+  );
+}
+
+// ─── INVESTOR EDUCATION MODULE ───────────────────────────────────
+function EducationPage({ user, go, openAuth }) {
+  const [data, setData] = useState(null);
+  const [i, setI] = useState(0);
+  const [answers, setAnswers] = useState([]);
+  const [result, setResult] = useState(null);
+  useEffect(() => { if (user) API.get('/api/education').then(r => { if (!r.error) setData(r); }); }, [user]);
+
+  if (!user) return (
+    <sec style={{ paddingTop: 80, textAlign: 'center' }}>
+      <div className="stitle">Investor Education</div>
+      <p className="ssub" style={{ margin: '0 auto 20px' }}>Sign in to complete the five-lesson module required before wholesale verification.</p>
+      <button className="btn btn-g" onClick={() => openAuth()}>Sign In →</button>
+    </sec>
+  );
+  if (!data) return <sec style={{ paddingTop: 80 }}><p className="ssub">Loading…</p></sec>;
+
+  const mods = data.modules;
+  const m = mods[i];
+  const card = { background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 28, maxWidth: 720 };
+
+  const finish = async () => {
+    const r = await API.post('/api/education/submit', { answers });
+    if (!r.error) setResult(r);
+  };
+
+  if (result) return (
+    <sec style={{ paddingTop: 80 }}>
+      <div className="slbl">Investor Education</div>
+      <div style={card}>
+        {result.passed ? (
+          <>
+            <div style={{ fontSize: 40, marginBottom: 8 }}>✅</div>
+            <div className="stitle" style={{ marginBottom: 8 }}>Module complete</div>
+            <p className="ssub" style={{ margin: '0 0 20px' }}>Your completion has been logged. You can now submit your accountant's certificate.</p>
+            <button className="btn btn-g" onClick={() => go('dashboard')}>Continue to verification →</button>
+          </>
+        ) : (
+          <>
+            <div className="stitle" style={{ marginBottom: 8 }}>Not quite yet</div>
+            <p className="ssub" style={{ margin: '0 0 12px' }}>Please review these lessons and try again:</p>
+            <ul style={{ margin: '0 0 20px 18px', fontSize: 13, lineHeight: 1.9 }}>{result.results.map((ok, k) => !ok && <li key={k}>{mods[k].title}</li>)}</ul>
+            <button className="btn btn-g" onClick={() => { setResult(null); setAnswers([]); setI(0); }}>Review and retry →</button>
+          </>
+        )}
+      </div>
+    </sec>
+  );
+
+  return (
+    <sec style={{ paddingTop: 80 }}>
+      <div className="slbl">Investor Education · Lesson {i + 1} of {mods.length}</div>
+      <div style={card}>
+        <div style={{ height: 4, background: 'rgba(0,0,0,0.07)', marginBottom: 20 }}><div style={{ width: `${(i + 1) / mods.length * 100}%`, height: '100%', background: 'var(--gold)' }} /></div>
+        <div className="stitle" style={{ marginBottom: 12 }}>{m.title}</div>
+        {m.body.map((p, k) => <p key={k} style={{ fontSize: 14, lineHeight: 1.8, color: '#333', marginBottom: 10 }}>{p}</p>)}
+        <div style={{ marginTop: 22, paddingTop: 16, borderTop: '1px solid rgba(0,0,0,0.07)' }}>
+          <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, marginBottom: 10 }}>{m.q}</div>
+          {m.options.map((o, k) => (
+            <div key={k} className={`eoiopt ${answers[i] === k ? 'sel' : ''}`} style={{ color: '#111' }} onClick={() => setAnswers(a => { const n = a.slice(); n[i] = k; return n; })}>
+              <div className="eoiopt-t" style={{ color: '#111' }}>{o}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 20 }}>
+          <button className="btn btn-o btn-sm" style={{ color: 'var(--muted)', borderColor: 'rgba(0,0,0,0.15)', visibility: i === 0 ? 'hidden' : 'visible' }} onClick={() => setI(i - 1)}>← Back</button>
+          {i < mods.length - 1
+            ? <button className="btn btn-g btn-sm" disabled={answers[i] === undefined} onClick={() => setI(i + 1)}>Next lesson →</button>
+            : <button className="btn btn-g btn-sm" disabled={answers.filter(a => a !== undefined).length < mods.length} onClick={finish}>Finish →</button>}
+        </div>
+        <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 16 }}>General information only — not financial product advice.</div>
+      </div>
+    </sec>
+  );
+}
+
+// ─── ACCOUNTANT SELF-VERIFICATION (no login) ─────────────────────
+function VerifyPage({ token }) {
+  const [d, setD] = useState(null);
+  const [err, setErr] = useState('');
+  const [f, setF] = useState({ membershipNumber: '', signedName: '', decl: [] });
+  const [done, setDone] = useState(false);
+  useEffect(() => {
+    if (!token) { setErr('This verification link is not valid.'); return; }
+    API.get(`/api/accountant-verify/${token}`).then(r => r.error ? setErr(r.error) : setD(r));
+  }, [token]);
+  const box = { background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 28, maxWidth: 720 };
+  if (err) return <sec style={{ paddingTop: 80 }}><div style={box}><div className="stitle">Verification link</div><p className="ssub">{err}</p></div></sec>;
+  if (!d) return <sec style={{ paddingTop: 80 }}><p className="ssub">Loading…</p></sec>;
+  if (done || d.status === 'verified') return <sec style={{ paddingTop: 80 }}><div style={box}><div style={{ fontSize: 40 }}>✅</div><div className="stitle">Thank you</div><p className="ssub">Your verification for {d.investorName} has been recorded with a timestamp.</p></div></sec>;
+  const allTicked = d.declarations.every((_, k) => f.decl[k]);
+  const submit = async () => {
+    setErr('');
+    const r = await API.post(`/api/accountant-verify/${token}`, { membershipNumber: f.membershipNumber, signedName: f.signedName, declarations: d.declarations.map((_, k) => !!f.decl[k]) });
+    if (r.error) { setErr(r.error); return; }
+    setDone(true);
+  };
+  return (
+    <sec style={{ paddingTop: 80 }}>
+      <div className="slbl">Accountant Verification</div>
+      <div style={box}>
+        <div className="stitle" style={{ marginBottom: 8 }}>Verify a wholesale investor certificate</div>
+        <p style={{ fontSize: 13, lineHeight: 1.8, color: '#333' }}>
+          <strong>{d.investorName}</strong> has named <strong>{d.acctName}</strong> ({d.acctFirm}, {d.acctMembership}) as their certifying accountant, on the basis of: {d.basis}.
+        </p>
+        <div style={{ marginTop: 16 }}>
+          <label style={{ fontSize: 11, color: 'var(--muted)' }}>Your membership number</label>
+          <input className="fi" style={lightFi} value={f.membershipNumber} onChange={e => setF(p => ({ ...p, membershipNumber: e.target.value }))} />
+        </div>
+        <div style={{ marginTop: 16 }}>
+          {d.declarations.map((t, k) => (
+            <label key={k} style={{ display: 'flex', gap: 10, fontSize: 13, lineHeight: 1.6, marginBottom: 10, color: '#222' }}>
+              <input type="checkbox" checked={!!f.decl[k]} onChange={e => setF(p => { const n = p.decl.slice(); n[k] = e.target.checked; return { ...p, decl: n }; })} />
+              <span>{t}</span>
+            </label>
+          ))}
+        </div>
+        <div style={{ marginTop: 8 }}>
+          <label style={{ fontSize: 11, color: 'var(--muted)' }}>Type your full name to sign</label>
+          <input className="fi" style={lightFi} value={f.signedName} onChange={e => setF(p => ({ ...p, signedName: e.target.value }))} />
+        </div>
+        {err && <div style={{ color: '#C0392B', fontSize: 12, marginTop: 10 }}>{err}</div>}
+        <button className="btn btn-g" style={{ marginTop: 16 }} disabled={!allTicked || !f.signedName || !f.membershipNumber} onClick={submit}>Submit verification →</button>
+        <div style={{ fontSize: 10, color: 'var(--muted)', marginTop: 12 }}>Your declarations are timestamped and stored, and may be checked against your professional body's register.</div>
+      </div>
+    </sec>
+  );
+}
+
+// ─── MILESTONE CERTIFICATE (public, printable) ───────────────────
+function CertificatePage({ id }) {
+  const [d, setD] = useState(null);
+  const [err, setErr] = useState('');
+  useEffect(() => {
+    if (!id) { setErr('Certificate not found.'); return; }
+    API.get(`/api/certificates/${id}`).then(r => r.error ? setErr(r.error) : setD(r));
+  }, [id]);
+  if (err) return <sec style={{ paddingTop: 80 }}><div className="stitle">Milestone Certificate</div><p className="ssub">{err}</p></sec>;
+  if (!d) return <sec style={{ paddingTop: 80 }}><p className="ssub">Loading…</p></sec>;
+  const c = d.certificate, s = c.snapshot;
+  const fmt = t => new Date(t).toLocaleDateString('en-AU', { day: 'numeric', month: 'long', year: 'numeric' });
+  return (
+    <sec style={{ paddingTop: 60 }}>
+      <div style={{ maxWidth: 760, margin: '0 auto', background: '#fff', border: '2px solid var(--gold)', padding: '40px 44px', color: '#111' }}>
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <div style={{ fontSize: 10, letterSpacing: '4px', textTransform: 'uppercase', color: 'var(--gold)' }}>Prop Dev DNA</div>
+          <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 34, marginTop: 6 }}>Milestone Certificate</div>
+        </div>
+        <div style={{ textAlign: 'center', fontSize: 14, lineHeight: 1.9, marginBottom: 24 }}>
+          <strong>{s.stageName}</strong> on <strong>{s.listingName}</strong><br />
+          <span style={{ color: 'var(--muted)' }}>{String(s.location || '').replace('📍', '').trim()}</span><br />
+          Contractor: <strong>{s.contractor || '—'}</strong>
+        </div>
+        <div style={{ textAlign: 'center', marginBottom: 20 }}>
+          <span style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 44, color: 'var(--gold)' }}>{s.score}</span><span style={{ fontSize: 16 }}> / 5</span>
+          <div style={{ fontSize: 10, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--muted)' }}>Stage score · scored {fmt(s.scoredAt)}</div>
+        </div>
+        {s.benchmarks.map(b => <ScoreBar key={b.label} label={b.label} value={b.value || 0} />)}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginTop: 32 }}>
+          <div style={{ borderTop: '1px solid #111', paddingTop: 8, fontSize: 12 }}><strong>{c.builderName}</strong><br /><span style={{ color: 'var(--muted)' }}>Builder — signed</span></div>
+          <div style={{ borderTop: '1px solid #111', paddingTop: 8, fontSize: 12 }}><strong>{c.inspectorName}</strong><br /><span style={{ color: 'var(--muted)' }}>Inspector — countersigned · Licence {c.inspectorLicence}</span></div>
+        </div>
+        <div style={{ marginTop: 28, paddingTop: 14, borderTop: '1px solid rgba(0,0,0,0.1)', fontSize: 10, color: '#666', lineHeight: 1.7, wordBreak: 'break-all' }}>
+          Issued {fmt(c.issuedAt)} · Locked — cannot be edited · Integrity check: <strong style={{ color: d.intact ? '#27ae60' : '#C0392B' }}>{d.intact ? 'record intact' : 'RECORD ALTERED'}</strong><br />
+          Certificate ID {c.id}<br />SHA-256 {c.hash}<br />
+          This certificate records a builder-signed, inspector-countersigned milestone. It does not by itself release any drawdown or constitute financial product advice.
+        </div>
+      </div>
+      <div style={{ textAlign: 'center', marginTop: 20 }}><button className="btn btn-g btn-sm" onClick={() => window.print()}>Print / save as PDF</button></div>
+    </sec>
+  );
+}
+
+// ─── REGULATOR / COMPLIANCE OVERVIEW ─────────────────────────────
+function RegulatorPage({ user, showT }) {
+  const [d, setD] = useState(null);
+  const [err, setErr] = useState('');
+  const [f, setF] = useState({ fname: '', lname: '', email: '', password: '' });
+  useEffect(() => { API.get('/api/regulator/overview').then(r => r.error ? setErr(r.error) : setD(r)); }, []);
+  const create = async () => {
+    const r = await API.post('/api/admin/regulators', f);
+    if (r.error) { showT(r.error); return; }
+    showT('Read-only regulator account created.');
+    setF({ fname: '', lname: '', email: '', password: '' });
+  };
+  if (err) return <sec style={{ paddingTop: 80 }}><div className="stitle">Compliance Overview</div><p className="ssub">{err}</p></sec>;
+  if (!d) return <sec style={{ paddingTop: 80 }}><p className="ssub">Loading…</p></sec>;
+  const box = { background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 20, marginBottom: 16 };
+  const stat = (n, l) => <div style={{ flex: '1 1 130px' }}><div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 30, color: 'var(--gold)', lineHeight: 1 }}>{n == null ? '—' : n}</div><div style={{ fontSize: 9, letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--muted)', marginTop: 4 }}>{l}</div></div>;
+  const w = d.wholesaleCertificates;
+  return (
+    <sec style={{ paddingTop: 80 }}>
+      <div className="slbl">Read-only · Regulator view</div>
+      <div className="stitle" style={{ marginBottom: 4 }}>Compliance Overview</div>
+      <p className="ssub" style={{ margin: '0 0 24px' }}>Aggregate figures only — no investor personal details. Generated {new Date(d.generatedAt).toLocaleString('en-AU')}.</p>
+
+      <div style={box}>
+        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, marginBottom: 14 }}>Wholesale investor verification</div>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          {stat(w.total, 'Certificates')}{stat(w.verified, 'Approved')}{stat(w.pending, 'Pending')}{stat(w.rejected, 'Rejected')}{stat(w.accountantVerified, 'Accountant verified')}{stat(w.accountantAwaiting, 'Awaiting accountant')}{stat(w.spotChecksFlagged, 'Spot-checks flagged')}
+        </div>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', marginTop: 18 }}>
+          {stat(d.investors.total, 'Investors')}{stat(d.investors.educationCompleted, 'Education completed')}{stat(d.investors.riskDeclarations, 'Risk acknowledgments')}
+        </div>
+      </div>
+
+      <div style={box}>
+        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, marginBottom: 12 }}>Listings</div>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
+            <thead><tr style={{ textAlign: 'left', color: 'var(--muted)', fontSize: 10, letterSpacing: '1px', textTransform: 'uppercase' }}>{['Listing', 'Status', 'FEASO on file', 'Risk', 'IM review', 'Stages scored', 'Certificates'].map(h => <th key={h} style={{ padding: '6px 8px' }}>{h}</th>)}</tr></thead>
+            <tbody>{d.listings.map(l => (
+              <tr key={l.id} style={{ borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                <td style={{ padding: '8px' }}>{l.name}</td><td style={{ padding: '8px' }}>{l.status}</td><td style={{ padding: '8px' }}>{l.feasoOnFile ? 'Yes' : 'No'}</td>
+                <td style={{ padding: '8px' }}>{l.riskBand} {l.riskComposite}</td><td style={{ padding: '8px' }}>{l.imReviewStatus}</td>
+                <td style={{ padding: '8px' }}>{l.stagesScored}/{l.stages}</td><td style={{ padding: '8px' }}>{l.certificatesIssued}</td>
+              </tr>))}</tbody>
+          </table>
+        </div>
+      </div>
+
+      <div style={box}>
+        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, marginBottom: 12 }}>Contractor scoring</div>
+        <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          {stat(d.contractorScoring.stagesTotal, 'Stages')}{stat(d.contractorScoring.stagesScored, 'Scored')}{stat(d.contractorScoring.averageScore, 'Average score')}{stat(d.contractorScoring.milestoneCertificates, 'Milestone certificates')}
+        </div>
+      </div>
+
+      <div style={box}>
+        <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, marginBottom: 12 }}>Control coverage</div>
+        {d.controls.map(c => (
+          <div key={c.name} style={{ display: 'flex', justifyContent: 'space-between', gap: 12, padding: '8px 0', borderTop: '1px solid rgba(0,0,0,0.06)', fontSize: 12 }}>
+            <span>{c.name}</span>
+            <span style={{ fontSize: 9, letterSpacing: '1px', textTransform: 'uppercase', color: c.status === 'live' ? '#27ae60' : '#E67E22', border: `1px solid ${c.status === 'live' ? '#27ae60' : '#E67E22'}`, padding: '2px 8px', borderRadius: 10, whiteSpace: 'nowrap' }}>{c.status}</span>
+          </div>
+        ))}
+      </div>
+
+      {user.role === 'admin' && (
+        <div style={box}>
+          <div style={{ fontFamily: "'Cormorant Garamond',serif", fontSize: 18, marginBottom: 12 }}>Grant read-only regulator access</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 8 }}>
+            <input className="fi" style={lightFi} placeholder="First name" value={f.fname} onChange={e => setF(p => ({ ...p, fname: e.target.value }))} />
+            <input className="fi" style={lightFi} placeholder="Last name" value={f.lname} onChange={e => setF(p => ({ ...p, lname: e.target.value }))} />
+            <input className="fi" style={lightFi} type="email" placeholder="Email" value={f.email} onChange={e => setF(p => ({ ...p, email: e.target.value }))} />
+            <input className="fi" style={lightFi} type="password" placeholder="Password (10+ characters)" value={f.password} onChange={e => setF(p => ({ ...p, password: e.target.value }))} />
+          </div>
+          <button className="btn btn-d btn-sm" style={{ marginTop: 12 }} onClick={create}>Create account</button>
+        </div>
+      )}
+    </sec>
   );
 }
 
@@ -685,6 +1105,13 @@ function Detail({ l, onBack, onInvest }) {
             <h2>Project Overview</h2>
             <p>{l.desc || l.description}</p>
           </div>
+          <RiskPanel risk={l.risk} />
+          {l.stageSummary && (
+            <div className="dsec" style={{ marginTop: 28 }}>
+              <h2>Contractor Performance</h2>
+              <p>{l.stageSummary.scored} of {l.stageSummary.total} construction stages scored against on-time, quality, budget and safety benchmarks{l.stageSummary.avgScore != null ? ` — average ${l.stageSummary.avgScore}/5` : ''}.</p>
+            </div>
+          )}
           {l.highlights && l.highlights.length > 0 && (
             <div className="dsec" style={{ marginTop: 28 }}>
               <h2>Investment Highlights</h2>
@@ -1065,6 +1492,13 @@ export default function App() {
     showT('Subcontractor assigned.');
   };
 
+  const certifyStage = async (stageId, payload) => {
+    const res = await API.post(`/api/listings/${stageListingId}/stages/${stageId}/certificate`, payload);
+    if (res.error) { showT(res.error); return; }
+    setStages(s => s.map(x => x.id === stageId ? res.stage : x));
+    showT('Milestone certificate issued and locked.');
+  };
+
   const scoreStage = async (stageId, values, notes) => {
     const res = await API.post(`/api/listings/${stageListingId}/stages/${stageId}/score`, { values, notes });
     if (res.error) { showT(res.error); return; }
@@ -1170,7 +1604,8 @@ export default function App() {
         {user
           ? <>
             {user.role === 'admin' && <button className="nl" style={{ color: '#e74c3c' }} onClick={() => go('admin')}>⚙ Admin</button>}
-            <button className="nl" style={{ color: 'var(--gold)' }} onClick={() => go('dashboard')}>My Account</button>
+            {(user.role === 'regulator' || user.role === 'admin') && <button className="nl" onClick={() => go('regulator')}>Compliance View</button>}
+            <button className="nl" style={{ color: 'var(--gold)' }} onClick={() => go(user.role === 'regulator' ? 'regulator' : 'dashboard')}>My Account</button>
             <button className="nl" onClick={logout}>Sign Out</button>
           </>
           : <button className="nl cta" onClick={() => setShowAuth(true)}>Sign In</button>
@@ -1601,10 +2036,20 @@ export default function App() {
               ))}
             </div>
             <div style={{ marginTop: 20, padding: '16px', background: 'rgba(201,168,76,0.05)', border: '1px solid rgba(201,168,76,0.15)', fontSize: 12, color: '#444', lineHeight: 1.7 }}>
-              💡 To unlock full IM access, submit your <strong>s.761G wholesale investor certificate</strong> via the profile page in the full platform.
+              💡 To unlock full IM access, complete the steps below: the education module, then your <strong>s.761G wholesale investor certificate</strong>.
             </div>
           </div>
+          <WholesalePanel user={user} showT={showT} go={go} onProfile={v => setUser(u => ({ ...u, riskProfile: v }))} />
         </sec>
+      )}
+
+      {/* ── INVESTOR EDUCATION / ACCOUNTANT VERIFY / MILESTONE CERTIFICATE / REGULATOR ── */}
+      {page === 'education' && <EducationPage user={user} go={go} openAuth={openAuth} />}
+      {page === 'verify' && <VerifyPage token={(window.__pddParams || {}).token} />}
+      {page === 'certificate' && <CertificatePage id={(window.__pddParams || {}).id} />}
+      {page === 'regulator' && user && (user.role === 'regulator' || user.role === 'admin') && <RegulatorPage user={user} showT={showT} />}
+      {page === 'regulator' && !(user && (user.role === 'regulator' || user.role === 'admin')) && (
+        <sec style={{ paddingTop: 80, textAlign: 'center' }}><div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div><div className="stitle">Access Denied</div><p className="ssub" style={{ margin: '0 auto' }}>Regulator or admin sign-in required.</p></sec>
       )}
 
       {/* ── STAGE SCORING — explainer for logged-out visitors & investors ── */}
@@ -1694,7 +2139,7 @@ export default function App() {
               {stageListingId === l.id && (
                 <div style={{ padding: 20 }}>
                   {stages.slice().sort((a, b) => a.order - b.order).map(s => (
-                    <StageRow key={s.id} stage={s} isDev onAssign={assignStage} onScore={scoreStage} />
+                    <StageRow key={s.id} stage={s} isDev onAssign={assignStage} onScore={scoreStage} onCertify={certifyStage} />
                   ))}
                 </div>
               )}
@@ -2179,7 +2624,6 @@ export default function App() {
               <p style={{ fontSize: '13px', color: 'var(--muted)', lineHeight: 1.75, marginBottom: 24 }}>Built to solve a real problem: connecting serious developers with qualified capital, efficiently and professionally.</p>
               {[{ i: '🏦', t: 'Financial DNA Group', s: 'Director — Mortgage Broking & Financial Advice' },
               { i: '🏗️', t: 'Prop Dev DNA', s: 'Founder — Wholesale Property Investment Platform' },
-              { i: '🧠', t: 'Quality Mind DNA', s: 'Psychosocial Support for Healthcare' },
               { i: '📍', t: 'Sydney, NSW', s: 'Serving clients nationally' },
               ].map(c => (
                 <div className="acred" key={c.t}>
@@ -2347,8 +2791,8 @@ export default function App() {
         </div>
       </footer>
 
-      {showAuth && <AuthModal defaultRole={authDefaultRole} onClose={() => { setShowAuth(false); setAuthDefaultRole(null); }} onLogin={u => { setUser(u); setAuthDefaultRole(null); showT(`Welcome, ${u.fname || u.email} 👋`); go(u.role === 'developer' || u.role === 'subcontractor' ? 'stages' : 'dashboard'); }} />}
-      {showComp && <CompModal listing={sel} onAccept={() => { setShowComp(false); setShowEOI(true); }} onClose={() => setShowComp(false)} />}
+      {showAuth && <AuthModal defaultRole={authDefaultRole} onClose={() => { setShowAuth(false); setAuthDefaultRole(null); }} onLogin={u => { setUser(u); setAuthDefaultRole(null); showT(`Welcome, ${u.fname || u.email} 👋`); go(u.role === 'developer' || u.role === 'subcontractor' ? 'stages' : u.role === 'regulator' ? 'regulator' : 'dashboard'); }} />}
+      {showComp && <CompModal listing={sel} onAccept={async () => { const r = await API.post('/api/risk-declaration', { listingId: sel && sel.id, listingName: sel && (sel.name || sel.title), allChecksConfirmed: true }); if (r && r.error) { showT(r.error); return; } setShowComp(false); setShowEOI(true); }} onClose={() => setShowComp(false)} />}
       {showEOI && sel && <EOIModal listing={sel} onClose={() => setShowEOI(false)} toast={showT} user={user} />}
       {toast && <div className="toast">{toast}</div>}
     </>

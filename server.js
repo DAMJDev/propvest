@@ -21,6 +21,8 @@ const BACKUP_DIR = path.join(__dirname, 'data', 'backups');
 [UPLOAD_DIR, BACKUP_DIR].forEach(d => { if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true }); });
 
 // ── Admin credentials (override via env vars) ─────
+const BASE_URL       = process.env.BASE_URL || 'https://propvest-production.up.railway.app';
+const BASE_URL_HOST  = BASE_URL.replace(/^https?:\/\//, '');
 const ADMIN_EMAIL    = process.env.ADMIN_EMAIL    || 'admin@propdevdna.com.au';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'PropDevDNA2026!';
 
@@ -50,7 +52,7 @@ function emailHtml(title, bodyHtml) {
     </div>
     <div style="padding:32px">${bodyHtml}</div>
     <div style="padding:16px 32px;border-top:1px solid #2a2a2a;font-size:.72rem;color:#555;text-align:center">
-      Prop Dev DNA · Australia · <a href="https://propdevdna.com.au" style="color:#c9a84c">propdevdna.com.au</a><br>
+      Prop Dev DNA · Australia · <a href="${BASE_URL}" style="color:#c9a84c">${BASE_URL_HOST}</a><br>
       This email was sent to you because you have an account on Prop Dev DNA.
     </div>
   </div></body></html>`;
@@ -270,6 +272,78 @@ function computeOverall(values) {
   return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
 }
 
+// ══════════════════════════════════════════════════
+//  SIX-DIMENSION RISK SCORE (1 = lower risk, 5 = higher risk)
+//  Computed from listing data at request time. Indicative only.
+// ══════════════════════════════════════════════════
+const RISK_BANDS = [
+  { max: 2.0,      label: 'Conservative' },
+  { max: 2.7,      label: 'Balanced' },
+  { max: 3.4,      label: 'Growth' },
+  { max: Infinity, label: 'Speculative' }
+];
+const round1 = n => Math.round(n * 10) / 10;
+const parseNum = v => { const n = parseFloat(String(v == null ? '' : v).replace(/[^0-9.\-]/g, '')); return isNaN(n) ? null : n; };
+const listingState = l => (/\b(NSW|VIC|QLD|SA|WA|TAS|NT|ACT)\b/.exec(l.loc || '') || [])[1] || 'AU';
+
+function computeRisk(l, all) {
+  const dims = [];
+  const planning = String(((l.stats || []).find(s => s[1] === 'Planning Status') || [''])[0]).toLowerCase();
+  let stage = 4, stageNote = 'Planning status not stated';
+  if (/complete/.test(planning))            { stage = 1; stageNote = 'Completed'; }
+  else if (/construction/.test(planning))   { stage = 2; stageNote = 'Under construction'; }
+  else if (/da approved|approved/.test(planning)) { stage = 3; stageNote = 'DA approved, construction not started'; }
+  else if (/lodged/.test(planning))         { stage = 4; stageNote = 'DA lodged, not yet approved'; }
+  else if (/pre/.test(planning))            { stage = 5; stageNote = 'Pre-DA'; }
+  dims.push({ key: 'stage', label: 'Development stage', score: stage, note: stageNote });
+
+  const st = String(l.structure || '').toLowerCase();
+  let cap = 4, capNote = 'Structure not stated';
+  if (/senior|first mortgage/.test(st))       { cap = 1; capNote = 'Senior ranking'; }
+  else if (/preferred/.test(st))              { cap = 2; capNote = 'Preferred equity — ranks ahead of developer profit'; }
+  else if (/mezz|joint venture|jv/.test(st))  { cap = 3; capNote = 'Mezzanine / joint venture equity'; }
+  else if (/equity/.test(st))                 { cap = 3; capNote = 'Equity'; }
+  dims.push({ key: 'capital', label: 'Capital structure', score: cap, note: capNote });
+
+  const done = parseNum(l.developer && l.developer.completed);
+  const track = done == null ? 5 : done >= 20 ? 1 : done >= 10 ? 2 : done >= 5 ? 3 : done >= 1 ? 4 : 5;
+  dims.push({ key: 'track', label: 'Developer track record', score: track, note: done == null ? 'No completed projects recorded' : `${done} completed projects (self-reported)` });
+
+  const marginRow = (l.financials || []).find(r => /profit margin on cost/i.test(r[0]));
+  const margin = parseNum((l.feaso && l.feaso.marginOnCost) != null ? l.feaso.marginOnCost : (marginRow && marginRow[1]));
+  const feas = margin == null ? 4 : margin >= 30 ? 1 : margin >= 25 ? 2 : margin >= 20 ? 3 : margin >= 15 ? 4 : 5;
+  dims.push({ key: 'feasibility', label: 'Feasibility margin', score: feas, note: margin == null ? 'Margin not verified' : `${margin}% margin on cost (platform minimum 15%)` });
+
+  const hold = parseNum(l.hold);
+  const liq = hold == null ? 4 : hold <= 2 ? 2 : hold <= 3.5 ? 3 : hold <= 5 ? 4 : 5;
+  dims.push({ key: 'liquidity', label: 'Liquidity / hold period', score: liq, note: hold == null ? 'Hold period not stated' : `${hold} year hold, no secondary market` });
+
+  const active = (all || []).filter(x => x.status === 'active');
+  const sameKind = active.filter(x => listingState(x) === listingState(l) && x.type === l.type).length;
+  const share = active.length ? sameKind / active.length : 1;
+  const conc = share >= 0.5 ? 4 : share >= 0.34 ? 3 : 2;
+  dims.push({ key: 'concentration', label: 'Market concentration', score: conc, note: `${Math.round(share * 100)}% of active platform listings are ${l.type || 'this type'} in ${listingState(l)}` });
+
+  const composite = round1(dims.reduce((a, d) => a + d.score, 0) / dims.length);
+  const band = RISK_BANDS.find(b => composite <= b.max).label;
+  return { composite, band, dimensions: dims, basis: 'Indicative score computed from listing data. General information only — not financial product advice.' };
+}
+
+function publicListing(l, all) {
+  const { stages, ...rest } = l;
+  const st = stages || [];
+  const scored = st.filter(s => s.score);
+  return {
+    ...rest,
+    risk: computeRisk(l, all),
+    stageSummary: st.length ? {
+      total: st.length,
+      scored: scored.length,
+      avgScore: scored.length ? round1(scored.reduce((a, s) => a + s.score.overall, 0) / scored.length) : null
+    } : null
+  };
+}
+
 function seedDB() {
   // Pre-populate the flagship demo listing with stages so the demo
   // developer/subcontractor accounts have something real to show.
@@ -441,7 +515,7 @@ app.post('/api/auth/register', async (req, res) => {
     <h2 style="color:#e8e2d5;margin:0 0 12px">Welcome, ${user.fname}!</h2>
     <p style="color:#888;line-height:1.7">Your account has been created on <strong style="color:#c9a84c">Prop Dev DNA</strong> — Australia's wholesale property development investment platform.</p>
     ${role === 'investor' ? `<p style="color:#888;line-height:1.7">Your next step is to complete your <strong style="color:#c9a84c">Wholesale Investor Certification</strong> (s761G Corporations Act). Once approved, you'll have full access to all Investment Memorandums and FEASO reports.</p>` : role === 'developer' ? `<p style="color:#888;line-height:1.7">Upgrade to a Developer subscription to publish listings and generate Information Memorandums for wholesale investors.</p>` : `<p style="color:#888;line-height:1.7">You'll be notified when a developer assigns you to a project stage. Once a stage is complete, the developer scores your work against agreed benchmarks — your track record builds automatically.</p>`}
-    <a href="https://propdevdna.com.au" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">Go to Platform →</a>
+    <a href="${BASE_URL}" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">Go to Platform →</a>
   `);
 
   // Notify admin of new user
@@ -516,14 +590,14 @@ app.get('/api/listings', (req, res) => {
     listings = listings.filter(l => l.status === 'active');
   }
 
-  res.json(listings);
+  res.json(listings.map(l => publicListing(l, db.listings)));
 });
 
 app.get('/api/listings/:id', (req, res) => {
   const db = readDB();
   const listing = db.listings.find(l => l.id === req.params.id);
   if (!listing) return res.status(404).json({ error: 'Listing not found.' });
-  res.json(listing);
+  res.json(publicListing(listing, db.listings));
 });
 
 app.post('/api/listings', requireAuth, requireDev, (req, res) => {
@@ -605,7 +679,7 @@ app.post('/api/interests', (req, res) => {
         <strong style="color:#e8e2d5">Phone:</strong> ${phone || 'Not provided'}<br>
         <strong style="color:#e8e2d5">Proposed amount:</strong> ${amount || 'Not specified'}<br>
         <strong style="color:#e8e2d5">Ref:</strong> ${refCode}</p>
-        <a href="https://propdevdna.com.au" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">View in Portal →</a>
+        <a href="${BASE_URL}" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">View in Portal →</a>
       `);
     }
   }
@@ -691,7 +765,7 @@ app.put('/api/listings/:id/stages/:stageId/assign', requireAuth, requireDev, (re
   sendEmail(sub.email, `You've been assigned to a stage — ${db.listings[lIdx].name}`, `
     <p style="color:#888">You've been assigned to <strong style="color:#c9a84c">${stages[sIdx].name}</strong> on <strong style="color:#c9a84c">${db.listings[lIdx].name}</strong>.</p>
     ${dueDate ? `<p style="color:#888">Due: ${new Date(dueDate).toLocaleDateString('en-AU')}</p>` : ''}
-    <a href="https://propdevdna.com.au" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">View on Platform →</a>
+    <a href="${BASE_URL}" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">View on Platform →</a>
   `);
 
   res.json({ ok: true, stage: stages[sIdx] });
@@ -815,7 +889,7 @@ app.post('/api/admin/subscriptions/:id/approve', requireAuth, requireAdmin, (req
   sendEmail(sub.userEmail, '✅ Your Prop Dev DNA subscription is now active', `
     <h2 style="color:#e8e2d5;margin:0 0 12px">Subscription Activated</h2>
     <p style="color:#888">Your <strong style="color:#c9a84c">${sub.plan}</strong> subscription is now active. You can now publish listings and use the full developer portal.</p>
-    <a href="https://propdevdna.com.au" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">Go to Portal →</a>
+    <a href="${BASE_URL}" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">Go to Portal →</a>
   `);
 
   res.json({ ok: true });
@@ -955,7 +1029,7 @@ app.post('/api/admin/im-reviews/:id/approve', requireAuth, requireAdmin, (req, r
       <p style="color:#888">Your Information Memorandum for <strong style="color:#c9a84c">${review.listingName}</strong> has been reviewed and approved by our compliance team.</p>
       <p style="color:#888">Your listing is now <strong style="color:#27ae60">live</strong> and visible to all verified wholesale investors on the platform.</p>
       ${req.body.notes ? `<p style="color:#888"><strong style="color:#e8e2d5">Admin notes:</strong> ${req.body.notes}</p>` : ''}
-      <a href="https://propdevdna.com.au" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">View Live Listing →</a>
+      <a href="${BASE_URL}" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">View Live Listing →</a>
     `);
   }
 
@@ -987,7 +1061,7 @@ app.post('/api/admin/im-reviews/:id/request-amendments', requireAuth, requireAdm
       </ul>
       ${req.body.adminNotes ? `<p style="color:#888"><strong style="color:#e8e2d5">Notes:</strong> ${req.body.adminNotes}</p>` : ''}
       <p style="color:#888">Please address these items and resubmit via your developer portal.</p>
-      <a href="https://propdevdna.com.au" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">Go to Portal →</a>
+      <a href="${BASE_URL}" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">Go to Portal →</a>
     `);
   }
 
@@ -1054,6 +1128,11 @@ app.post('/api/wholesale-cert', requireAuth, (req, res, next) => {
     const user = db.users.find(u => u.id === req.session.userId);
     if (!user) return res.status(404).json({ error: 'User not found.' });
 
+    if (!user.educationCompletedAt) {
+      if (req.file) fs.unlink(req.file.path, () => {});
+      return res.status(400).json({ error: 'Please complete the investor education module before submitting a certificate.', code: 'education_required' });
+    }
+
     const existing = db.wholesaleCerts.find(c => c.userId === req.session.userId && ['pending','verified'].includes(c.status));
     if (existing) return res.status(400).json({ error: 'You already have a ' + existing.status + ' wholesale certificate on file.' });
 
@@ -1092,6 +1171,15 @@ app.post('/api/wholesale-cert', requireAuth, (req, res, next) => {
       adminNotes:         ''
     };
 
+    // Accountant self-verification: 1 in 5 certificates is flagged for an admin register spot-check
+    cert.spotCheckRequired = ((db.wholesaleCerts.length + 1) % 5 === 0);
+    cert.accountantVerification = cert.acctEmail ? {
+      token: crypto.randomBytes(24).toString('hex'),
+      status: 'requested',
+      requestedAt: new Date().toISOString(),
+      verifiedAt: null
+    } : null;
+
     db.wholesaleCerts.push(cert);
     const userIdx = db.users.findIndex(u => u.id === req.session.userId);
     if (userIdx !== -1) db.users[userIdx].wholesaleStatus = 'pending';
@@ -1112,7 +1200,9 @@ app.post('/api/wholesale-cert', requireAuth, (req, res, next) => {
       <p style="color:#888">Log in to download the certificate and approve or reject.</p>
     `);
 
-    res.json({ ok: true, cert });
+    if (cert.accountantVerification) sendAccountantLink(cert);
+
+    res.json({ ok: true, cert: publicCert(cert) });
   });
 });
 
@@ -1126,13 +1216,22 @@ app.get('/api/wholesale-cert/status', requireAuth, (req, res) => {
   const certs  = db.wholesaleCerts.filter(c => c.userId === req.session.userId).sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
   const latest = certs[0] || null;
   const user   = db.users.find(u => u.id === req.session.userId);
-  res.json({ cert: latest, wholesaleStatus: user?.wholesaleStatus || 'none', wsOk: wsStatus.ok });
+  res.json({ cert: latest ? publicCert(latest) : null, wholesaleStatus: user?.wholesaleStatus || 'none', wsOk: wsStatus.ok, educationCompletedAt: user?.educationCompletedAt || null });
 });
 
 app.get('/api/admin/wholesale-certs', requireAuth, requireAdmin, (req, res) => {
   const db    = readDB();
-  const certs = (db.wholesaleCerts || []).slice().reverse();
+  const certs = (db.wholesaleCerts || []).slice().reverse().map(publicCert);
   res.json({ certs });
+});
+
+app.post('/api/admin/wholesale-certs/:id/resend-accountant-link', requireAuth, requireAdmin, (req, res) => {
+  const db   = readDB();
+  const cert = (db.wholesaleCerts || []).find(c => c.id === req.params.id);
+  if (!cert || !cert.accountantVerification) return res.status(404).json({ error: 'No accountant verification on this certificate.' });
+  if (cert.accountantVerification.status === 'verified') return res.status(400).json({ error: 'Already verified.' });
+  sendAccountantLink(cert);
+  res.json({ ok: true });
 });
 
 app.post('/api/admin/wholesale-certs/:id/approve', requireAuth, requireAdmin, (req, res) => {
@@ -1141,6 +1240,10 @@ app.post('/api/admin/wholesale-certs/:id/approve', requireAuth, requireAdmin, (r
   const cert = db.wholesaleCerts.find(c => c.id === req.params.id);
   if (!cert)  return res.status(404).json({ error: 'Certificate not found.' });
 
+  const av = cert.accountantVerification;
+  if (av && av.status !== 'verified' && !req.body.override) {
+    return res.status(400).json({ error: 'The accountant has not yet completed self-verification. Resend the link, or approve with override.', code: 'accountant_pending' });
+  }
   const admin      = db.users.find(u => u.id === req.session.userId);
   cert.status      = 'verified';
   cert.reviewedAt  = new Date().toISOString();
@@ -1164,7 +1267,7 @@ app.post('/api/admin/wholesale-certs/:id/approve', requireAuth, requireAdmin, (r
       <p style="color:#888">Your Wholesale Investor Certificate has been approved. You now have full access to all Investment Memorandums and FEASO reports on Prop Dev DNA.</p>
       <p style="color:#888"><strong style="color:#e8e2d5">Certified by:</strong> ${cert.acctName} (${cert.acctMembership})<br>
       <strong style="color:#e8e2d5">Valid until:</strong> ${new Date(cert.expiresAt).toLocaleDateString('en-AU', { day:'numeric', month:'long', year:'numeric' })}</p>
-      <a href="https://propdevdna.com.au" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">Browse Investment Opportunities →</a>
+      <a href="${BASE_URL}" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">Browse Investment Opportunities →</a>
     `);
   }
 
@@ -1204,11 +1307,298 @@ app.post('/api/admin/wholesale-certs/:id/reject', requireAuth, requireAdmin, (re
       <p style="color:#888">Unfortunately, your Wholesale Investor Certificate could not be approved at this time.</p>
       ${cert.adminNotes ? `<p style="color:#888"><strong style="color:#e8e2d5">Reason:</strong> ${cert.adminNotes}</p>` : ''}
       <p style="color:#888">Please obtain a new signed certificate from a qualified accountant (CPA Australia, CA ANZ, or IPA member) and resubmit via your portal.</p>
-      <a href="https://propdevdna.com.au" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">Resubmit Certificate →</a>
+      <a href="${BASE_URL}" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">Resubmit Certificate →</a>
     `);
   }
 
   res.json({ ok: true, cert });
+});
+
+// ══════════════════════════════════════════════════
+//  INVESTOR EDUCATION MODULE
+// ══════════════════════════════════════════════════
+const EDUCATION = [
+  { title: 'How development finance works',
+    body: ['Property development finance funds the construction of new buildings before they can be sold.',
+           'Senior debt comes from a lender and is repaid first. Subordinated capital, such as preferred or mezzanine equity, sits behind the senior lender and carries more risk in exchange for a higher target return.',
+           'Projects can be delayed, cost more than planned, or sell for less than forecast.'],
+    q: 'Which capital is repaid first from sale proceeds?',
+    options: ['Senior debt from the lender', 'Preferred equity investors', 'The developer\'s profit share'], answer: 0 },
+  { title: 'Preferred equity and the waterfall',
+    body: ['A distribution waterfall sets the order in which sale proceeds are paid out.',
+           'In a typical structure the senior lender is repaid first, then project costs, then investor principal and preferred return, and only then is the developer\'s profit share paid.',
+           'If proceeds fall short, the investors lowest in the waterfall are the first to lose money.'],
+    q: 'In a typical waterfall, who is paid before the developer takes profit?',
+    options: ['Nobody — the developer is paid first', 'The senior lender and preferred investors', 'Only the platform'], answer: 1 },
+  { title: 'Capital at risk',
+    body: ['You can lose some or all of the money you invest.',
+           'A target return, such as an 18% IRR, is what the deal is aiming for. It is not a promise and it is not a minimum.',
+           'Past performance of a developer or a project is not a reliable indicator of future performance.'],
+    q: 'A target IRR of 18% means:',
+    options: ['You are guaranteed 18% a year', 'It is a target that may not be achieved', 'It is the minimum you will receive'], answer: 1 },
+  { title: 'Illiquidity',
+    body: ['Development investments are typically locked in until the project is built and sold, often 3 to 5 years.',
+           'There is usually no market where you can sell your interest early, and you may not be able to withdraw when you want to.',
+           'Only invest money you will not need during the project.'],
+    q: 'If you need your money back in year 2, you should expect that:',
+    options: ['You can sell your interest immediately', 'You can withdraw at any time', 'Your money may be unavailable until the project completes'], answer: 2 },
+  { title: 'Wholesale investors and general information',
+    body: ['Opportunities on this platform are available only to wholesale clients under s.761G of the Corporations Act 2001 (Cth), confirmed by a certificate from a qualified accountant.',
+           'Everything on the platform is general information. It is not personal financial product advice and does not take your objectives, financial situation or needs into account.',
+           'Consider seeking independent financial and legal advice before you invest.'],
+    q: 'Is the information on the platform personal financial advice?',
+    options: ['Yes, it is tailored to me', 'No, it is general information only', 'Only once I am verified'], answer: 1 }
+];
+
+app.get('/api/education', requireAuth, (req, res) => {
+  const db = readDB();
+  const user = db.users.find(u => u.id === req.session.userId);
+  res.json({
+    modules: EDUCATION.map(m => ({ title: m.title, body: m.body, q: m.q, options: m.options })),
+    completedAt: user?.educationCompletedAt || null
+  });
+});
+
+app.post('/api/education/submit', requireAuth, (req, res) => {
+  const db = readDB();
+  const idx = db.users.findIndex(u => u.id === req.session.userId);
+  if (idx === -1) return res.status(404).json({ error: 'User not found.' });
+  const answers = Array.isArray(req.body.answers) ? req.body.answers : [];
+  const results = EDUCATION.map((m, i) => answers[i] === m.answer);
+  const passed = results.every(Boolean);
+  if (!db.educationLogs) db.educationLogs = [];
+  db.educationLogs.push({ id: 'edu-' + Date.now(), userId: req.session.userId, at: new Date().toISOString(), passed, ip: req.ip });
+  if (passed && !db.users[idx].educationCompletedAt) db.users[idx].educationCompletedAt = new Date().toISOString();
+  writeDB(db);
+  res.json({ ok: true, passed, results, completedAt: db.users[idx].educationCompletedAt || null });
+});
+
+app.post('/api/profile/risk-profile', requireAuth, (req, res) => {
+  const v = req.body.riskProfile;
+  if (!['conservative', 'balanced', 'growth', 'aggressive'].includes(v)) return res.status(400).json({ error: 'Invalid risk profile.' });
+  const db = readDB();
+  const idx = db.users.findIndex(u => u.id === req.session.userId);
+  if (idx === -1) return res.status(404).json({ error: 'User not found.' });
+  db.users[idx].riskProfile = v;
+  writeDB(db);
+  res.json({ ok: true, riskProfile: v });
+});
+
+// ══════════════════════════════════════════════════
+//  ACCOUNTANT SELF-VERIFICATION (no login — emailed link)
+// ══════════════════════════════════════════════════
+const ACCOUNTANT_DECLARATIONS = [
+  'I am a current member of CPA Australia, Chartered Accountants ANZ or the Institute of Public Accountants and the membership number stated is correct.',
+  'I meet the definition of a qualified accountant under section 88B of the Corporations Act 2001 (Cth).',
+  'I have reviewed the evidence supplied by the investor for the basis stated (net assets of at least $2.5 million, or gross income of at least $250,000 in each of the last two financial years).',
+  'I have no financial interest in Prop Dev DNA or in the investor\'s investment beyond my professional fee.',
+  'I understand this declaration is timestamped and stored, and may be checked against the professional body\'s register.'
+];
+
+const verifyLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, max: 40,
+  message: { error: 'Too many attempts. Please try again later.' },
+  standardHeaders: true, legacyHeaders: false,
+});
+
+function publicCert(cert) {
+  const c = { ...cert };
+  if (c.accountantVerification) {
+    const { token, ...av } = c.accountantVerification;
+    c.accountantVerification = av;
+  }
+  return c;
+}
+
+function sendAccountantLink(cert) {
+  const av = cert.accountantVerification;
+  if (!av || !cert.acctEmail) return;
+  const link = `${BASE_URL}/?page=verify&token=${av.token}`;
+  sendEmail(cert.acctEmail, `Please verify a wholesale investor certificate — ${cert.investorName}`, `
+    <p style="color:#888">Hello ${cert.acctName},</p>
+    <p style="color:#888"><strong style="color:#e8e2d5">${cert.investorName}</strong> has submitted a wholesale investor certificate on Prop Dev DNA naming you as the certifying accountant.</p>
+    <p style="color:#888">Please confirm your membership and make five short declarations. It takes about two minutes and needs no login.</p>
+    <a href="${link}" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">Verify now →</a>
+    <p style="color:#666;font-size:12px;margin-top:16px">If you did not certify this investor, do not use the link and please reply to let us know.</p>
+  `);
+}
+
+function findCertByToken(db, token) {
+  return (db.wholesaleCerts || []).find(c => c.accountantVerification && token && c.accountantVerification.token === token);
+}
+
+app.get('/api/accountant-verify/:token', verifyLimiter, (req, res) => {
+  const db = readDB();
+  const cert = findCertByToken(db, req.params.token);
+  if (!cert) return res.status(404).json({ error: 'This verification link is not valid.' });
+  res.json({
+    status: cert.accountantVerification.status,
+    investorName: cert.investorName,
+    basis: cert.certBasis === 'net_assets' ? 'Net assets of at least $2.5 million' : 'Gross income of at least $250,000 in each of the last two financial years',
+    acctName: cert.acctName, acctFirm: cert.acctFirm, acctMembership: cert.acctMembership,
+    declarations: ACCOUNTANT_DECLARATIONS
+  });
+});
+
+app.post('/api/accountant-verify/:token', verifyLimiter, (req, res) => {
+  const db = readDB();
+  const cert = findCertByToken(db, req.params.token);
+  if (!cert) return res.status(404).json({ error: 'This verification link is not valid.' });
+  const av = cert.accountantVerification;
+  if (av.status === 'verified') return res.status(400).json({ error: 'This certificate has already been verified.' });
+
+  const { membershipNumber, signedName, declarations } = req.body;
+  if (!signedName || !String(signedName).trim()) return res.status(400).json({ error: 'Please type your full name to sign.' });
+  if (!membershipNumber || String(membershipNumber).trim().toLowerCase() !== String(cert.acctMembershipNumber).trim().toLowerCase()) {
+    return res.status(400).json({ error: 'The membership number does not match the certificate.' });
+  }
+  if (!Array.isArray(declarations) || declarations.length !== ACCOUNTANT_DECLARATIONS.length || !declarations.every(d => d === true)) {
+    return res.status(400).json({ error: 'All five declarations must be confirmed.' });
+  }
+
+  const at = new Date().toISOString();
+  av.status = 'verified';
+  av.verifiedAt = at;
+  av.signedName = String(signedName).trim();
+  av.ip = req.ip;
+  av.declarations = ACCOUNTANT_DECLARATIONS.map(text => ({ text, confirmed: true, at }));
+  writeDB(db);
+
+  sendEmail(ADMIN_EMAIL, `Accountant verified certificate — ${cert.investorName}`, `
+    <p style="color:#888"><strong style="color:#c9a84c">${av.signedName}</strong> (${cert.acctMembership} ${cert.acctMembershipNumber}) has completed self-verification for ${cert.investorName}.${cert.spotCheckRequired ? ' <strong style="color:#e8e2d5">This certificate is flagged for an admin register spot-check.</strong>' : ''}</p>
+  `);
+  res.json({ ok: true });
+});
+
+// ══════════════════════════════════════════════════
+//  MILESTONE CERTIFICATES (locked once issued)
+// ══════════════════════════════════════════════════
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function certHash(c) {
+  return crypto.createHash('sha256').update(JSON.stringify({
+    id: c.id, listingId: c.listingId, stageId: c.stageId, snapshot: c.snapshot,
+    builderName: c.builderName, inspectorName: c.inspectorName, inspectorLicence: c.inspectorLicence, issuedAt: c.issuedAt
+  })).digest('hex');
+}
+
+app.post('/api/listings/:id/stages/:stageId/certificate', requireAuth, requireDev, (req, res) => {
+  const db   = readDB();
+  const user = db.users.find(u => u.id === req.session.userId);
+  const lIdx = db.listings.findIndex(l => l.id === req.params.id && (l.devId === req.session.userId || user.role === 'admin'));
+  if (lIdx === -1) return res.status(404).json({ error: 'Listing not found or not yours.' });
+  const listing = db.listings[lIdx];
+  const stage = (listing.stages || []).find(s => s.id === req.params.stageId);
+  if (!stage) return res.status(404).json({ error: 'Stage not found.' });
+  if (stage.status !== 'scored') return res.status(400).json({ error: 'Score the stage before issuing a milestone certificate.' });
+  if (stage.certificate) return res.status(400).json({ error: 'A certificate has already been issued for this stage and is locked.' });
+
+  const { builderName, inspectorName, inspectorLicence, builderSigned, inspectorCountersigned } = req.body;
+  if (!builderName || !inspectorName || !inspectorLicence) return res.status(400).json({ error: 'Builder name, inspector name and inspector licence are required.' });
+  if (builderSigned !== true || inspectorCountersigned !== true) return res.status(400).json({ error: 'Builder signature and inspector countersignature are both required.' });
+  const recipients = (Array.isArray(req.body.recipients) ? req.body.recipients : []).map(e => String(e).trim()).filter(Boolean).slice(0, 10);
+  if (recipients.some(e => !EMAIL_RE.test(e))) return res.status(400).json({ error: 'One of the recipient emails is not valid.' });
+
+  const cert = {
+    id: 'mc-' + crypto.randomBytes(12).toString('hex'),
+    listingId: listing.id, stageId: stage.id,
+    snapshot: {
+      listingName: listing.name, location: listing.loc, stageName: stage.name,
+      contractor: stage.subcontractorName, score: stage.score.overall, benchmarks: stage.benchmarks.map(b => ({ label: b.label, value: stage.score.values[b.id] || null })),
+      scoredAt: stage.score.ratedAt
+    },
+    builderName: String(builderName).trim(), inspectorName: String(inspectorName).trim(), inspectorLicence: String(inspectorLicence).trim(),
+    issuedAt: new Date().toISOString(), issuedBy: user.id, locked: true
+  };
+  cert.hash = certHash(cert);
+  stage.certificate = cert;
+  writeDB(db);
+
+  const link = `${BASE_URL}/?page=certificate&id=${cert.id}`;
+  recipients.forEach(to => sendEmail(to, `Milestone certificate — ${listing.name}: ${stage.name}`, `
+    <p style="color:#888">A milestone certificate has been issued for <strong style="color:#c9a84c">${stage.name}</strong> on <strong style="color:#c9a84c">${listing.name}</strong>.</p>
+    <p style="color:#888">Signed by the builder (${cert.builderName}) and countersigned by the inspector (${cert.inspectorName}, licence ${cert.inspectorLicence}).</p>
+    <a href="${link}" style="display:inline-block;margin-top:16px;background:#c9a84c;color:#0a0a0a;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700">View certificate →</a>
+  `));
+  res.json({ ok: true, certificate: cert, stage });
+});
+
+app.get('/api/certificates/:id', (req, res) => {
+  const db = readDB();
+  for (const l of db.listings) {
+    const s = (l.stages || []).find(x => x.certificate && x.certificate.id === req.params.id);
+    if (s) return res.json({ certificate: s.certificate, intact: certHash(s.certificate) === s.certificate.hash });
+  }
+  res.status(404).json({ error: 'Certificate not found.' });
+});
+
+// ══════════════════════════════════════════════════
+//  REGULATOR / COMPLIANCE OVERVIEW (read-only)
+// ══════════════════════════════════════════════════
+function requireRegulator(req, res, next) {
+  const db = readDB();
+  const user = db.users.find(u => u.id === req.session.userId);
+  if (!user || (user.role !== 'regulator' && user.role !== 'admin')) return res.status(403).json({ error: 'Regulator or admin access required.' });
+  next();
+}
+
+app.get('/api/regulator/overview', requireAuth, requireRegulator, (req, res) => {
+  const db = readDB();
+  const certs = db.wholesaleCerts || [];
+  const by = (arr, f) => arr.filter(f).length;
+  const investors = db.users.filter(u => u.role === 'investor');
+  const stagesAll = db.listings.flatMap(l => l.stages || []);
+  const scored = stagesAll.filter(s => s.score);
+  res.json({
+    generatedAt: new Date().toISOString(),
+    wholesaleCertificates: {
+      total: certs.length,
+      pending: by(certs, c => c.status === 'pending'), verified: by(certs, c => c.status === 'verified'), rejected: by(certs, c => c.status === 'rejected'),
+      accountantVerified: by(certs, c => c.accountantVerification && c.accountantVerification.status === 'verified'),
+      accountantAwaiting: by(certs, c => c.accountantVerification && c.accountantVerification.status === 'requested'),
+      spotChecksFlagged: by(certs, c => c.spotCheckRequired)
+    },
+    investors: {
+      total: investors.length,
+      educationCompleted: by(investors, u => u.educationCompletedAt),
+      riskDeclarations: (db.riskDeclarations || []).length
+    },
+    listings: db.listings.map(l => {
+      const r = computeRisk(l, db.listings);
+      const rev = (db.imReviews || []).filter(x => x.listingId === l.id).slice(-1)[0];
+      const st = l.stages || [];
+      return { id: l.id, name: l.name, status: l.status, feasoOnFile: !!l.feaso, riskComposite: r.composite, riskBand: r.band,
+               imReviewStatus: rev ? rev.status : 'none', stages: st.length, stagesScored: by(st, s => s.score), certificatesIssued: by(st, s => s.certificate) };
+    }),
+    contractorScoring: {
+      stagesTotal: stagesAll.length, stagesScored: scored.length,
+      averageScore: scored.length ? round1(scored.reduce((a, s) => a + s.score.overall, 0) / scored.length) : null,
+      milestoneCertificates: by(stagesAll, s => s.certificate)
+    },
+    controls: [
+      { name: 'Wholesale certificate review (admin)', status: 'live' },
+      { name: 'Accountant self-verification', status: 'live' },
+      { name: 'Investor education module', status: 'live' },
+      { name: 'Per-deal risk acknowledgment (timestamped, IP-logged)', status: 'live' },
+      { name: 'Six-dimension risk score', status: 'live' },
+      { name: 'Subcontractor stage scoring', status: 'live' },
+      { name: 'Milestone certificates', status: 'live' },
+      { name: 'Contractor licence and insurance verification', status: 'in development' },
+      { name: 'Drawdown gating on contractor compliance', status: 'in development' },
+      { name: 'Breach register (in platform)', status: 'in development' }
+    ]
+  });
+});
+
+app.post('/api/admin/regulators', requireAuth, requireAdmin, (req, res) => {
+  const { fname, lname, email, password } = req.body;
+  if (!fname || !email || !password || password.length < 10) return res.status(400).json({ error: 'Name, email and a password of at least 10 characters are required.' });
+  const db = readDB();
+  const e = String(email).toLowerCase().trim();
+  if (db.users.find(u => u.email === e)) return res.status(400).json({ error: 'An account with this email already exists.' });
+  db.users.push({ id: 'u-reg-' + Date.now(), email: e, password: hashPw(password), fname: String(fname).trim(), lname: String(lname || '').trim(), role: 'regulator', joined: new Date().toISOString() });
+  writeDB(db);
+  res.json({ ok: true });
 });
 
 // ── Partner Registry ──────────────────────────────
