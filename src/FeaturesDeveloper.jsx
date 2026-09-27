@@ -216,6 +216,28 @@ export function CapitalPanel({ listing }) {
   );
 }
 
+// ── Confirmed investor leads (with verification tier) ──
+const TIER_LABEL = { registered: 'Tier 1 · Registered', verified: 'Tier 2 · Wholesale verified', funds: 'Tier 3 · Capital ready', prequalified: 'Tier 4 · PDD endorsed' };
+export function LeadsPanel({ listing }) {
+  const [list, setList] = useState(null);
+  useEffect(() => { API.get('/api/interests').then(r => setList(Array.isArray(r) ? r.filter(i => i.listingId === listing.id) : [])); }, [listing.id]);
+  if (!list) return null;
+  return (
+    <div>
+      <p style={{ ...muted, marginBottom: 10 }}>Only investors who have confirmed within their 48-hour window appear here. Each shows their verification tier. Interest is not a commitment to invest.</p>
+      {list.length === 0 && <p style={muted}>No confirmed interest yet.</p>}
+      {list.map(i => (
+        <div key={i.id} style={{ borderTop: '1px solid rgba(0,0,0,0.06)', padding: '10px 0' }}>
+          <div style={{ fontSize: 13 }}><strong>{i.fname} {i.lname}</strong> · {i.amount || 'amount not stated'} <Pill status="verified">{TIER_LABEL[i.tier] || 'Tier 1 · Registered'}</Pill></div>
+          <div style={muted}>{i.email}{i.phone ? ` · ${i.phone}` : ''} · confirmed {dt(i.confirmedAt)} · ref {i.refCode}</div>
+          {i.comments && <div style={{ ...muted, fontStyle: 'italic' }}>{i.comments}</div>}
+          {i.needsBroker && <div style={{ fontSize: 10, color: 'var(--gold)' }}>Requested broker introduction</div>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // ── Drawdowns ──
 export function DrawdownPanel({ listing, stages, showT }) {
   const [list, setList] = useState([]);
@@ -274,7 +296,7 @@ export function ReviewPanel({ listing, showT, onChanged }) {
 
 // ── Workspace: one card per project, with tabs ──
 export function DevWorkspace({ listing, showT, stages, stagesNode, onChanged }) {
-  const tabs = [['stages', 'Stages & scoring'], ['feaso', 'FEASO'], ['review', 'Review'], ['actuals', 'Actuals'], ['valuation', 'Valuation'], ['capital', 'Capital certainty'], ['drawdowns', 'Drawdowns']];
+  const tabs = [['stages', 'Stages & scoring'], ['feaso', 'FEASO'], ['review', 'Review'], ['leads', 'Leads'], ['actuals', 'Actuals'], ['valuation', 'Valuation'], ['capital', 'Capital certainty'], ['drawdowns', 'Drawdowns']];
   const [tab, setTab] = useState('stages');
   return (
     <div style={{ padding: 20 }}>
@@ -284,6 +306,7 @@ export function DevWorkspace({ listing, showT, stages, stagesNode, onChanged }) 
       {tab === 'stages' && stagesNode}
       {tab === 'feaso' && <FeasoBuilder listing={listing} showT={showT} onChanged={onChanged} />}
       {tab === 'review' && <ReviewPanel listing={listing} showT={showT} onChanged={onChanged} />}
+      {tab === 'leads' && <LeadsPanel listing={listing} />}
       {tab === 'actuals' && <ActualsForm listing={listing} showT={showT} onChanged={onChanged} />}
       {tab === 'valuation' && <ValuationForm listing={listing} showT={showT} onChanged={onChanged} />}
       {tab === 'capital' && <CapitalPanel listing={listing} />}
