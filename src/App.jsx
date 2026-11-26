@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import { API, lightFi } from "./shared.js";
+import SideNav from "./SideNav.jsx";
+import { API, lightFi, shortMoney, BOOKING_URL } from "./shared.js";
+import { PrivacyPage, DisclaimerPage, GuidesPage, BookBand } from "./InfoPages.jsx";
 import { EoiPage, MyEois, WaterfallPanel, SummaryPanel, SummaryModal, FeasoReadPanel, ActualsPanel, FundsStep, TradesmenPage, BuyersAgentsPage, RegistryPage } from "./FeaturesInvestor.jsx";
 import { NewProjectForm, DevWorkspace, ContractorProfile, AdminConsole } from "./FeaturesDeveloper.jsx";
 
@@ -32,7 +34,61 @@ const css = `
   body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);overflow-x:hidden;-webkit-font-smoothing:antialiased}
   .notice{background:rgba(201,168,76,0.08);border-bottom:1px solid rgba(201,168,76,0.2);padding:8px 20px;text-align:center;font-size:11px;color:rgba(13,13,13,0.6)}
   .notice strong{color:var(--gold)}
-  nav{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:center;gap:32px;padding:0 32px;height:48px;background:rgba(13,13,13,0.98);backdrop-filter:blur(16px);border-bottom:1px solid rgba(201,168,76,0.1)}
+  /* ── Left sidebar navigation ── */
+  .app-main{margin-left:232px;min-width:0}
+  .notice-bar{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:4px 14px;padding:9px 32px;background:var(--ink);border-bottom:1px solid rgba(201,168,76,0.18);font-size:10px;color:rgba(245,242,236,0.5)}
+  .notice-bar strong{color:var(--gold);font-weight:500}
+  .side{position:fixed;top:0;bottom:0;left:0;width:232px;z-index:160;display:flex;flex-direction:column;background:var(--ink);border-right:1px solid rgba(201,168,76,0.22);overflow-y:auto;overscroll-behavior:contain}
+  .side-brand{display:flex;flex-direction:column;align-items:center;gap:10px;background:none;border:none;cursor:pointer;padding:22px 16px 18px;text-align:center;font-family:'DM Sans',sans-serif}
+  .side-brand img{width:96px;height:96px;object-fit:contain;transition:transform 0.4s}
+  .side-brand:hover img{transform:scale(1.05)}
+  .side-brand span{display:flex;flex-direction:column}
+  .side-brand strong{font-family:'Cormorant Garamond',serif;font-size:23px;color:var(--gold);line-height:1.1}
+  .side-brand em{font-style:normal;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:rgba(201,168,76,0.6);margin-top:5px;line-height:1.6}
+  .side-nav{position:relative;display:flex;flex-direction:column;padding:8px 0;border-top:1px solid rgba(201,168,76,0.12)}
+  .side-marker{position:absolute;left:0;top:0;width:3px;background:var(--gold);transition:transform 0.35s cubic-bezier(.4,0,.2,1),height 0.35s}
+  .side-link{background:none;border:none;text-align:left;cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;color:rgba(245,242,236,0.68);padding:11px 24px;transition:color 0.2s,background 0.2s,padding-left 0.2s;animation:sideIn 0.45s ease backwards;animation-delay:calc(var(--i) * 40ms)}
+  .side-link:hover,.side-link:focus-visible{color:var(--gold);padding-left:32px;background:rgba(201,168,76,0.05)}
+  .side-link.on{color:var(--gold);background:rgba(201,168,76,0.09)}
+  .side-sep{font-size:9px;letter-spacing:2px;text-transform:uppercase;color:rgba(201,168,76,0.5);padding:16px 24px 6px;border-top:1px solid rgba(201,168,76,0.12);margin-top:8px}
+  .side-foot{margin-top:auto;display:flex;flex-direction:column;gap:8px;padding:16px 20px 22px}
+  .side-cta{background:var(--gold);color:var(--ink);border:1px solid var(--gold);font-family:'DM Sans',sans-serif;font-size:10px;font-weight:500;letter-spacing:1.5px;text-transform:uppercase;padding:11px 12px;cursor:pointer;transition:opacity 0.2s}
+  .side-cta:hover{opacity:0.85}
+  a.side-cta{text-align:center;text-decoration:none}
+  .side-cta.ghost{background:transparent;color:var(--gold);border-color:rgba(201,168,76,0.35)}
+  .topbar,.side-shade{display:none}
+  @keyframes sideIn{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
+  @media(min-width:901px) and (max-width:1150px){
+    .sizzle-hero{flex-direction:column !important;min-height:auto !important}
+    .sizzle-left,.sizzle-right{flex:0 0 100% !important}
+    .sizzle-divider,.sizzle-medallion{display:none !important}
+  }
+  @media(max-width:900px){
+    .app-main{margin-left:0}
+    .topbar{display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:150;height:60px;padding:0 14px 0 12px;background:var(--ink);border-bottom:1px solid rgba(201,168,76,0.22)}
+    .topbar .side-brand{flex-direction:row;padding:0;gap:10px;text-align:left}
+    .topbar .side-brand img{width:42px;height:42px}
+    .topbar .side-brand strong{font-size:19px}
+    .topbar .side-brand em{display:none}
+    .menu-btn{width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:none;border:1px solid rgba(201,168,76,0.3);cursor:pointer}
+    .menu-btn i{display:block;width:20px;height:2px;background:var(--gold);transition:transform 0.3s,opacity 0.2s}
+    .menu-btn.x i:nth-child(1){transform:translateY(7px) rotate(45deg)}
+    .menu-btn.x i:nth-child(2){opacity:0}
+    .menu-btn.x i:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+    .side-shade{display:block;position:fixed;inset:60px 0 0 0;z-index:155;background:rgba(0,0,0,0.6);opacity:0;pointer-events:none;transition:opacity 0.3s}
+    .side-shade.show{opacity:1;pointer-events:auto}
+    .side{top:60px;width:min(280px,82vw);transform:translateX(-102%);visibility:hidden;transition:transform 0.35s cubic-bezier(.4,0,.2,1),visibility 0s 0.35s}
+    .side.open{transform:translateX(0);visibility:visible;transition:transform 0.35s cubic-bezier(.4,0,.2,1)}
+    .side>.side-brand{display:none}
+    .side-nav{border-top:none}
+    .side-link{animation:none;padding-top:13px;padding-bottom:13px;font-size:14px}
+    .side.open .side-link{animation:sideIn 0.4s ease backwards;animation-delay:calc(80ms + var(--i) * 35ms)}
+    .notice-bar{justify-content:flex-start;padding:8px 14px;font-size:9px}
+    .sbar{top:76px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .side,.side *,.side-shade,.menu-btn i,.topbar img{animation:none !important;transition:none !important}
+  }
   .logo{cursor:pointer;background:none;border:none;display:flex;align-items:center;gap:10px;padding:0}
   .logo-text{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
   .logo-name{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:var(--gold);line-height:1}
@@ -164,7 +220,7 @@ const css = `
   .toast{position:fixed;bottom:24px;right:24px;background:var(--sage);color:#fff;padding:12px 18px;font-size:11px;z-index:300;border-left:3px solid var(--gold);animation:si 0.3s ease;max-width:280px;line-height:1.5}
   @keyframes si{from{transform:translateX(110%);opacity:0}to{transform:translateX(0);opacity:1}}
   .about-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
-  .aphoto{width:100%;aspect-ratio:3/4;background:linear-gradient(135deg,var(--sage),#1a2a1e);display:flex;align-items:center;justify-content:center;font-size:72px}
+  .aphoto{display:block;width:100%;max-width:460px;height:auto;border:1px solid rgba(201,168,76,0.55)}
   .acred{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid rgba(0,0,0,0.07)}
   .acred-i{font-size:18px}
   .acred-t{font-size:12px;color:#333}
@@ -250,11 +306,8 @@ const css = `
     .acc-grid{grid-template-columns:1fr !important}
     /* Footer simplified */
     .ftop{grid-template-columns:1fr 1fr !important}
-    nav{gap:16px;padding:0 16px;overflow-x:auto;justify-content:flex-start}
-    .nl{font-size:10px;white-space:nowrap}
   }
   @media(max-width:480px){
-    nav{gap:12px}
     .ftop{grid-template-columns:1fr !important}
     .sizzle-left,.sizzle-right{padding:32px 20px 56px !important}
   }
@@ -314,13 +367,7 @@ function TierBadge({ tier, size = "sm" }) {
 
 function Card({ l, onClick, user }) {
   const closing = l.raised / l.raise > 0.85;
-  const cardPhotos = [
-    'photo-1545324418-cc1a3fa10c00','photo-1590650153855-d9e808231d41',
-    'photo-1486406146926-c627a92ad1ab','photo-1580587771525-78b9dba3b914',
-    'photo-1512917774080-9991f1c4c750','photo-1460317442991-0ec209397118',
-  ];
-  const photoIdx = (l.id||l.name||'').split('').reduce((a,c)=>a+c.charCodeAt(0),0)%cardPhotos.length;
-  const cardPhoto = l.photo||`https://images.unsplash.com/${cardPhotos[photoIdx]}?w=600&q=80&fit=crop&auto=format`;
+  const cardPhoto = l.photo || '/img/listing-generic.svg';
   const riskMap = { conservative:['low'], balanced:['low','medium'], growth:['low','medium','high'], aggressive:['low','medium','high','very-high'] };
   const investorProfile = user?.riskProfile || 'balanced';
   const dealRisk = l.risk ? ({ Conservative: 'low', Balanced: 'medium', Growth: 'high', Speculative: 'very-high' })[l.risk.band] : (l.riskLevel || 'medium');
@@ -346,7 +393,7 @@ function Card({ l, onClick, user }) {
         <div className="cmets">
           <div className="cm"><div className="cmv">{l.irr || '—'}</div><div className="cml">IRR</div></div>
           <div className="cm"><div className="cmv">{l.term || '—'}</div><div className="cml">Term</div></div>
-          <div className="cm"><div className="cmv">${((l.minInvest || 50000) / 1000).toFixed(0)}K</div><div className="cml">Min.</div></div>
+          <div className="cm"><div className="cmv">{shortMoney(l.minInvest || 50000)}</div><div className="cml">Min.</div></div>
         </div>
         {l.raise && <PBar raised={l.raised || 0} target={l.raise} />}
         {closing && <div className="closing">⚡ Closing soon — {Math.round(100 - (l.raised / l.raise * 100))}% remaining</div>}
@@ -1160,7 +1207,7 @@ function Detail({ l, onBack, onInvest, user, go }) {
           <div className="sc">
             <h3>Register Interest</h3>
             <p>Receive the full IM and access the due diligence data room.</p>
-            {[['Min. Investment', `$${((l.minInvest || 50000) / 1000).toFixed(0)},000`], ['Total Raise', l.raise ? `$${(l.raise / 1e6).toFixed(1)}M` : '—'], ['Structure', l.structure || '—'], ['Distributions', 'As set out in the IM']].map(([lb, v]) => (
+            {[['Min. Investment', `$${(l.minInvest || 50000).toLocaleString('en-AU')}`], ['Total Raise', l.raise ? `$${(l.raise / 1e6).toFixed(1)}M` : '—'], ['Structure', l.structure || '—'], ['Distributions', 'As set out in the IM']].map(([lb, v]) => (
               <div className="si" key={lb}><span className="sil">{lb}</span><span className="siv">{v}</span></div>
             ))}
             {l.raise && <PBar raised={l.raised || 0} target={l.raise} />}
@@ -1532,54 +1579,14 @@ export default function App() {
         </div>
       )}
 
-      {/* LOGO HEADER — top bar with logo left */}
-      <div style={{ background:'#0D0D0D', padding:'20px 32px', display:'flex', alignItems:'center', justifyContent:'space-between', borderBottom:'1px solid rgba(201,168,76,0.2)', zIndex:200, position:'relative' }}>
-        <button onClick={() => go('home')} style={{ background:'none', border:'none', cursor:'pointer', display:'flex', alignItems:'center', gap:20, padding:0 }}>
-          {/* Logo with gold ring — sized to match header prominence */}
-          <div style={{ position:'relative', flexShrink:0 }}>
-            <div style={{ position:'absolute', inset:-3, borderRadius:'50%', background:'rgba(201,168,76,0.1)', border:'1px solid rgba(201,168,76,0.35)' }} />
-            <img src="/logo.png" alt="Prop Dev DNA"
-              style={{ height:140, width:140, objectFit:'contain', position:'relative', zIndex:1, display:'block' }}
-              onError={e => { e.target.style.display='none'; }}
-            />
-          </div>
-          <div style={{ display:'flex', flexDirection:'column', alignItems:'flex-start' }}>
-            <span style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:32, fontWeight:700, color:'var(--gold)', lineHeight:1.1, letterSpacing:'-0.5px' }}>Prop Dev DNA</span>
-            <span style={{ fontSize:10, letterSpacing:'3px', textTransform:'uppercase', color:'rgba(201,168,76,0.55)', marginTop:6, fontWeight:300 }}>Where Performance Meets Accountability</span>
-          </div>
-        </button>
-        <div style={{ fontSize:10, color:'rgba(245,242,236,0.3)', textAlign:'right' }}>
-          <strong style={{ color:'rgba(201,168,76,0.5)' }}>Wholesale &amp; Sophisticated Investors Only</strong><br />
-          <span>s.761G Corporations Act 2001 (Cth) · General information only · Not financial product advice</span>
-        </div>
-      </div>
+      <SideNav page={page} user={user} go={go} onSignIn={() => setShowAuth(true)} onSignOut={logout} showInstall={showInstall && !appInstalled} onInstall={handleInstall} />
 
-      {/* NAV — sticky, centred links */}
-      <nav style={{ position:'sticky', top:0, zIndex:100, display:'flex', alignItems:'center', justifyContent:'center', padding:'0 32px', height:46, background:'rgba(13,13,13,0.98)', backdropFilter:'blur(16px)', borderBottom:'1px solid rgba(201,168,76,0.1)', gap:36 }}>
-        <button className="nl" onClick={() => go('listings')}>Opportunities</button>
-        <button className="nl" onClick={() => go('portal')}>Developers</button>
-        <button className="nl" onClick={() => go('partners')}>Partners</button>
-        <button className="nl" onClick={() => go('tiers')}>Investor Tiers</button>
-        <button className="nl" onClick={() => go('pricing')}>Pricing</button>
-        <button className="nl" onClick={() => go('compliance')}>Compliance</button>
-        <button className="nl" onClick={() => go('developers')}>Track Record</button>
-        <button className="nl" onClick={() => go('stages')}>Stage Scoring</button>
-        <button className="nl" onClick={() => go('about')}>About</button>
-        {showInstall && !appInstalled && (
-          <button onClick={handleInstall} style={{ background:'rgba(201,168,76,0.1)', border:'1px solid rgba(201,168,76,0.3)', color:'var(--gold)', fontSize:9, letterSpacing:'1.5px', textTransform:'uppercase', padding:'6px 12px', cursor:'pointer', fontFamily:"'DM Sans',sans-serif", marginLeft:8 }}>
-            ⬇ Install App
-          </button>
-        )}
-        {user
-          ? <>
-            {user.role === 'admin' && <button className="nl" style={{ color: '#e74c3c' }} onClick={() => go('admin')}>⚙ Admin</button>}
-            {(user.role === 'regulator' || user.role === 'admin') && <button className="nl" onClick={() => go('regulator')}>Compliance View</button>}
-            <button className="nl" style={{ color: 'var(--gold)' }} onClick={() => go(user.role === 'regulator' ? 'regulator' : 'dashboard')}>My Account</button>
-            <button className="nl" onClick={logout}>Sign Out</button>
-          </>
-          : <button className="nl cta" onClick={() => setShowAuth(true)}>Sign In</button>
-        }
-      </nav>
+      <div className="app-main">
+      {/* Persistent compliance notice — shown on every page */}
+      <div className="notice-bar">
+        <strong>Wholesale &amp; Sophisticated Investors Only</strong>
+        <span>s.761G Corporations Act 2001 (Cth) · General information only · Not financial product advice</span>
+      </div>
 
       {/* ── HOME ── */}
       {page === 'home' && <>
@@ -2555,9 +2562,10 @@ export default function App() {
             <div>
               <div className="slbl">About the Platform</div>
               <div className="stitle">Built by a Broker.<br />For the Deal Table.</div>
-              <p style={{ fontSize: '13px', color: 'var(--muted)', lineHeight: 1.75, marginBottom: 20 }}>Prop Dev DNA was founded by Anthony Lawson — mortgage broker, financial adviser, and property development finance specialist based in Sydney.</p>
+              <p style={{ fontSize: '13px', color: 'var(--muted)', lineHeight: 1.75, marginBottom: 20 }}>Prop Dev DNA was founded by Anthony Lawson, a Sydney mortgage broker with a focus on property development and construction finance.</p>
               <p style={{ fontSize: '13px', color: 'var(--muted)', lineHeight: 1.75, marginBottom: 24 }}>Built to solve a real problem: connecting serious developers with qualified capital, efficiently and professionally.</p>
-              {[{ i: '🏦', t: 'Financial DNA Group', s: 'Director — Mortgage Broking & Financial Advice' },
+              {[{ i: '🏦', t: 'Financial DNA Group', s: 'Director — Mortgage and Credit Broking' },
+              { i: '📄', t: 'Authorised Credit Representative', s: 'Anthony Lawson ACR 443815 · Financial DNA Group Pty Ltd ACR 565255' },
               { i: '🏗️', t: 'Prop Dev DNA', s: 'Founder — Wholesale Property Investment Platform' },
               { i: '📍', t: 'Sydney, NSW', s: 'Serving clients nationally' },
               ].map(c => (
@@ -2566,9 +2574,11 @@ export default function App() {
                   <div className="acred-t"><strong>{c.t}</strong>{c.s}</div>
                 </div>
               ))}
+              <p style={{ fontSize: 11, color: 'var(--muted)', lineHeight: 1.7, marginTop: 14 }}>Financial DNA Group Pty Ltd (ABN 11 682 017 849, Authorised Credit Representative No. 565255) and Anthony Lawson (Authorised Credit Representative No. 443815) are authorised credit representatives of Mortgage Australia Group Pty Ltd, Australian Credit Licence No. 377294. These credit authorisations are not an Australian financial services licence and do not cover investment services on Prop Dev DNA.</p>
+              <a className="btn btn-g" href={BOOKING_URL} target="_blank" rel="noreferrer" style={{ display: 'inline-block', textDecoration: 'none', marginTop: 16 }}>Book a Meeting →</a>
             </div>
             <div>
-              <div className="aphoto">👤</div>
+              <img className="aphoto" src="/img/anthony-lawson.jpg" alt="Anthony Lawson, founder of Prop Dev DNA" />
               <div style={{ background: 'rgba(201,168,76,0.05)', border: '1px solid rgba(201,168,76,0.16)', padding: '18px', marginTop: 14 }}>
                 <div style={{ fontSize: '9px', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: 6 }}>Contact</div>
                 <p style={{ fontSize: '12px', color: 'var(--ink)', lineHeight: 1.7 }}>anthony@financialdnagroup.com.au<br />0414 744 516<br />Sydney NSW</p>
@@ -2577,6 +2587,10 @@ export default function App() {
           </div>
         </sec>
       )}
+
+      {page === 'guides' && <GuidesPage />}
+      {page === 'privacy' && <PrivacyPage />}
+      {page === 'disclaimer' && <DisclaimerPage />}
 
       {/* ── PRICING ── */}
       {page === 'pricing' && (
@@ -2679,6 +2693,8 @@ export default function App() {
         </sec>
       )}
 
+      {(page === 'home' || page === 'about') && <BookBand />}
+
       {/* ── FOOTER ── */}
       <footer>
         <div className="ftop">
@@ -2696,7 +2712,8 @@ export default function App() {
           </div>
           <div>
             <div className="fch4">Company</div>
-            {[['about','About'],['about','Contact']].map(([pg,l]) => <button key={l} className="fl2" onClick={() => go(pg)}>{l}</button>)}
+            {[['about','About'],['about','Contact'],['guides','Guides'],['privacy','Privacy Policy'],['disclaimer','Disclaimer']].map(([pg,l]) => <button key={l} className="fl2" onClick={() => go(pg)}>{l}</button>)}
+            <a className="fl2" href={BOOKING_URL} target="_blank" rel="noreferrer" style={{ display:'block', textDecoration:'none' }}>Book a Meeting</a>
           </div>
           <div>
             <div className="fch4">Entities</div>
@@ -2725,8 +2742,9 @@ export default function App() {
           </div>
         </div>
       </footer>
+      </div>
 
-      {showAuth && <AuthModal defaultRole={authDefaultRole} onClose={() => { setShowAuth(false); setAuthDefaultRole(null); }} onLogin={u => { setUser(u); setAuthDefaultRole(null); showT(`Welcome, ${u.fname || u.email} 👋`); go(u.role === 'developer' || u.role === 'subcontractor' ? 'stages' : u.role === 'regulator' ? 'regulator' : 'dashboard'); }} />}
+      {showAuth &&<AuthModal defaultRole={authDefaultRole} onClose={() => { setShowAuth(false); setAuthDefaultRole(null); }} onLogin={u => { setUser(u); setAuthDefaultRole(null); showT(`Welcome, ${u.fname || u.email} 👋`); go(u.role === 'developer' || u.role === 'subcontractor' ? 'stages' : u.role === 'regulator' ? 'regulator' : 'dashboard'); }} />}
       {showSummary && sel && <SummaryModal listing={sel} onClose={() => setShowSummary(false)} onDone={() => { setShowSummary(false); setShowComp(true); }} />}
       {showComp && <CompModal listing={sel} onAccept={async () => { const r = await API.post('/api/risk-declaration', { listingId: sel && sel.id, listingName: sel && (sel.name || sel.title), allChecksConfirmed: true, summaryAcknowledged: true, waterfallAcknowledged: true }); if (r && r.error) { showT(r.error); return; } setShowComp(false); setShowEOI(true); }} onClose={() => setShowComp(false)} />}
       {showEOI && sel && <EOIModal listing={sel} onClose={() => setShowEOI(false)} toast={showT} user={user} />}

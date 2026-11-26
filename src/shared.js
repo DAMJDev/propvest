@@ -8,6 +8,11 @@ export const API = {
   upload: (url, formData) => fetch(url, { method: 'POST', credentials: 'include', body: formData }).then(json),
 };
 
+export const BOOKING_URL = 'https://calendly.com/anthony-financialdnagroup/30min';
+
+// $250K, $1M, $1.5M
+export const shortMoney = n => n >= 1e6 ? `$${+(n / 1e6).toFixed(2)}M` : `$${Math.round(n / 1e3)}K`;
+
 // Inputs on light (white/paper) cards: the global .fi style is designed for dark modals.
 export const lightFi = { color: '#111', background: '#fafafa', borderColor: 'rgba(0,0,0,0.15)' };
 

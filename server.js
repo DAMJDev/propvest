@@ -155,8 +155,8 @@ const DEFAULT_LISTINGS = [
     name:'Harbour View Residences', loc:'📍 Darling Harbour, Sydney NSW',
     irr:18.2, hold:'3.5 yr', profit:'$2.8M', fundedPct:68, minInvest:'$250,000',
     raise:'$18,500,000', structure:'Equity / Joint Venture', spotsLeft:6,
-    photo:'https://picsum.photos/seed/hvr2026/800/400',
-    heroPhoto:'https://picsum.photos/seed/hvr2026hero/1200/400',
+    photo:'/img/listing-hvr.svg',
+    heroPhoto:'/img/listing-hvr.svg',
     category:'Luxury Residential — Off-Plan',
     overview:'Harbour View Residences is a landmark 52-apartment luxury development perched above Darling Harbour. Premium 1, 2 & 3-bedroom apartments with unobstructed harbour views, resort-style amenities, and a world-class location just 300m from the CBD. The developer has a 20-year track record with 14 completed residential projects across NSW.',
     stats:[['52','Total Apartments'],['14 Levels','Tower Height'],['Q3 2027','Est. Completion'],['DA Approved','Planning Status']],
@@ -171,8 +171,8 @@ const DEFAULT_LISTINGS = [
     name:'The Exchange — Collins St', loc:'📍 Melbourne CBD, VIC',
     irr:21.6, hold:'5 yr', profit:'$4.1M', fundedPct:91, minInvest:'$500,000',
     raise:'$24,000,000', structure:'Preferred Equity', spotsLeft:2,
-    photo:'https://picsum.photos/seed/collins2026/800/400',
-    heroPhoto:'https://picsum.photos/seed/collins2026hero/1200/400',
+    photo:'/img/listing-collins.svg',
+    heroPhoto:'/img/listing-collins.svg',
     category:'Commercial — Strata Office',
     overview:'A premium strata office development on Melbourne\'s iconic Collins Street. The Exchange delivers A-grade office suites across 12 floors with end-of-trip facilities, rooftop terrace, and unmatched CBD connectivity. 82% pre-sold to owner-occupiers, providing significant de-risk for investors.',
     stats:[['48','Office Suites'],['12 Levels','Tower Height'],['Q4 2027','Est. Completion'],['DA Approved','Planning Status']],
@@ -187,8 +187,8 @@ const DEFAULT_LISTINGS = [
     name:'Riverside Quarter', loc:'📍 West End, Brisbane QLD',
     irr:15.8, hold:'4 yr', profit:'$1.9M', fundedPct:42, minInvest:'$150,000',
     raise:'$12,000,000', structure:'Equity / Joint Venture', spotsLeft:14,
-    photo:'https://picsum.photos/seed/riverside2026/800/400',
-    heroPhoto:'https://picsum.photos/seed/riverside2026hero/1200/400',
+    photo:'/img/listing-riverside.svg',
+    heroPhoto:'/img/listing-riverside.svg',
     category:'Mixed-Use — Townhouses + Retail',
     overview:'A vibrant mixed-use precinct in Brisbane\'s thriving West End. Riverside Quarter delivers 32 contemporary townhouses alongside ground-floor retail and café tenancies, creating a live-work-play community just 2km from the CBD on the Brisbane River.',
     stats:[['32','Townhouses'],['4 Levels','Max Height'],['Q1 2028','Est. Completion'],['DA Approved','Planning Status']],
@@ -203,8 +203,8 @@ const DEFAULT_LISTINGS = [
     name:'Pacifico Penthouses', loc:'📍 Gold Coast, QLD',
     irr:23.1, hold:'3 yr', profit:'$5.6M', fundedPct:25, minInvest:'$1,000,000',
     raise:'$42,000,000', structure:'Preferred Equity', spotsLeft:18,
-    photo:'https://picsum.photos/seed/pacifico2026/800/400',
-    heroPhoto:'https://picsum.photos/seed/pacifico2026hero/1200/400',
+    photo:'/img/listing-pacifico.svg',
+    heroPhoto:'/img/listing-pacifico.svg',
     category:'Luxury Residential — Beachfront',
     overview:'The Gold Coast\'s most exclusive beachfront address. Pacifico Penthouses delivers just 24 ultra-luxury apartments with private rooftop terraces, infinity pools, and direct beach access at Main Beach. A once-in-a-generation opportunity at Australia\'s most iconic coastal location.',
     stats:[['24','Apartments'],['32 Levels','Tower Height'],['Q2 2027','Est. Completion'],['DA Approved','Planning Status']],
@@ -419,7 +419,12 @@ function migrateDemoData() {
   let changed = false;
   const sub = db.users.find(u => u.id === 'u-demo-sub');
   if (sub && !sub.contractor) { sub.contractor = demoContractor(); changed = true; }
-  if (changed) { writeDB(db); console.log('[MIGRATE] Added demo contractor profile.'); }
+  // Swap the old random stock photos on the sample listings for their own illustrations.
+  db.listings.forEach(l => {
+    const sample = DEFAULT_LISTINGS.find(d => d.id === l.id);
+    if (sample && /picsum\.photos/.test(l.photo || '')) { l.photo = sample.photo; l.heroPhoto = sample.heroPhoto; changed = true; }
+  });
+  if (changed) { writeDB(db); console.log('[MIGRATE] Updated demo data.'); }
 }
 
 function seedDB() {
